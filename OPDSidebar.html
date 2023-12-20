@@ -1,0 +1,89 @@
+ <!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
+    <?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+  </head>
+  <body>
+    <!-- Below is the HTML code that defines the sidebar element structure. -->
+    <div class="top-bar">
+      <div class="refresh-section">
+        <div class="refresh-text">
+          <p>
+            To pick a project, select it in the spreadsheet then click this refresh button to load information about that project.
+          </p>
+        </div>
+        <div class="refresh-button">
+          <button id="project-refresh-button" class="action">Load Project</button>
+      </div>
+      <br> 
+      <hr>
+      <div class="title-section">
+        <h3 id="project-title">
+          No Project Selected
+        </h3>
+      </div> 
+    </div>
+    
+<!-- Dynamic Content -->
+  <!-- Existing Job -->
+    <div class="existing-job" style="display: none;">
+      <button id="open-reconciliation-button" class="share">Open Reconciliation Sheet</button>
+      <div class="proposal-section">
+        <button class="open-costing-button action">Open Job Costing</button>
+        <button class="open-proposal-button action">Open Proposal</button>
+      </div>
+    </div>
+  <!-- New Job -->
+    <div class="new-job" style="display: none;">
+      <button id="create-job-button" class="create">Generate New Project</button>
+    </div>
+
+  <!-- Empty Job -->
+    <div class="empty-job" style="display: none;">
+      <p>
+        Fill out the project with information then hit load project to refresh.
+      </p>
+    </div>
+
+  <!-- Existing Proposal -->
+    <div class="existing-proposal" style="display: none;">
+      <div class="proposal-section">
+        <button class="open-costing-button action">Open Job Costing</button>
+        <button class="open-proposal-button action">Open Proposal</button>
+      </div>
+      <button id="accept-proposal-button" class="create">Proposal Accepted</button>
+    </div>
+
+  <!-- New Proposal -->
+    <div class="new-proposal" style="display: none;">
+      <button id="create-proposal-button" class="create">Generate New Proposal</button>
+    </div>
+
+  <!-- Empty Proposal -->
+    <div class="empty-proposal" style="display: none;">
+      <p>
+        Fill out the proposal with information then hit load project to refresh.
+      </p>
+    </div>
+    
+    <!-- Sidebar bottom-branding. -->
+    <div class="sidebar bottom">
+      <hr>
+      <br>
+      <div class="navigation-buttons">
+        <button id="jump-to-job-button" class="action">Jump To Current Job</button>
+        <button id="jump-to-proposals-button" class="action">Jump To Proposals</button>
+      </div>
+      <br>
+      <img alt="Add-on logo" class="logo" width="100%"
+          src="https://outpostworldwide.com/wp-content/uploads/2023/12/Outpost-Black-Transparent.png">
+      <span class="gray branding-text">Add-on by Quinn Cecil</span>
+    </div>
+
+    
+    <!-- Use a templated HTML printing scriptlet to import JavaScript. -->
+    <?!= HtmlService.createHtmlOutputFromFile('OPDSidebarJS').getContent(); ?>
+  </body>
+</html>
