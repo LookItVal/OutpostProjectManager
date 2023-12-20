@@ -25,29 +25,33 @@
   // Get the current project info from the server and display the appropriate dynamic content.
   function refreshSidebar() {
     loading();
-    google.script.run.withSuccessHandler(function(project) {
-      console.log(project);
-      $('#project-title').text(project.title);
-      if (!project.type) {
+    google.script.run.withSuccessHandler(function(initiative) {
+      console.log(initiative);
+      $('#project-title').text(initiative.title);
+      if (!initiative.type) {
         $('#info-text').text('Fill out the sheet with information then hit load project to refresh.');
         $('.info-message').fadeIn();
-      } else if (project.type === "PROJECT") {
-        if (project.sheetId === null) {
+      } else if (initiative.type === "PROJECT") {
+        if (initiative.sheetId === null) {
           $('.new-job').fadeIn();
         } else {
           $('.existing-job').fadeIn();
         }
-      } else if (project.type === "PROPOSAL") {
-        if (project.status === "NEW") {
+      } else if (initiative.type === "PROPOSAL") {
+        if (initiative.status === "NEW") {
           $('.new-proposal').fadeIn();
-        } else if (project.status === "ACTIVE") {
-          $('.existing-proposal').fadeIn();
+        } else if (initiative.status === "ACTIVE") {
+          populateProposal(initiative);
         }
       }
     }).withFailureHandler(function(msg, element) {
       console.log(msg, element);
       $('#project-title').text("Error With Addon: Check Frontend Console For Details")
     }).getProject();
+  }
+
+  function populateProposal(proposal) {
+    $('.existing-proposal').fadeIn();
   }
 
   // Calls the server to change the active sheet to the most recent job.

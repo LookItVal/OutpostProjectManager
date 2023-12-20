@@ -231,7 +231,7 @@ function getProject() {
   // This should work by retreving the name array not the full title.
   let nameArray = getProjectNameArray();
   try {
-    return getInitiative({nameArray});
+    return getInitiative({nameArray}).solidify();
   } catch (e) {
     if (e instanceof ValidationError) {
       return {"title": e.message.split(":")[0]};
