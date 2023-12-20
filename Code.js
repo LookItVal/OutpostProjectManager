@@ -241,6 +241,25 @@ function getProject() {
   }
 }
 
+function requestProposalGeneration() {
+  const proposal = getProject();
+  if (proposal.type !== "PROPOSAL") {
+    throw new ValidationError("generateProposal function found a project not a proposal");
+  }
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    "Generate Proposal?",
+    `Are you sure you want to generate a proposal in the ${proposal.clientName} folder called ${proposal.title}?`,
+    ui.ButtonSet.YES_NO);
+  if (response == ui.Button.YES) {
+    console.log("Generating Proposal");
+    return true;
+  } else {
+    console.log("Proposal Generation Cancelled");
+    return false;
+  }
+}
+
 
 /////////////////////////////////////////////
 //               UI Elements               //

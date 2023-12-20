@@ -6,6 +6,7 @@
     $('#project-refresh-button').click(refreshSidebar);
     $('#jump-to-job-button').click(jumpToJob);
     $('#jump-to-proposals-button').click(jumpToProposal);
+    $('#create-proposal-button').click(generateProposal);
     refreshSidebar();
     // Call the server here to retrieve any information needed to build
     // the dialog, if necessary.
@@ -74,5 +75,18 @@
         refreshSidebar();
       })
       .jumpToProposal();
+  }
+
+  // Calls the server to generate a new proposal.
+  function generateProposal() {
+    google.script.run
+      .withFailureHandler(function(msg, element) {
+        console.log(msg, element);
+        element.disabled = false;
+      })
+      .withSuccessHandler(function(result) {
+        if (result) refreshSidebar();
+      })
+      .requestProposalGeneration();
   }
 </script>

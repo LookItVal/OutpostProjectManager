@@ -130,6 +130,14 @@ class Initiative {
     return this._folder;
   }
 
+  get client() {
+    if (this._client) {
+      return this._client;
+    }
+    this._client = new Client({name: this.clientName});
+    return this._client;
+  }
+
   /////////////////////////////////////////////
   //              Static Methods             //
   /////////////////////////////////////////////
@@ -278,13 +286,17 @@ class Proposal extends Initiative {
   /////////////////////////////////////////////
   //             Public Methods             //
   /////////////////////////////////////////////
+  // again lets think very carefully about running this. check all of the client side stuff too.
   makeFolder() {
     if (this.folder) {
       throw new ValidationError("Proposal already has a folder");
     }
     const client = new Client({name: this.clientName});
-    client.makeFolder();
-    this._folder = client.folder.createFolder(this.title);
+    if (client.folder) {
+      this._folder = this.client.folder.createFolder(this.title);
+    } else {
+      this._folder = this.client.makeFolder().createFolder(this.title);
+    }
     return this._folder;
   }
 }
