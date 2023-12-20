@@ -6,7 +6,7 @@
     $('#project-refresh-button').click(refreshSidebar);
     $('#jump-to-job-button').click(jumpToJob);
     $('#jump-to-proposals-button').click(jumpToProposal);
-    $('#create-proposal-button').click(generateProposal);
+    $('#create-proposal-button').click(requestProposalGeneration);
     refreshSidebar();
     // Call the server here to retrieve any information needed to build
     // the dialog, if necessary.
@@ -17,7 +17,7 @@
     $('#project-title').text("Loading...");
     $('.existing-job').fadeOut();
     $('.new-job').fadeOut();
-    $('.item-not-found').fadeOut();
+    $('.info-message').fadeOut();
     $('.existing-proposal').fadeOut();
     $('.new-proposal').fadeOut();
   }
@@ -29,7 +29,8 @@
       console.log(project);
       $('#project-title').text(project.title);
       if (!project.type) {
-        $('.item-not-found').fadeIn();
+        $('#info-text').text('Fill out the sheet with information then hit load project to refresh.');
+        $('.info-message').fadeIn();
       } else if (project.type === "PROJECT") {
         if (project.sheetId === null) {
           $('.new-job').fadeIn();
@@ -78,15 +79,34 @@
   }
 
   // Calls the server to generate a new proposal.
-  function generateProposal() {
+  function requestProposalGeneration() {
     google.script.run
       .withFailureHandler(function(msg, element) {
         console.log(msg, element);
         element.disabled = false;
       })
       .withSuccessHandler(function(result) {
-        if (result) refreshSidebar();
+        if (result) {
+          $('#project-title').text("Proposal Being Generated...");
+          $('#info-text').text('Please wait while the proposal is generated. This may take a few moments.');
+          $('.new-proposal').fadeOut();
+          $('.info-message').fadeIn();
+          generateProposal();
+        }
       })
       .requestProposalGeneration();
+  }
+
+  function generateProposal() {
+    google.script.run
+      .withFailureHandler(function(msg, element) {
+        $('#info-text').text('An error occured. Please check the console for details.');
+        console.log(msg, element);
+        element.disabled = false;
+      })
+      .withSuccessHandler(function() {
+        refreshSidebar();
+      })
+      .generateProposal();
   }
 </script>

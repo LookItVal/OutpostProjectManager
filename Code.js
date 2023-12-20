@@ -252,11 +252,14 @@ function requestProposalGeneration() {
     `Are you sure you want to generate a proposal in the ${proposal.clientName} folder called ${proposal.title}?`,
     ui.ButtonSet.YES_NO);
   if (response == ui.Button.YES) {
-    proposal.generateProposal();
     return true;
   } else {
     return false;
   }
+}
+
+function generateProposal() {
+  getProject().generateProposal();
 }
 
 
