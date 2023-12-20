@@ -152,6 +152,26 @@ class Initiative {
   static get reconciliationSheetTemplate() {
     return DriveApp.getFileById(reconciliationSheetTemplateId);
   }
+
+  /////////////////////////////////////////////
+  //             Public Methods              //
+  /////////////////////////////////////////////
+  // function to retun a new copy of an object with only data do pass to the frontend
+  solidify() {
+    const solidified = {};
+    for (const key of Object.keys(this)) {
+      if (key.startsWith("_") && (!this[key])) {
+        continue;
+      }
+      // remnove the _ from the key name if it has one
+      if (key.startsWith("_")) {
+        solidified[key.slice(1)] = this[key];
+        continue;
+      }
+      solidified[key] = this[key];
+    }
+    return solidified;
+  }
 }
 
 
