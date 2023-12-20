@@ -142,15 +142,15 @@ class Initiative {
   //              Static Methods             //
   /////////////////////////////////////////////
   static get costingSheetTemplate() {
-    return DriveApp.getFileById(costingSheetTemplate);
+    return DriveApp.getFileById(costingSheetTemplateId);
   }
 
   static get proposalTemplate() {
-    return DriveApp.getFileById(proposalTemplate);
+    return DriveApp.getFileById(proposalTemplateId);
   }
 
   static get reconciliationSheetTemplate() {
-    return DriveApp.getFileById(reconciliationSheetTemplate);
+    return DriveApp.getFileById(reconciliationSheetTemplateId);
   }
 }
 
@@ -240,7 +240,6 @@ class Proposal extends Initiative {
       this._yrmo = nameArray[1];
     }
     this.status = this.initStatus();
-    console.log("pass5");
   }
 
   /////////////////////////////////////////////
@@ -286,17 +285,27 @@ class Proposal extends Initiative {
   /////////////////////////////////////////////
   //             Public Methods             //
   /////////////////////////////////////////////
-  // again lets think very carefully about running this. check all of the client side stuff too.
   makeFolder() {
     if (this.folder) {
       throw new ValidationError("Proposal already has a folder");
     }
     const client = new Client({name: this.clientName});
-    if (client.folder) {
-      this._folder = this.client.folder.createFolder(this.title);
-    } else {
+    if (client.isNew()) {
       this._folder = this.client.makeFolder().createFolder(this.title);
+    } else {
+      this._folder = this.client.folder.createFolder(this.title);
     }
     return this._folder;
+  }
+
+  generateProposal() {
+    if (this.folder) {
+      throw new ValidationError("Proposal already has a folder");
+    }
+    this.makeFolder();
+    const proposalTemplate = DriveApp.getFileById(proposalTemplateId);
+    const costingSheetTemplate = DriveApp.getFileById(costingSheetTemplateId);
+    proposalTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`, this.folder);
+    costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName}  Costing Sheet`, this.folder);
   }
 }

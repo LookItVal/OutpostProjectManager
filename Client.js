@@ -1,5 +1,7 @@
 class Client {
   constructor({name = null, folder = null} = {}) {
+    const constructorData = {name, folder};
+    this.validateConstructorData(constructorData)
     if (!name && !folder) {
       throw new TypeError("Client must be initialized with either a Name or a Folder Object");
     }
@@ -8,6 +10,21 @@ class Client {
     }
     if (name) {
       this._name = name;
+    }
+  }
+
+  /////////////////////////////////////////////
+  //              Validators                 //
+  /////////////////////////////////////////////
+  validateConstructorData({name = null, folder = null} = {}) {
+    if (!name && !folder) {
+      throw new ValidationError("Client must be initialized with either a Name or a Folder Object");
+    }
+    if (name && typeof name != "string") {
+      throw new ValidationError("Client name must be a string.");
+    }
+    if (folder && !(folder instanceof DriveApp.Folder)) {
+      throw new ValidationError("Client folder must be a Folder object.");
     }
   }
 
@@ -23,7 +40,7 @@ class Client {
       this._folder = DriveApp.getFolderById(this._folderId);
     }
     if (this._name) {
-      const rootFolder = DriveApp.getFolderById(clientFolder);
+      const rootFolder = DriveApp.getFolderById(clientFolderId);
       const folders = rootFolder.getFoldersByName(this._name);
       if (!folders.hasNext()) {
         return null;
@@ -68,7 +85,7 @@ class Client {
     // if projects not cached then get all initiatives and run them throught the initiativeType function to determine if they are projects or proposals
     this._projects = [];
     for (const initiative of this.initiatives) {
-      if (initiativeType(initiative) == "PROJECT") {
+      if (initiative.type === "PROJECT") {
         this._projects.push(initiative);
       }
     }
@@ -82,7 +99,7 @@ class Client {
     // if proposal not cached then get all initiatives and run them throught the initiativeType function to determine if they are projects or proposals
     this._proposals = [];
     for (const initiative of this.initiatives) {
-      if (initiativeType(initiative) == "PROPOSAL") {
+      if (initiative.type === "PROPOSAL") {
         this._proposals.push(initiative);
       }
     }
@@ -90,7 +107,7 @@ class Client {
   }
 
   isNew() {
-    if (folder) {
+    if (!this.folder) {
       return true;
     }
     return false;
@@ -103,7 +120,8 @@ class Client {
     if (this.folder) {
       throw new ValidationError("Client already has a folder");
     }
-    const rootFolder = DriveApp.getFolderById(clientFolder);
+    const rootFolder = DriveApp.getFolderById(clientFolderId);
     this._folder = rootFolder.createFolder(this._name);
+    return this._folder;
   }
 }
