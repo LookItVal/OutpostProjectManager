@@ -36,7 +36,11 @@
           $('.existing-job').fadeIn();
         }
       } else if (project.type === "PROPOSAL") {
-        $('.existing-proposal').fadeIn();
+        if (project.status === "NEW") {
+          $('.new-proposal').fadeIn();
+        } else if (project.status === "ACTIVE") {
+          $('.existing-proposal').fadeIn();
+        }
       }
     }).withFailureHandler(function(msg, element) {
       console.log(msg, element);
