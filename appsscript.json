@@ -1,0 +1,62 @@
+{
+  "timeZone": "America/Chicago",
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "dependencies": {
+    "enabledAdvancedServices": [
+      {
+        "userSymbol": "Calendar",
+        "serviceId": "calendar",
+        "version": "v3"
+      },
+      {
+        "userSymbol": "Drive",
+        "serviceId": "drive",
+        "version": "v2"
+      },
+      {
+        "userSymbol": "Sheets",
+        "serviceId": "sheets",
+        "version": "v4"
+      }
+    ]
+  },
+  "addOns": {
+    "calendar": {
+      "eventOpenTrigger": {
+        "runFunction": "selectEventUI"
+      },
+      "homepageTrigger": {
+        "runFunction": "calendarHomepageUI",
+        "enabled": true
+      }
+    },
+    "sheets": {
+      "homepageTrigger": {
+        "runFunction": "openSheetSidebar",
+        "enabled": true
+      }
+    },
+    "common": {
+      "layoutProperties": {
+        "primaryColor": "#4997eb",
+        "secondaryColor": "#1777d6"
+      },
+      "logoUrl": "https://outpostworldwide.com/wp-content/uploads/2023/11/Outpost-Icon-Square-INV.png",
+      "name": "Outpost Worldwide",
+      "openLinkUrlPrefixes": [],
+      "universalActions": [
+        {}
+      ],
+      "useLocaleFromApp": true
+    }
+  },
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/script.locale",
+    "https://www.googleapis.com/auth/calendar.addons.execute",
+    "https://www.googleapis.com/auth/calendar.readonly",
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/spreadsheets.currentonly",
+    "https://www.googleapis.com/auth/script.container.ui"
+  ]
+}

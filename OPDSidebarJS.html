@@ -1,0 +1,77 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+  // Run initializations on sidebar load.
+  $(function() {
+    // Assign handler functions to sidebar elements here, if needed.
+    $('#project-refresh-button').click(refreshSidebar);
+    $('#jump-to-job-button').click(jumpToJob);
+    $('#jump-to-proposals-button').click(jumpToProposal);
+    refreshSidebar();
+    // Call the server here to retrieve any information needed to build
+    // the dialog, if necessary.
+  });
+
+  // Update the ui to show loading info and remove dynamic content.
+  function loading() {
+    $('#project-title').text("Loading...");
+    $('.existing-job').fadeOut();
+    $('.new-job').fadeOut();
+    $('.empty-job').fadeOut();
+    $('.existing-proposal').fadeOut();
+    $('.new-proposal').fadeOut();
+    $('.empty-proposal').fadeOut();
+  }
+
+  // Get the current project info from the server and display the appropriate dynamic content.
+  function refreshSidebar() {
+    loading();
+    google.script.run.withSuccessHandler(function(project) {
+      console.log(project);
+      $('#project-title').text(project.title);
+      if (project.title === "Project Not Found") {
+        $('.empty-job').fadeIn();
+      } else if (project.title === "Proposal Not Found") {
+        $('.empty-proposal').fadeIn();
+      } else if (project.type === "PROJECT") {
+        if (project.sheetId === null) {
+          $('.new-job').fadeIn();
+        } else {
+          $('.existing-job').fadeIn();
+        }
+      } else if (project.type === "PROPOSAL") {
+        $('.existing-proposal').fadeIn();
+      }
+    }).withFailureHandler(function(msg, element) {
+      console.log(msg, element);
+      $('#project-title').text("Error With Addon: Check Frontend Console For Details")
+    }).getProject();
+  }
+
+  // Calls the server to change the active sheet to the most recent job.
+  function jumpToJob() {
+    loading();
+      google.script.run
+      .withFailureHandler(function(msg, element) {
+        console.log(msg, element);
+        element.disabled = false;
+      })
+      .withSuccessHandler(function() {
+        refreshSidebar();
+      })
+      .jumpToJob();
+  }
+  
+  // Calls The server to change the active sheet to the proposal sheet.
+  function jumpToProposal() {
+    loading();
+    google.script.run
+      .withFailureHandler(function(msg, element) {
+        console.log(msg, element);
+        element.disabled = false;
+      })
+      .withSuccessHandler(function() {
+        refreshSidebar();
+      })
+      .jumpToProposal();
+  }
+</script>
