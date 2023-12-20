@@ -3,16 +3,16 @@
 /////////////////////////////////////////////
 
 // Folder Ids
-const reconciliationFolder = "1NNilomBvR1yumr9e89IE2qysCKLCs55O";
-const clientFolder = "1Y5CTtT86ORvnZXg-yuY6el5tWx1AbBfp";
+const reconciliationFolderId = "1NNilomBvR1yumr9e89IE2qysCKLCs55O";
+const clientFolderId = "1Y5CTtT86ORvnZXg-yuY6el5tWx1AbBfp";
 // Spreadsheet Ids
-const projectDataSheet = '1a7d08zpaNTUMUAa9nH10UHHIkGoBJfhVd-hRrnLM7ls';
+const projectDataSheetId = '1a7d08zpaNTUMUAa9nH10UHHIkGoBJfhVd-hRrnLM7ls';
 // TemplateIds
-const reconciliationSheetTemplate = '1pagP4j59__jDa2iB2YokYVG56RYChVOG2jUXuCVPG1c';
-const proposalTemplate = '1bTp3KyCw8MmU7WJoAVyhA_x_MPbYWTwqhXzkBM7vq20';
-const costingSheetTemplate = '1UJ5P8V92bFpJEcccCiIwAULAN5Cv_zb7YWjY38i7A9A';
+const reconciliationSheetTemplateId = '1pagP4j59__jDa2iB2YokYVG56RYChVOG2jUXuCVPG1c';
+const proposalTemplateId = '1bTp3KyCw8MmU7WJoAVyhA_x_MPbYWTwqhXzkBM7vq20';
+const costingSheetTemplateId = '1UJ5P8V92bFpJEcccCiIwAULAN5Cv_zb7YWjY38i7A9A';
 // OPD Sheed Ids
-const proposalsSheet = 202907659;
+const proposalsSheetId = 202907659;
 //Regex queries
 const regexJobName = /^\d{4}\s\d{4}\s.*/;
 const regexProposalName = /^PROPOSAL: \d{4}\s.*/;
@@ -33,7 +33,7 @@ function onOpen(e) {
   var ui = SpreadsheetApp.getUi();
   console.log(e);
   // Checks if the active spreadsheet matches the specific project data sheet ID
-  if (SpreadsheetApp.getActiveSpreadsheet().getId() === projectDataSheet) {
+  if (SpreadsheetApp.getActiveSpreadsheet().getId() === projectDataSheetId) {
   // Creates a menu for the add-on in the UI
   ui.createMenu("Outpost Project Manager")
       .addItem('Show Sidebar', 'openOPDSidebar')
@@ -48,7 +48,7 @@ function onOpen(e) {
 //Function to distribute the propper sidebar depending on the current sheet
 function openSheetSidebar() {
   var currentSheet = SpreadsheetApp.getActiveSpreadsheet().getId();
-  if (currentSheet === projectDataSheet) {
+  if (currentSheet === projectDataSheetId) {
     return openOPDSidebar();
   }
   else {
@@ -62,7 +62,7 @@ function getProjectTitle() {
   var currentRow = currentSheet.getActiveCell().getRow();
   const currentSheetId = currentSheet.getSheetId();
   // If the project is a proposal
-  if (currentSheetId === proposalsSheet) {
+  if (currentSheetId === proposalsSheetId) {
     if (currentRow === 1) {
       return 'Proposal Not Found';
     }
@@ -103,7 +103,7 @@ function getProjectNameArray() {
   const currentSheetId = currentSheet.getSheetId();
   let nameArray = [];
   // If the project is a proposal  
-  if (currentSheetId === proposalsSheet) {
+  if (currentSheetId === proposalsSheetId) {
     nameArray.push("PROPOSAL:");
     nameArray.push(currentSheet.getRange(`A${currentRow}`).getDisplayValue());
     nameArray.push(currentSheet.getRange(`B${currentRow}`).getDisplayValue());
@@ -138,7 +138,7 @@ function getOrderedSheets(spreadsheet) {
 // Gets the id of the active reconciliation sheet based on the name of the project. returns null if none found
 // Should this return just the actual object instead? Maybe refactor this.
 function findSheet(name) {
-    const folder = DriveApp.getFolderById(reconciliationFolder);
+    const folder = DriveApp.getFolderById(reconciliationFolderId);
     const files = folder.getFiles();
     // A file iterator is not an array.
     while (files.hasNext()) {
@@ -154,7 +154,7 @@ function findSheet(name) {
 
 //  Returns an array of OPM.Client objects
 function getClients() {
-  const rootFolder = DriveApp.getFolderById(clientFolder);
+  const rootFolder = DriveApp.getFolderById(clientFolderId);
   const clientFolders = rootFolder.getFolders();
   var clients = [];
   // A Folder iterator is not an array.
@@ -252,10 +252,9 @@ function requestProposalGeneration() {
     `Are you sure you want to generate a proposal in the ${proposal.clientName} folder called ${proposal.title}?`,
     ui.ButtonSet.YES_NO);
   if (response == ui.Button.YES) {
-    console.log("Generating Proposal");
+    proposal.generateProposal();
     return true;
   } else {
-    console.log("Proposal Generation Cancelled");
     return false;
   }
 }
