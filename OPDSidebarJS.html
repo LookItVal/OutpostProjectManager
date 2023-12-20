@@ -16,10 +16,9 @@
     $('#project-title').text("Loading...");
     $('.existing-job').fadeOut();
     $('.new-job').fadeOut();
-    $('.empty-job').fadeOut();
+    $('.item-not-found').fadeOut();
     $('.existing-proposal').fadeOut();
     $('.new-proposal').fadeOut();
-    $('.empty-proposal').fadeOut();
   }
 
   // Get the current project info from the server and display the appropriate dynamic content.
@@ -28,10 +27,8 @@
     google.script.run.withSuccessHandler(function(project) {
       console.log(project);
       $('#project-title').text(project.title);
-      if (project.title === "Project Not Found") {
-        $('.empty-job').fadeIn();
-      } else if (project.title === "Proposal Not Found") {
-        $('.empty-proposal').fadeIn();
+      if (!project.type) {
+        $('.item-not-found').fadeIn();
       } else if (project.type === "PROJECT") {
         if (project.sheetId === null) {
           $('.new-job').fadeIn();
