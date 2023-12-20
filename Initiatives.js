@@ -119,6 +119,9 @@ class Initiative {
       throw new ValidationError("Cannot get folder without client name: this is likely because the client doesnt yet have a folder");
     }
     const client = new Client({name: this.clientName});
+    if (!client.folder) {
+      return null;
+    }
     const projectFolder = client.folder.getFoldersByName(this.title);
     if (!projectFolder.hasNext()) {
       return null;
@@ -162,7 +165,7 @@ class Project extends Initiative {
       this._yrmo = nameArray[0];
       this._jobNumber = nameArray[1];
     }
-    this.sheetId = findSheet(name);
+    this.sheetId = findSheet(this.title);
   }
 
   /////////////////////////////////////////////
@@ -229,6 +232,7 @@ class Proposal extends Initiative {
       this._yrmo = nameArray[1];
     }
     this.status = this.initStatus();
+    console.log("pass5");
   }
 
   /////////////////////////////////////////////
