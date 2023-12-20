@@ -3,21 +3,27 @@ function getInitiative({name = null, nameArray = null, folder = null} = {}) {
   if (name) {
     if (regexProposalName.test(name)) return new Proposal(constructorData);
     if (regexJobName.test(name)) return new Project(constructorData);
+    throw new ValidationError("Initiative not found: name does not match regex");
   }
   if (nameArray) {
     if (regexProposalOpen.test(nameArray[0])) return new Proposal(constructorData);
     if (regex4Digits.test(nameArray[0])) return new Project(constructorData);
+    throw new ValidationError("Initiative not found: nameArray does not match regex");
   }
   if (folder) {
     const folderName = folder.getName();
     if (regexProposalName.test(folderName)) return new Proposal(constructorData);
     if (regexJobName.test(folderName)) return new Project(constructorData);
+    throw new ValidationError("Initiative not found: folder name does not match regex");
   }
 }
 
 // Parent Class to proposal and project classes
-class Initiatives {
+class Initiative {
   constructor({name = null, nameArray = null, folder = null} = {}) {
+    if (new.target === Initiative) {
+      throw new TypeError("Cannot construct Initiative instances directly");
+    }
     if (name) {
       this.title = name;
     }
@@ -36,16 +42,13 @@ class Initiatives {
   /////////////////////////////////////////////
   //             Data Validators             //
   /////////////////////////////////////////////
-  validateConstructorData({name = null, nameArray = null, folder = null} = {}) {
+  static validateConstructorData({name = null, nameArray = null, folder = null} = {}) {
     if (!name && !nameArray && !folder) {
       throw new ValidationError("Not Enough Data: Initiative must be constructed with either a Name, Name Array, or Folder");
     }
     const countNonNull = [name, nameArray, folder].filter(value => value !== null).length;
     if (countNonNull !== 1) {
       throw new ValidationError("Too Much Data: Initiative must be constructed with either a Name, Name Array, or Folder");
-    }
-    if (!this.type) {
-      throw new ValidationError("Iniative class function called without child class: this.type not found");
     }
     if (nameArray) {
       for (const item of nameArray) {
@@ -141,13 +144,12 @@ class Initiatives {
 }
 
 
-// Project class that inherits the properties of the Initiatives class
-class Project extends Initiatives {
+// Project class that inherits the properties of the Initiative class
+class Project extends Initiative {
   constructor({name = null, nameArray = null, folder = null} = {}) {
-    this.type = 'PROJECT';
     const constructorData = {name, nameArray, folder};
     try {
-      this.validateConstructorData(constructorData);
+      Project.validateConstructorData(constructorData);
     } catch (e) {
       if (e instanceof ValidationError) {
         throw new ValidationError(`Project Not Found: ${e.message}`);
@@ -155,6 +157,7 @@ class Project extends Initiatives {
       throw e;
     }
     super(constructorData);
+    this.type = 'PROJECT';
     if (nameArray) {
       this._yrmo = nameArray[0];
       this._jobNumber = nameArray[1];
@@ -165,9 +168,9 @@ class Project extends Initiatives {
   /////////////////////////////////////////////
   //             Data Validators             //
   /////////////////////////////////////////////
-  validateConstructorData({name = null, nameArray = null, folder = null} = {}) {
+  static validateConstructorData({name = null, nameArray = null, folder = null} = {}) {
     const constructorData = {name, nameArray, folder};
-    super.validateConstructorData(constructorData);
+    Initiative.validateConstructorData(constructorData);
     if (name) {
       if (!regexJobName.test(name)) {
         throw new ValidationError("Project name does not pass the regexJobName test.");
@@ -208,13 +211,12 @@ class Project extends Initiatives {
 }
 
 
-// Proposal class that inherits the properties of the Initiatives class
-class Proposal extends Initiatives {
+// Proposal class that inherits the properties of the Initiative class
+class Proposal extends Initiative {
   constructor({name = null, nameArray = null, folder = null } = {}) {
-    this.type = 'PROPOSAL';
     const constructorData = {name, nameArray, folder};
     try {
-      this.validateConstructorData(constructorData);
+      Proposal.validateConstructorData(constructorData);
     } catch (e) {
       if (e instanceof ValidationError) {
         throw new ValidationError(`Proposal Not Found: ${e.message}`);
@@ -222,6 +224,7 @@ class Proposal extends Initiatives {
       throw e;
     }
     super(constructorData);
+    this.type = 'PROPOSAL';
     if (nameArray) {
       this._yrmo = nameArray[1];
     }
@@ -231,9 +234,9 @@ class Proposal extends Initiatives {
   /////////////////////////////////////////////
   //             Data Validators             //
   /////////////////////////////////////////////
-  validateConstructorData({name = null, nameArray = null, folder = null} = {}) {
+  static validateConstructorData({name = null, nameArray = null, folder = null} = {}) {
     const constructorData = {name, nameArray, folder};
-    super.validateConstructorData(constructorData);
+    Initiative.validateConstructorData(constructorData);
     if (name) {
       if (!regexProposalName.test(name)) {
         throw new ValidationError("Proposal name does not pass the regexJobName test.");

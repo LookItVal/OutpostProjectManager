@@ -1,4 +1,4 @@
-// We shoudl eventually unit test but maybe thats a task for when we migrate to TS
+// We should eventually unit test but maybe thats a task for when we migrate to TS
 
 function testInitiativesConstructor() {
   try {
