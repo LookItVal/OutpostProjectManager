@@ -96,6 +96,28 @@ function getProjectTitle() {
   return `${nameArray[0]} ${nameArray[1]} ${nameArray[2]} ${nameArray[3]}`;
 }
 
+//function to get the name array from the spreadsheet
+function getProjectNameArray() {
+  const currentSheet = SpreadsheetApp.getActiveSheet();
+  const currentRow = currentSheet.getActiveCell().getRow();
+  const currentSheetId = currentSheet.getSheetId();
+  let nameArray = [];
+  // If the project is a proposal  
+  if (currentSheetId === proposalsSheet) {
+    nameArray.push("PROPOSAL:");
+    nameArray.push(currentSheet.getRange(`A${currentRow}`).getDisplayValue());
+    nameArray.push(currentSheet.getRange(`B${currentRow}`).getDisplayValue());
+    nameArray.push(currentSheet.getRange(`C${currentRow}`).getDisplayValue());
+    return nameArray;
+  }
+  // If the project is a project
+  nameArray.push(currentSheet.getRange(`A${currentRow}`).getDisplayValue());
+  nameArray.push(currentSheet.getRange(`B${currentRow}`).getDisplayValue());
+  nameArray.push(currentSheet.getRange(`C${currentRow}`).getDisplayValue());
+  nameArray.push(currentSheet.getRange(`D${currentRow}`).getDisplayValue());
+  return nameArray;
+}
+
 // Gets the sheets for the OPD spreadsheet and removes un numbered sheets, and makes sure they are ordered.
 // It doesnt actually do anything to make sure they are ordered tho it just expects them to already be ordered.
 // Fix it if you want i dont wanna get into it, but dont fucking slow down this app okay? its slow enough.
@@ -206,16 +228,16 @@ function jumpToJob() {
 // Sends the simplified project to the frontend
 function getProject() {
   // This should work by retreving the name array not the full title.
-  var title = getProjectTitle();
-  if (title === "Project Not Found" || title === "Proposal Not Found") {
-    return {"title": title}
+  let nameArray = getProjectNameArray();
+  try {
+    return getInitiative({nameArray});
+  } catch (e) {
+    if (e instanceof ValidationError) {
+      return {"title": e.message.split(":")[0]};
+    }
+    console.error(e);
+    return {"title": "A fatal error has occured."};
   }
-  if (regexJobName.test(title)) {
-    const project = new Project({name: title});
-    return project;
-  }
-  const proposal = new Proposal({name: title});
-  return proposal;
 }
 
 

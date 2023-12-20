@@ -48,6 +48,11 @@ class Initiatives {
       throw new ValidationError("Iniative class function called without child class: this.type not found");
     }
     if (nameArray) {
+      for (const item of nameArray) {
+        if (item === "") {
+          throw new ValidationError("One or more elements in the nameArray are missing.");
+        }
+      }
       if (!nameArray.length === 4) {
         throw new ValidationError("Name array does not fit the expected format");
       }
@@ -141,7 +146,14 @@ class Project extends Initiatives {
   constructor({name = null, nameArray = null, folder = null} = {}) {
     this.type = 'PROJECT';
     const constructorData = {name, nameArray, folder};
-    this.validateConstructorData(constructorData);
+    try {
+      this.validateConstructorData(constructorData);
+    } catch (e) {
+      if (e instanceof ValidationError) {
+        throw new ValidationError(`Project Not Found: ${e.message}`);
+      }
+      throw e;
+    }
     super(constructorData);
     if (nameArray) {
       this._yrmo = nameArray[0];
@@ -201,7 +213,14 @@ class Proposal extends Initiatives {
   constructor({name = null, nameArray = null, folder = null } = {}) {
     this.type = 'PROPOSAL';
     const constructorData = {name, nameArray, folder};
-    this.validateConstructorData(constructorData);
+    try {
+      this.validateConstructorData(constructorData);
+    } catch (e) {
+      if (e instanceof ValidationError) {
+        throw new ValidationError(`Proposal Not Found: ${e.message}`);
+      }
+      throw e;
+    }
     super(constructorData);
     if (nameArray) {
       this._yrmo = nameArray[1];
