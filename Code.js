@@ -207,13 +207,14 @@ function cleanClientFiles() {
 
 // Function to change the active sheet to the proposal sheet.
 function jumpToProposal() {
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Proposals'));
 }
 
 // Function to change the active sheet to the sheet with the last recorded Job.
 function jumpToJob() {
-  var lastSheet = null; 
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let lastSheet = null; 
   for (const sheet of getOrderedSheets()) {
     console.log(sheet.getName());
     if (sheet.getRange('A51').isBlank()) {
