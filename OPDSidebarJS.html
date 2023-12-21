@@ -11,6 +11,7 @@
     $('#create-proposal-button').click(requestProposalGeneration);
     $('.open-costing-button').click(openCostingSheet);
     $('.open-proposal-button').click(openProposal);
+    $('#accept-proposal-button').click(requestProposalAccept);
 
     refreshSidebar();
     // Call the server here to retrieve any information needed to build
@@ -145,5 +146,39 @@
         refreshSidebar();
       })
       .generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
+  }
+
+  function requestProposalAccept() {
+    $('#project-title').text("Prepairing Proposal...");
+    google.script.run
+      .withFailureHandler(function(msg, element) {
+        console.log(msg, element);
+        element.disabled = false;
+      })
+      .withSuccessHandler(function(result) {
+        if (result) {
+          $('#project-title').text("Project Being Generated...");
+          $('#info-text').text('Please wait while the proposal is converted. This may take a few moments.');
+          $('.existing-proposal').fadeOut();
+          $('.info-message').fadeIn();
+          acceptProposal();
+          return;
+        }
+        $('#project-title').text(globalInitiative.title);
+      })
+      .requestProposalAccept();
+  }
+
+  function acceptProposal() {
+    google.script.run
+      .withFailureHandler(function(msg, element) {
+        $('#info-text').text('An error occured. Please check the console for details.');
+        console.log(msg, element);
+        element.disabled = false;
+      })
+      .withSuccessHandler(function() {
+        refreshSidebar();
+      })
+      .acceptProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 </script>

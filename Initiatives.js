@@ -85,7 +85,6 @@ class Initiative {
     this._dataSpreadsheet = SpreadsheetApp.openById(projectDataSheetId); 
     return this._dataSpreadsheet;
   }
-
   
   get clientName() {
     if (this._clientName) {
@@ -178,7 +177,13 @@ class Initiative {
   }
 
   get creationDate() {
-    return null;
+    if (this._creationDate) {
+      return this._creationDate;
+    }
+    const data = this.dataSheet.getDataRange().getValues()[0];
+    const creationDateColumn = data.indexOf("CREATION DATE") + 1;
+    this._creationDate = this.dataSheet.getRange(this.rowNumber, creationDateColumn).getValue();
+    return this._creationDate;
   }
 
   set creationDate(date) {
@@ -189,7 +194,13 @@ class Initiative {
   }
 
   get producer() {
-    return null;
+    if (this._producer) {
+      return this._producer;
+    }
+    const data = this.dataSheet.getDataRange().getValues()[0];
+    const producerColumn = data.indexOf("PRODUCER") + 1;
+    this._producer = this.dataSheet.getRange(this.rowNumber, producerColumn).getValue();
+    return this._producer;
   }
 
   set producer(producer) {
@@ -260,6 +271,7 @@ class Project extends Initiative {
     if (nameArray) {
       this._yrmo = nameArray[0];
       this._jobNumber = nameArray[1];
+      this._closed = nameArray[4];
     }
     this.sheetId = findSheet(this.title);
   }
@@ -285,6 +297,38 @@ class Project extends Initiative {
   /////////////////////////////////////////////
   //                Properties               //
   /////////////////////////////////////////////
+  get dataSheet() {
+    if (this._dataSheet) {
+      return this._dataSheet;
+    }
+    let low = 1001;
+    let high = 1050;
+    while (!this._dataSheet) {
+      if (this.jobNumber >= low && this.jobNumber <= high) {
+        this._dataSheet = this.dataSpreadsheet.getSheetByName(`${low}-${high}`);
+      }
+      low += 50;
+      high += 50;
+      if (low > 10000) {
+        throw new ValidationError("Data sheet not found");
+      }
+    }
+    return this._dataSheet;
+  }
+
+  get rowNumber() {
+    if (this._rowNumber) {
+      return this._rowNumber;
+    }
+    const data = this.dataSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][1] == this.jobNumber) {
+        this._rowNumber = i + 1;
+        return this._rowNumber;
+      }
+    }
+  }
+
   get yrmo() {
     if (this._yrmo) {
       return this._yrmo;
@@ -301,11 +345,39 @@ class Project extends Initiative {
     return this._jobNumber;
   }
 
-  isActive() {
-    if (this.sheetId === null) {
-      return false;
+  get closed() {
+    if (this._closed) {
+      return this._closed;
     }
-    return true;
+    return this._closed;
+  }
+  /////////////////////////////////////////////
+  //             Static Methods              //
+  /////////////////////////////////////////////
+  static nextSheet(spreadsheet) {
+    let lastSheet = null; 
+    for (const sheet of getOrderedSheets(spreadsheet)) {
+      if (sheet.getRange('A51').isBlank()) {
+        lastSheet = sheet;
+        continue;
+      }
+      break;
+    }
+    return lastSheet;
+  }
+
+  static nextRow(spreadsheet) {
+    const sheet = Project.nextSheet(spreadsheet);
+    const columnA = sheet.getRange('A:A').getValues();
+
+    let lastRowWithContent = 0;
+    for (let i = 0; i < columnA.length; i++) {
+      if (columnA[i][0] === "") {
+        lastRowWithContent = i;
+        break;
+      }
+    }
+    return lastRowWithContent + 1;
   }
 }
 
@@ -417,5 +489,29 @@ class Proposal extends Initiative {
     costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.folder);
     this.creationDate = new Date();
     this.producer = getFullUserName();
+  }
+
+  acceptProposal() {
+    if (!this.folder) {
+      throw new ValidationError("Proposal does not have a folder");
+    }
+    if (this.status !== "ACTIVE") {
+      throw new ValidationError("Proposal is not ACTIVE");
+    }
+    // get the next sheet and next row from the Project class and set the first column of that row and sheet to "TEST"
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const projectSheet = Project.nextSheet(spreadsheet);
+    const row = Project.nextRow(spreadsheet);
+    projectSheet.getRange(row, 1).setValue(this.yrmo);
+    projectSheet.getRange(row, 3).setValue(this.clientName);
+    projectSheet.getRange(row, 4).setValue(this.projectName);
+    projectSheet.getRange(row, 6).setValue(this.producer);
+
+    const jobNumber = projectSheet.getRange(row, 2).getValue();
+    this.folder.setName(`${this.yrmo} ${jobNumber} ${this.clientName} ${this.projectName}`);
+
+    const proposalSheet = this.dataSheet;
+    const proposalRow = this.rowNumber;
+    proposalSheet.deleteRow(proposalRow);
   }
 }
