@@ -114,6 +114,7 @@
 
   // Calls the server to generate a new proposal.
   function requestProposalGeneration() {
+    $('#project-title').text("Prepairing Proposal...");
     google.script.run
       .withFailureHandler(function(msg, element) {
         console.log(msg, element);
@@ -126,7 +127,9 @@
           $('.new-proposal').fadeOut();
           $('.info-message').fadeIn();
           generateProposal();
+          return;
         }
+        $('#project-title').text(globalInitiative.title);
       })
       .requestProposalGeneration();
   }
