@@ -122,8 +122,7 @@ function getProjectNameArray() {
 // It doesnt actually do anything to make sure they are ordered tho it just expects them to already be ordered.
 // Fix it if you want i dont wanna get into it, but dont fucking slow down this app okay? its slow enough.
 function getOrderedSheets(spreadsheet) {
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var sheets = spreadsheet.getSheets();
+  const sheets = spreadsheet.getSheets();
   const badSheets = ['OLD MASTER SHEET', 'Proposals']
   for (let i = 0; i < sheets.length; i++) {
     const sheet = sheets[i];
@@ -240,16 +239,10 @@ function jumpToProposal() {
 
 // Function to change the active sheet to the sheet with the last recorded Job.
 function jumpToJob() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  let lastSheet = null; 
-  for (const sheet of getOrderedSheets()) {
-    if (sheet.getRange('A51').isBlank()) {
-      lastSheet = sheet;
-      continue;
-    }
-    break;
-  }
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet(); 
+  const lastSheet = Project.nextSheet(spreadsheet);
   spreadsheet.setActiveSheet(lastSheet);
+
   setActiveCellToLastRow(spreadsheet);
 }
 
@@ -271,7 +264,6 @@ function getProject() {
 
 function requestProposalGeneration() {
   const proposal = getProject();
-  console.log(proposal);
   if (proposal.type !== "PROPOSAL") {
     throw new ValidationError("generateProposal function found a project not a proposal");
   }
@@ -289,6 +281,31 @@ function requestProposalGeneration() {
 
 function generateProposal(nameArray) {
   getInitiative({nameArray}).generateProposal();
+}
+
+function requestProposalAccept() {
+  const proposal = getProject();
+  if (proposal.type !== "PROPOSAL") {
+    throw new ValidationError("generateProposal function found a project not a proposal");
+  }
+  if (proposal.status !== "ACTIVE") {
+    throw new ValidationError("generateProposal function found a proposal that is not active");
+  }
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    "Accept Proposal?",
+    `Are you sure you want to accept the proposal ${proposal.title} into a full project?`,
+    ui.ButtonSet.YES_NO);
+  if (response == ui.Button.YES) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function acceptProposal(nameArray) {
+  getInitiative({nameArray}).acceptProposal();
+  jumpToJob();
 }
 
 
