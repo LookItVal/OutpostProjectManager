@@ -287,8 +287,7 @@ function requestProposalGeneration() {
   }
 }
 
-function generateProposal() {
-  const nameArray = getProjectNameArray();
+function generateProposal(nameArray) {
   getInitiative({nameArray}).generateProposal();
 }
 
