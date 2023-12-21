@@ -171,6 +171,21 @@ function initiativeType(name) {
   if (regexJobName.test(name)) return "PROJECT";
 }
 
+// function to get the last row with content in the A column. only checks for content in the A column. can not use the native getLastRow() function because it will return the last row with any content in it.
+function setActiveCellToLastRow(spreadsheet) {
+  const sheet = spreadsheet.getActiveSheet();
+  const columnA = sheet.getRange('A:A').getValues();
+
+  let lastRowWithContent = 0;
+  for (let i = 0; i < columnA.length; i++) {
+    if (columnA[i][0] === "") {
+      lastRowWithContent = i;
+      break;
+    }
+  }
+  sheet.setActiveRange(sheet.getRange(`A${lastRowWithContent}`));
+}
+
 /////////////////////////////////////////////
 //           Utility Functions             //
 /////////////////////////////////////////////
@@ -209,6 +224,9 @@ function cleanClientFiles() {
 function jumpToProposal() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   spreadsheet.setActiveSheet(spreadsheet.getSheetByName('Proposals'));
+  // set the active cell to the last row with anything in it.
+  const lastRow = spreadsheet.getActiveSheet().getLastRow();
+  spreadsheet.getActiveSheet().getRange(`A${lastRow}`).activate();
 }
 
 // Function to change the active sheet to the sheet with the last recorded Job.
@@ -216,7 +234,6 @@ function jumpToJob() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   let lastSheet = null; 
   for (const sheet of getOrderedSheets()) {
-    console.log(sheet.getName());
     if (sheet.getRange('A51').isBlank()) {
       lastSheet = sheet;
       continue;
@@ -224,7 +241,9 @@ function jumpToJob() {
     break;
   }
   spreadsheet.setActiveSheet(lastSheet);
+  setActiveCellToLastRow(spreadsheet);
 }
+
 
 // Sends the simplified project to the frontend
 function getProject() {
