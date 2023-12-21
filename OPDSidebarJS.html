@@ -32,7 +32,6 @@
     loading();
     google.script.run.withSuccessHandler(function(initiative) {
       globalInitiative = initiative;
-      console.log(initiative);
       $('#project-title').text(initiative.title);
       if (!initiative.type) {
         $('#info-text').text('Fill out the sheet with information then hit load project to refresh.');
@@ -44,7 +43,6 @@
           $('.existing-job').fadeIn();
         }
       } else if (initiative.type === "PROPOSAL") {
-        console.log(initiative.status);
         if (initiative.status === "NEW") {
           $('.new-proposal').fadeIn();
         } else if (initiative.status === "ACTIVE") {
