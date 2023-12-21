@@ -78,6 +78,15 @@ class Initiative {
   /////////////////////////////////////////////
   //                Properties               //
   /////////////////////////////////////////////
+  get dataSpreadsheet() {
+    if (this._dataSpreadsheet) {
+      return this._dataSpreadsheet;
+    }
+    this._dataSpreadsheet = SpreadsheetApp.openById(projectDataSheetId); 
+    return this._dataSpreadsheet;
+  }
+
+  
   get clientName() {
     if (this._clientName) {
       return this._clientName;
@@ -166,6 +175,28 @@ class Initiative {
     }
     this._costingSheetId = search.next().getId();
     return this._costingSheetId;
+  }
+
+  get creationDate() {
+    return null;
+  }
+
+  set creationDate(date) {
+    this._creationDate = date;
+    const data = this.dataSheet.getDataRange().getValues()[0];
+    const creationDateColumn = data.indexOf("CREATION DATE") + 1;
+    this.dataSheet.getRange(this.rowNumber, creationDateColumn).setValue(date);
+  }
+
+  get producer() {
+    return null;
+  }
+
+  set producer(producer) {
+    this._producer = producer;
+    const data = this.dataSheet.getDataRange().getValues()[0];
+    const producerColumn = data.indexOf("PRODUCER") + 1;
+    this.dataSheet.getRange(this.rowNumber, producerColumn).setValue(producer);
   }
 
   /////////////////////////////////////////////
@@ -320,6 +351,26 @@ class Proposal extends Initiative {
   /////////////////////////////////////////////
   //                Properties               //
   /////////////////////////////////////////////
+  get dataSheet() {
+    if (this._dataSheet) {
+      return this._dataSheet;
+    }
+    this._dataSheet = this.dataSpreadsheet.getSheetByName("Proposals");
+    return this._dataSheet;
+  }
+
+  get rowNumber() {
+    if (this._rowNumber) {
+      return this._rowNumber;
+    }
+    const data = this.dataSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] == this.yrmo && data[i][1] == this.clientName && data[i][2] == this.projectName) {
+        this._rowNumber = i + 1;
+        return this._rowNumber;
+      }
+    }
+  }
 
   get yrmo() {
     if (this._yrmo) {
@@ -364,5 +415,7 @@ class Proposal extends Initiative {
     const costingSheetTemplate = DriveApp.getFileById(costingSheetTemplateId);
     proposalTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`, this.folder);
     costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.folder);
+    this.creationDate = new Date();
+    this.producer = "test name";
   }
 }
