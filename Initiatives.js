@@ -138,6 +138,36 @@ class Initiative {
     return this._client;
   }
 
+  get proposalId() {
+    if (this._proposalId) {
+      return this._proposalId;
+    }
+    if (!this.folder) {
+      return null;
+    }
+    let search = this.folder.getFilesByName(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`);
+    if (!search.hasNext()) {
+      return null;
+    }
+    this._proposalId = search.next().getId();
+    return this._proposalId;
+  }
+
+  get costingSheetId() {
+    if (this._costingSheetId) {
+      return this._costingSheetId;
+    }
+    if (!this.folder) {
+      return null;
+    }
+    let search = this.folder.getFilesByName(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`);
+    if (!search.hasNext()) {
+      return null;
+    }
+    this._costingSheetId = search.next().getId();
+    return this._costingSheetId;
+  }
+
   /////////////////////////////////////////////
   //              Static Methods             //
   /////////////////////////////////////////////
@@ -159,8 +189,15 @@ class Initiative {
   // function to retun a new copy of an object with only data do pass to the frontend
   solidify() {
     const solidified = {};
+    // initializse those properties so they will get sent to the frontend
+    this.proposalId;
+    this.costingSheetId;
+
     for (const key of Object.keys(this)) {
-      if (key.startsWith("_") && (!this[key])) {
+      if (!this[key]) {
+        continue;
+      }
+      if (typeof this[key] === "object") {
         continue;
       }
       // remnove the _ from the key name if it has one
@@ -303,7 +340,7 @@ class Proposal extends Initiative {
   }
 
   /////////////////////////////////////////////
-  //             Public Methods             //
+  //             Public Methods              //
   /////////////////////////////////////////////
   makeFolder() {
     if (this.folder) {
@@ -326,6 +363,6 @@ class Proposal extends Initiative {
     const proposalTemplate = DriveApp.getFileById(proposalTemplateId);
     const costingSheetTemplate = DriveApp.getFileById(costingSheetTemplateId);
     proposalTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`, this.folder);
-    costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName}  Costing Sheet`, this.folder);
+    costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.folder);
   }
 }

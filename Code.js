@@ -262,6 +262,7 @@ function getProject() {
 
 function requestProposalGeneration() {
   const proposal = getProject();
+  console.log(proposal);
   if (proposal.type !== "PROPOSAL") {
     throw new ValidationError("generateProposal function found a project not a proposal");
   }
@@ -278,7 +279,8 @@ function requestProposalGeneration() {
 }
 
 function generateProposal() {
-  getProject().generateProposal();
+  const nameArray = getProjectNameArray();
+  getInitiative({nameArray}).generateProposal();
 }
 
 
