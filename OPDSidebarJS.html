@@ -1,5 +1,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
+  var globalInitiative = {};
+
   // Run initializations on sidebar load.
   $(function() {
     // Assign handler functions to sidebar elements here, if needed.
@@ -7,6 +9,9 @@
     $('#jump-to-job-button').click(jumpToJob);
     $('#jump-to-proposals-button').click(jumpToProposal);
     $('#create-proposal-button').click(requestProposalGeneration);
+    $('.open-costing-button').click(openCostingSheet);
+    $('.open-proposal-button').click(openProposal);
+
     refreshSidebar();
     // Call the server here to retrieve any information needed to build
     // the dialog, if necessary.
@@ -26,6 +31,7 @@
   function refreshSidebar() {
     loading();
     google.script.run.withSuccessHandler(function(initiative) {
+      globalInitiative = initiative;
       console.log(initiative);
       $('#project-title').text(initiative.title);
       if (!initiative.type) {
@@ -38,11 +44,12 @@
           $('.existing-job').fadeIn();
         }
       } else if (initiative.type === "PROPOSAL") {
+        console.log(initiative.status);
         if (initiative.status === "NEW") {
           $('.new-proposal').fadeIn();
         } else if (initiative.status === "ACTIVE") {
-          populateProposal(initiative);
-        }
+          $('.existing-proposal').fadeIn();
+       }
       }
     }).withFailureHandler(function(msg, element) {
       console.log(msg, element);
@@ -50,9 +57,34 @@
     }).getProject();
   }
 
-  function populateProposal(proposal) {
-    $('.existing-proposal').fadeIn();
+  //gets the local initiative object and opens in a new tab the costing sheet
+  function openCostingSheet() {
+    //if initiative is set
+    if (globalInitiative.costingSheetId) {
+      const url = "https://docs.google.com/spreadsheets/d/"+globalInitiative.costingSheetId+"/edit#gid=0";
+      window.open(url, "_blank");
+      return
+    }
+    //if initiative is not set
+    console.log("initiative not set");
+    console.log(globalInitiative);
+    $('#project-title').text("Error With Addon: Check Frontend Console For Details");
   }
+
+  function openProposal() {
+    //if initiative is set
+    if (globalInitiative.proposalId) {
+      const url = "https://docs.google.com/document/d/"+globalInitiative.proposalId+"/edit";
+      window.open(url, "_blank");
+      return
+    }
+    //if initiative is not set
+    console.log("initiative not set");
+    console.log(globalInitiative);
+    $('#project-title').text("Error With Addon: Check Frontend Console For Details");
+  }
+    
+
 
   // Calls the server to change the active sheet to the most recent job.
   function jumpToJob() {
