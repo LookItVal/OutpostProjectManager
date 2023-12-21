@@ -416,6 +416,6 @@ class Proposal extends Initiative {
     proposalTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`, this.folder);
     costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.folder);
     this.creationDate = new Date();
-    this.producer = "test name";
+    this.producer = getFullUserName;
   }
 }

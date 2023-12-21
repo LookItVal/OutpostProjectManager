@@ -190,6 +190,15 @@ function setActiveCellToLastRow(spreadsheet) {
 //           Utility Functions             //
 /////////////////////////////////////////////
 
+function getFullUserName() {
+  const user = People.People.get('people/me', {personFields: 'names'});
+  let name = `${user.names[0].givenName} ${user.names[0].familyName}`;
+  if (name == "Outpost Worldwide") {
+    name = "Robert Cecil";
+  }
+  return name;
+}
+
 /// mother of fuck check this before running it.
 function cleanClientFiles() {
   var clients = getClients();

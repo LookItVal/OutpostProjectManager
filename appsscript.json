@@ -18,6 +18,11 @@
         "userSymbol": "Sheets",
         "serviceId": "sheets",
         "version": "v4"
+      },
+      {
+        "userSymbol": "People",
+        "version": "v1",
+        "serviceId": "peopleapi"
       }
     ]
   },
@@ -57,6 +62,7 @@
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/script.container.ui"
+    "https://www.googleapis.com/auth/script.container.ui",
+    "https://www.googleapis.com/auth/userinfo.profile"
   ]
 }
