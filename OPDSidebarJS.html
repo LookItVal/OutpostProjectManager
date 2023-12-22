@@ -9,8 +9,8 @@
     $('#jump-to-job-button').click(jumpToJob);
     $('#jump-to-proposals-button').click(jumpToProposal);
     $('#create-proposal-button').click(requestProposalGeneration);
-    $('.open-costing-button').click(openCostingSheet);
-    $('.open-proposal-button').click(openProposal);
+    $('#open-costing-button').click(openCostingSheet);
+    $('#open-proposal-button').click(openProposal);
     $('#accept-proposal-button').click(requestProposalAccept);
 
     refreshSidebar();
@@ -21,11 +21,48 @@
   // Update the ui to show loading info and remove dynamic content.
   function loading() {
     $('#project-title').text("Loading...");
-    $('.existing-job').fadeOut();
-    $('.new-job').fadeOut();
+    $('#info-text').text('Fill out the sheet with information then hit load project to refresh.');
+    fadeOutAll();
+  }
+
+  // Fade out all dynamic content.
+  function fadeOutAll() {
     $('.info-message').fadeOut();
-    $('.existing-proposal').fadeOut();
-    $('.new-proposal').fadeOut();
+    $('.reconciliation-section').fadeOut();
+    $('.proposal-section').fadeOut();
+    $('.accept-proposal-section').fadeOut();
+    $('.create-job-section').fadeOut();
+    $('.create-proposal-section').fadeOut();
+  }
+
+  // Fade in the new job section.
+  function newJobFadeIn() {
+    $('.create-job-section').fadeIn();
+  }
+
+  // Fade in the existing job section.
+  function existingJobFadeIn() {
+    if (globalInitiative.sheetId) {
+      $('.reconciliation-section').fadeIn();
+    }
+    if (globalInitiative.proposalId) {
+      $('.proposal-section').fadeIn();
+    }
+    if (!globalInitiative.proposalId && !globalInitiative.sheetId) {
+      $('.info-message').text("Project Loaded. No Proposal or Reconciliation Sheet Found.");
+      $('.info-message').fadeIn();
+    }
+  }
+
+  // Fade in the new proposal section.
+  function newProposalFadeIn() {
+    $('.create-proposal-section').fadeIn();
+  }
+
+  // Fade in the existing proposal section.
+  function existingProposalFadeIn() {
+    $('.proposal-section').fadeIn();
+    $('.accept-proposal-section').fadeIn();
   }
 
   // Get the current project info from the server and display the appropriate dynamic content.
@@ -33,27 +70,31 @@
     loading();
     google.script.run.withSuccessHandler(function(initiative) {
       globalInitiative = initiative;
-      $('#project-title').text(initiative.title);
-      if (!initiative.type) {
-        $('#info-text').text('Fill out the sheet with information then hit load project to refresh.');
-        $('.info-message').fadeIn();
-      } else if (initiative.type === "PROJECT") {
-        if (initiative.sheetId === null) {
-          $('.new-job').fadeIn();
-        } else {
-          $('.existing-job').fadeIn();
-        }
-      } else if (initiative.type === "PROPOSAL") {
-        if (initiative.status === "NEW") {
-          $('.new-proposal').fadeIn();
-        } else if (initiative.status === "ACTIVE") {
-          $('.existing-proposal').fadeIn();
-       }
-      }
+      refreshUI();
     }).withFailureHandler(function(msg, element) {
       console.log(msg, element);
       $('#project-title').text("Error With Addon: Check Frontend Console For Details")
     }).getProject();
+  }
+
+  function refreshUI() {
+    initiative = globalInitiative;
+    $('#project-title').text(initiative.title);
+    if (!initiative.type) {
+      $('.info-message').fadeIn();
+    } else if (initiative.type === "PROJECT") {
+      if (!initiative.sheetId) {
+        newJobFadeIn();
+      } else {
+        existingJobFadeIn();
+      }
+    } else if (initiative.type === "PROPOSAL") {
+      if (initiative.status === "NEW") {
+        newProposalFadeIn();
+      } else if (initiative.status === "ACTIVE") {
+        existingProposalFadeIn();
+      }
+    }
   }
 
   //gets the local initiative object and opens in a new tab the costing sheet
@@ -125,7 +166,7 @@
         if (result) {
           $('#project-title').text("Proposal Being Generated...");
           $('#info-text').text('Please wait while the proposal is generated. This may take a few moments.');
-          $('.new-proposal').fadeOut();
+          fadeOutAll();
           $('.info-message').fadeIn();
           generateProposal();
           return;
@@ -159,7 +200,7 @@
         if (result) {
           $('#project-title').text("Project Being Generated...");
           $('#info-text').text('Please wait while the proposal is converted. This may take a few moments.');
-          $('.existing-proposal').fadeOut();
+          fadeOutAll();
           $('.info-message').fadeIn();
           acceptProposal();
           return;

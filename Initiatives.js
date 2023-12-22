@@ -349,8 +349,12 @@ class Project extends Initiative {
     if (this._closed) {
       return this._closed;
     }
+    // set the closed value to the value in the K column of the data sheet
+    const data = this.dataSheet.getDataRange().getValues();
+    this._closed = data[this.rowNumber - 1][10];
     return this._closed;
   }
+  
   /////////////////////////////////////////////
   //             Static Methods              //
   /////////////////////////////////////////////
@@ -509,6 +513,8 @@ class Proposal extends Initiative {
 
     const jobNumber = projectSheet.getRange(row, 2).getValue();
     this.folder.setName(`${this.yrmo} ${jobNumber} ${this.clientName} ${this.projectName}`);
+
+    // make new project object to initialize it.
 
     const proposalSheet = this.dataSheet;
     const proposalRow = this.rowNumber;
