@@ -32,13 +32,6 @@ function onInstall(e) {
 function onOpen(e) {
   var ui = SpreadsheetApp.getUi();
   console.log(e);
-  // Checks if the active spreadsheet matches the specific project data sheet ID
-  if (SpreadsheetApp.getActiveSpreadsheet().getId() === projectDataSheetId) {
-  // Creates a menu for the add-on in the UI
-  ui.createMenu("Outpost Project Manager")
-      .addItem('Show Sidebar', 'openOPDSidebar')
-      .addToUi();
-  }
 }
 
 /////////////////////////////////////////////
