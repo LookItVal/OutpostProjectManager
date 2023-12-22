@@ -115,6 +115,7 @@ function getProjectNameArray() {
   nameArray.push(currentSheet.getRange(`B${currentRow}`).getDisplayValue());
   nameArray.push(currentSheet.getRange(`C${currentRow}`).getDisplayValue());
   nameArray.push(currentSheet.getRange(`D${currentRow}`).getDisplayValue());
+  nameArray.push(currentSheet.getRange(`K${currentRow}`).getDisplayValue());
   return nameArray;
 }
 
@@ -306,6 +307,28 @@ function requestProposalAccept() {
 function acceptProposal(nameArray) {
   getInitiative({nameArray}).acceptProposal();
   jumpToJob();
+}
+
+function requestJobGeneration() {
+  const project = getProject();
+  if (project.type !== "PROJECT") {
+    throw new ValidationError("generateProposal function found a proposal not a project");
+  }
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    "Generate Project?",
+    `Are you sure you want to generate a project in the ${project.clientName} folder called ${project.title}?`,
+    ui.ButtonSet.YES_NO);
+  if (response == ui.Button.YES) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+function generateJob(nameArray) {
+  getInitiative({nameArray}).generateProject();
 }
 
 

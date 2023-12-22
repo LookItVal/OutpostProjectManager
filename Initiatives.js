@@ -251,6 +251,19 @@ class Initiative {
     }
     return solidified;
   }
+
+  makeFolder() {
+    if (this.folder) {
+      throw new ValidationError("Initiative already has a folder");
+    }
+    const client = new Client({name: this.clientName});
+    if (client.isNew()) {
+      this._folder = this.client.makeFolder().createFolder(this.title);
+    } else {
+      this._folder = this.client.folder.createFolder(this.title);
+    }
+    return this._folder;
+  }
 }
 
 
@@ -354,7 +367,7 @@ class Project extends Initiative {
     this._closed = data[this.rowNumber - 1][10];
     return this._closed;
   }
-  
+
   /////////////////////////////////////////////
   //             Static Methods              //
   /////////////////////////////////////////////
@@ -382,6 +395,21 @@ class Project extends Initiative {
       }
     }
     return lastRowWithContent + 1;
+  }
+
+  /////////////////////////////////////////////
+  //             Public Methods              //
+  /////////////////////////////////////////////
+  generateProject() {
+    if (!this.folder) {
+      this.makeFolder();
+    }
+    const reconciliationFolder = DriveApp.getFolderById(reconciliationFolderId);
+    Initiative.reconciliationSheetTemplate.makeCopy(this.title, reconciliationFolder);
+    this.creationDate = new Date();
+    if (!this.producer) {
+      this.producer = getFullUserName();
+    }
   }
 }
 
@@ -469,28 +497,13 @@ class Proposal extends Initiative {
   /////////////////////////////////////////////
   //             Public Methods              //
   /////////////////////////////////////////////
-  makeFolder() {
-    if (this.folder) {
-      throw new ValidationError("Proposal already has a folder");
-    }
-    const client = new Client({name: this.clientName});
-    if (client.isNew()) {
-      this._folder = this.client.makeFolder().createFolder(this.title);
-    } else {
-      this._folder = this.client.folder.createFolder(this.title);
-    }
-    return this._folder;
-  }
-
   generateProposal() {
     if (this.folder) {
       throw new ValidationError("Proposal already has a folder");
     }
     this.makeFolder();
-    const proposalTemplate = DriveApp.getFileById(proposalTemplateId);
-    const costingSheetTemplate = DriveApp.getFileById(costingSheetTemplateId);
-    proposalTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`, this.folder);
-    costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.folder);
+    Initiative.proposalTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`, this.folder);
+    Initiative.costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.folder);
     this.creationDate = new Date();
     this.producer = getFullUserName();
   }
@@ -514,7 +527,8 @@ class Proposal extends Initiative {
     const jobNumber = projectSheet.getRange(row, 2).getValue();
     this.folder.setName(`${this.yrmo} ${jobNumber} ${this.clientName} ${this.projectName}`);
 
-    // make new project object to initialize it.
+    const project = new Project({nameArray: [this.yrmo, jobNumber, this.clientName, this.projectName, "FALSE"]});
+    project.generateProject();
 
     const proposalSheet = this.dataSheet;
     const proposalRow = this.rowNumber;
