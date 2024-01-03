@@ -1,3 +1,4 @@
+// TODO add this as a static method to the Initiative class
 function getInitiative({name = null, nameArray = null, folder = null} = {}) {
   const constructorData = {name, nameArray, folder};
   if (name) {
