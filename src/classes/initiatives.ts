@@ -83,11 +83,9 @@ abstract class Initiative {
             return this._clientName;
         }
         const clientProject: string = this.title.split(' ').slice(2).join(' ');
-        // TODO: this next line requires both the definition for the client class and also a getClients() function
         // would i define the client to be the Client class?
-        // var allClients: string[] = getClients().map(client => client.name);
-        const allClients: string[] = [];
-        for (const client of allClients) {
+        var clientNames: string[] = Client.getClients().map(client => client.name);
+        for (const client of clientNames) {
             if (clientProject.includes(client)) {
                 this._clientName = client;
                 return client;
@@ -244,7 +242,7 @@ abstract class Initiative {
         if (this.client.isNew()) {
             this._folder =  this.client.makeFolder().createFolder(this.title);
         } else {
-            this._folder = this.client.folder.createFolder(this.title);
+            this._folder = this.client.folder?.createFolder(this.title) as GoogleAppsScript.Drive.Folder;
         }
         return this._folder;
     }
