@@ -1,7 +1,7 @@
 import { ValidationError } from '../errors';
 import { ClientParams, Initiative } from '../interfaces';
 import { properties } from '../constants';
-import { Project } from './initiatives';
+import { Project, Proposal } from './initiatives';
 
 // TODO: this.
 export class Client {
@@ -9,6 +9,8 @@ export class Client {
     protected _name?: string;
     protected _folder?: GoogleAppsScript.Drive.Folder | null;
     protected _initiatives?: Initiative[];
+    protected _projects?: Project[];
+    protected _proposals?: Proposal[];
 
     constructor({name = '', folder = null}: ClientParams) {
         const params: ClientParams = {name, folder};
@@ -63,7 +65,7 @@ export class Client {
         return undefined;
     }
 
-    public get initiatives(): Initiative[] | undefined {
+    public get initiatives(): Initiative[] {
         if (this._initiatives) {
             return this._initiatives;
         }
@@ -79,5 +81,79 @@ export class Client {
         }
         return this._initiatives;
         
+    }
+
+    public get projects() : Project[] {
+        if (this._projects) {
+            return this._projects;
+        }
+        this._projects = [];
+        for (const initiative of this.initiatives ?? []) {
+            if (initiative.type === 'PROJECT') {
+                this._projects.push(initiative as Project);
+            }
+        }
+        return this._projects;
+    }
+
+    public get proposals() : Proposal[] {
+        if (this._proposals) {
+            return this._proposals;
+        }
+        this._proposals = [];
+        for (const initiative of this.initiatives ?? []) {
+            if (initiative.type === 'PROPOSAL') {
+                this._proposals.push(initiative as Proposal);
+            }
+        }
+        return this._proposals;
+    }
+
+    /////////////////////////////////////////////
+    //              Public Methods             //
+    /////////////////////////////////////////////
+    public isNew() {
+        if (!this.folder) {
+            return true;
+        }
+        return false;
+    }
+
+    public makeFolder() {
+        if (this.folder) {
+            throw new ValidationError("Client already has a folder");
+        }
+        this._folder = Client.clientFolder.createFolder(this.name);
+        return this._folder;
+    }
+
+    /////////////////////////////////////////////
+    //             Static Methods              //
+    /////////////////////////////////////////////
+    
+    public static getClients(): Client[] {
+        const clientFolders = Client.clientFolder.getFolders();
+        var clients: Client[] = [];
+        while (clientFolders.hasNext()) {
+            const client = clientFolders.next();
+            clients.push(new Client({folder: client}));
+        }
+        return clients;
+    }
+
+    /////////////////////////////////////////////
+    //             Private Methods             //
+    /////////////////////////////////////////////
+
+    private validateParams({name, folder}: ClientParams): void {
+        if (!name && !folder) {
+            throw new ValidationError('Client must have a name or a folder');
+        }
+        if (name && folder) {
+            throw new ValidationError('Client cannot have both a name and a folder');
+        }
+        if (name && typeof name !== 'string') {
+            throw new ValidationError('Client name must be a string');
+        }
     }
 }
