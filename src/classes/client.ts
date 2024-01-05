@@ -1,18 +1,17 @@
-import { ValidationError } from '../errors';
+import { ValidationError } from './errors';
 import { ClientParams, Initiative } from '../interfaces';
 import { properties } from '../constants';
 import { Project, Proposal } from './initiatives';
 
-// TODO: this.
 export class Client {
     
     protected _name?: string;
-    protected _folder?: GoogleAppsScript.Drive.Folder | null;
+    protected _folder?: GoogleAppsScript.Drive.Folder | undefined;
     protected _initiatives?: Initiative[];
     protected _projects?: Project[];
     protected _proposals?: Proposal[];
 
-    constructor({name = '', folder = null}: ClientParams) {
+    constructor({name = '', folder = undefined}: ClientParams) {
         const params: ClientParams = {name, folder};
         this.validateParams(params);
         if (!name && !folder) {
@@ -80,7 +79,6 @@ export class Client {
             this._initiatives.push(initiative);
         }
         return this._initiatives;
-        
     }
 
     public get projects() : Project[] {
@@ -121,7 +119,7 @@ export class Client {
 
     public makeFolder() {
         if (this.folder) {
-            throw new ValidationError("Client already has a folder");
+            throw new ValidationError('Client already has a folder');
         }
         this._folder = Client.clientFolder.createFolder(this.name);
         return this._folder;
@@ -133,7 +131,7 @@ export class Client {
     
     public static getClients(): Client[] {
         const clientFolders = Client.clientFolder.getFolders();
-        var clients: Client[] = [];
+        const clients: Client[] = [];
         while (clientFolders.hasNext()) {
             const client = clientFolders.next();
             clients.push(new Client({folder: client}));

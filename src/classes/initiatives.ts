@@ -1,10 +1,10 @@
-import { ValidationError } from '../errors';
-import { properties, regex4Digits } from '../constants';
+import { ValidationError } from './errors';
+import { properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits } from '../constants';
 import { Client } from './client';
-import { InitiativeParams, SerializedInitiative } from '../interfaces';
+import { InitiativeParams, SerializedData } from '../interfaces';
 
 
-abstract class Initiative {
+export abstract class Initiative {
     [key: string]: string | number | object | undefined;
 
     public title: string;
@@ -17,11 +17,14 @@ abstract class Initiative {
     protected _producer?: string;
     protected _folder?: GoogleAppsScript.Drive.Folder;
     protected _folderId?: string;
-    protected _dataSheet?: GoogleAppsScript.Spreadsheet.Spreadsheet;
+    protected _dataSheet?: GoogleAppsScript.Spreadsheet.Sheet;
+    protected _rowNumber?: number;
     protected _proposalDocumentId?: string;
+    protected _proposalDocument?: GoogleAppsScript.Drive.File;
     protected _costingSheetId?: string;
+    protected _costingSheet?: GoogleAppsScript.Drive.File;
 
-    constructor ({ name = '', nameArray = [], folder = null }: InitiativeParams) {
+    constructor ({ name = '', nameArray = [], folder = undefined }: InitiativeParams) {
         if (new.target === Initiative) {
             throw new TypeError('Cannot construct Abstract instances directly');
         }
@@ -53,21 +56,6 @@ abstract class Initiative {
         return SpreadsheetApp.openById(projectDataSheetId);
     }
 
-    public static get costingSheetTemplate (): GoogleAppsScript.Drive.File {
-        const costingSheetTemplateId = properties.getProperty('costingSheetTemplateId') ?? '';
-        return DriveApp.getFileById(costingSheetTemplateId);
-    }
-
-    public static get proposalTemplate (): GoogleAppsScript.Drive.File {
-        const proposalTemplateId = properties.getProperty('proposalTemplateId') ?? '';
-        return DriveApp.getFileById(proposalTemplateId);
-    }
-
-    public static get reconciliationSheetTemplate (): GoogleAppsScript.Drive.File {
-        const reconciliationSheetTemplateId = properties.getProperty('reconciliationSheetTemplateId') ?? '';
-        return DriveApp.getFileById(reconciliationSheetTemplateId);
-    }
-
     /////////////////////////////////////////////
     //          Immutable Properties           //
     /////////////////////////////////////////////
@@ -84,7 +72,7 @@ abstract class Initiative {
         }
         const clientProject: string = this.title.split(' ').slice(2).join(' ');
         // would i define the client to be the Client class?
-        var clientNames: string[] = Client.getClients().map(client => client.name);
+        const clientNames: string[] = Client.getClients().map(client => client.name);
         for (const client of clientNames) {
             if (clientProject.includes(client)) {
                 this._clientName = client;
@@ -98,7 +86,6 @@ abstract class Initiative {
     }
 
     public get client(): Client {
-    // TODO: this needs the client object
         if (this._client) {
             return this._client;
         }
@@ -209,26 +196,46 @@ abstract class Initiative {
     /////////////////////////////////////////////
     //              Static Methods             //
     /////////////////////////////////////////////
-    public static getInitiative({ name = '', nameArray = [], folder = null }: InitiativeParams): Initiative {
-        // TODO this
+
+    public static getInitiative({ name = '', nameArray = [], folder = undefined }: InitiativeParams): Project | Proposal {
+        if (name) {
+            if (regexProposalName.test(name)) return new Proposal({name});
+            if (regexJobName.test(name)) return new Project({name});
+            throw new ValidationError('Name does not match any known initiative types');
+        }
+        if (nameArray.length > 0) {
+            if (regexProposalOpen.test(nameArray[0])) return new Proposal({nameArray});
+            if (regex4Digits.test(nameArray[1])) return new Project({nameArray});
+            throw new ValidationError('Name Array does not match any known initiative types');
+        }
+        if (folder) {
+            const folderName = folder.getName();
+            if (regexProposalName.test(folderName)) return new Proposal({folder});
+            if (regexJobName.test(folderName)) return new Project({folder});
+            throw new ValidationError('Folder does not match any known initiative types');
+        }
+        throw new ValidationError('Initiative must be initialized with a name, nameArray, or folder');
     }
 
     /////////////////////////////////////////////
-    //                 Methods                 //
+    //              Public Methods             //
     /////////////////////////////////////////////
 
-    public serialize (): SerializedInitiative {
-        const initiative: SerializedInitiative = {};
+    public serialize (): SerializedData {
+        const initiative: SerializedData = {};
         this.costingSheetId;
         this.proposalDocumentId;
         for (const key of Object.keys(this)) {
-            if (typeof this[key] !== 'object' && typeof this[key] !== 'undefined') {
+            if (this[key] === undefined) {
                 continue;
-            }
-            if (key.startsWith('_')) {
-                initiative[key.slice(1)] = this[key] as string | number;
-            } else {
-                initiative[key] = this[key] as string | number;
+            } else if (typeof this[key] !== 'object') {
+                continue;
+            } else if (key.startsWith('_')) {
+                initiative[key.slice(1)] = this[key] as string;
+            } else  if (typeof this[key] === 'string') {
+                initiative[key] = this[key] as string;
+            } else if (typeof this[key] === 'number') {
+                initiative[key] = this[key]?.toString() as string;
             }
         }
         return initiative;
@@ -252,17 +259,17 @@ abstract class Initiative {
     /////////////////////////////////////////////
 
     // Validation for the constructor
-    protected static validateConstructorData ({ name = '', nameArray = [], folder = null }: InitiativeParams): void {
+    protected static validateParams ({ name = '', nameArray = [], folder = undefined }: InitiativeParams): void {
         if (name && (nameArray.length > 0) && folder) {
             throw new ValidationError('Initiative must be initialized with a name, nameArray, or folder');
         }
         // make sure only one of the three is not null
-        const countNonNull: number = [name, nameArray, folder].filter(value => value !== null).length;
+        const countNonNull: number = [name, nameArray, folder].filter(value => !!value).length;
         if (countNonNull !== 1) {
             throw new ValidationError('Too Much Data: Initiative must be constructed with either a Name, Name Array, or Folder');
         }
         // nameArray Validation
-        if (nameArray) {
+        if (nameArray.length > 0) {
             for (const item of nameArray) {
                 if (item === '') {
                     throw new ValidationError('One or more elements in the nameArray are missing.');
@@ -283,6 +290,399 @@ abstract class Initiative {
     }
 }
 
-export class Project extends Initiative {}
+export class Project extends Initiative {
+    public type = 'PROJECT';
 
-export class Proposal extends Initiative {}
+    private _jobNumber?: string;
+    private _closed?: string;
+    private _reconciliationSheetId?: string;
+    private _reconciliationSheet?: GoogleAppsScript.Drive.File;
+
+
+
+    constructor ({ name = '', nameArray = [], folder = undefined}: InitiativeParams) {
+        const params = { name, nameArray, folder };
+        try {
+            Project.validateParams(params);
+        } catch (error) {
+            if (error instanceof ValidationError) {
+                throw new ValidationError(`Project Not Found: ${error.message}`);
+            }
+            throw error;
+        }
+        super(params);
+        if (nameArray.length > 0) {
+            this._yrmo = nameArray[0];
+            this._jobNumber = nameArray[1];
+            this._closed = nameArray[4];
+        }
+
+    }
+    
+    /////////////////////////////////////////////
+    //            Static Properties            //
+    /////////////////////////////////////////////
+
+    public static get orderedSheets(): GoogleAppsScript.Spreadsheet.Sheet[] {
+        const dataSpreadsheet = Project.dataSpreadsheet;
+        const orderedSheets: GoogleAppsScript.Spreadsheet.Sheet[] = [];
+        let low = 1001;
+        let high = 1050;
+        while (low < 10000) {
+            const sheet = dataSpreadsheet.getSheetByName(`${low}-${high}`);
+            if (sheet) {
+                orderedSheets.push(sheet);
+                low += 50;
+                high += 50;
+                continue;
+            }
+            break;
+        }
+        return orderedSheets.reverse();
+    }
+
+    //gets the sheet with the last project in it
+    public static get recentSheet (): GoogleAppsScript.Spreadsheet.Sheet {
+        const orderedSheets = Project.orderedSheets;
+        for (const sheet of orderedSheets) {
+            if (!sheet.getRange('A2').isBlank()) {
+                return sheet;
+            }
+        }
+        throw new ReferenceError('No Recent Sheet Found');
+    }
+    
+    //gets the sheet where the next project would go. thit will be the same as the reccent sheet unless the recent sheet is full.
+    public static get nextSheet (): GoogleAppsScript.Spreadsheet.Sheet {
+        const recentSheet = Project.recentSheet;
+        if (recentSheet.getRange('A51').isBlank()) {
+            return recentSheet;
+        }
+        let digits = recentSheet.getName().match(regexPullDigits) ?? [];
+        if (digits.length !== 2) {
+            throw new ReferenceError('No Digits Found');
+        }
+        digits = [digits[0] + 50, digits[1] + 50];
+        const nextSheet = Project.dataSpreadsheet.getSheetByName(`${digits[0]}-${digits[1]}`);
+        if (nextSheet) {
+            return nextSheet;
+        }
+        throw new ReferenceError('No Next Sheet Found');
+    }
+
+    public static get nextRow (): number {
+        const data = Project.nextSheet.getDataRange().getValues();
+        for (let i = 1; i < data.length; i++) {
+            if (data[i][1] === '') {
+                return i + 1;
+            }
+        }
+        throw new ReferenceError('No Next Row Found');
+    }
+
+    public static get reconciliationFolder (): GoogleAppsScript.Drive.Folder {
+        const reconciliationFolderId = properties.getProperty('reconciliationFolderId') ?? '';
+        return DriveApp.getFolderById(reconciliationFolderId);
+    }
+
+    public static get reconciliationSheetTemplate (): GoogleAppsScript.Drive.File {
+        const reconciliationSheetTemplateId = properties.getProperty('reconciliationSheetTemplateId') ?? '';
+        return DriveApp.getFileById(reconciliationSheetTemplateId);
+    }
+
+    /////////////////////////////////////////////
+    //          Immutable Properties           //
+    /////////////////////////////////////////////
+
+    public get dataSheet (): GoogleAppsScript.Spreadsheet.Sheet {
+        if (this._dataSheet) {
+            return this._dataSheet;
+        }
+        let low = 1001;
+        let high = 1050;
+        const jobNumber = parseInt(this.jobNumber, 10); // Convert jobNumber to a number
+        while (!this._dataSheet) {
+            if (jobNumber >= low && jobNumber <= high) {
+                this._dataSheet = Project.dataSpreadsheet.getSheetByName(`${low}-${high}`) ?? undefined;
+            }
+            low += 50;
+            high += 50;
+            if (low > 10000) {
+                throw new ReferenceError('Data Sheet Not Found');
+            }
+        }
+        return this._dataSheet;
+    }
+
+    public get reconciliationSheet (): GoogleAppsScript.Drive.File | undefined {
+        if (this._reconciliationSheet) {
+            return this._reconciliationSheet;
+        }
+        if (this._reconciliationSheetId) {
+            this._reconciliationSheet = DriveApp.getFileById(this._reconciliationSheetId);
+            return this._reconciliationSheet;
+        }
+        const files = Project.reconciliationFolder.getFilesByName(this.title);
+        if (!files.hasNext()) {
+            return undefined;
+        }
+        this._reconciliationSheet = files.next();
+        return this._reconciliationSheet;
+    }
+
+    public get reconciliationSheetId (): string | undefined {
+        if (this._reconciliationSheetId) {
+            return this._reconciliationSheetId;
+        }
+        this._reconciliationSheetId = this.reconciliationSheet?.getId();
+        return this._reconciliationSheetId;
+    }
+
+    public get rowNumber (): number {
+        if (this._rowNumber) {
+            return this._rowNumber;
+        }
+        const data = this.dataSheet.getDataRange().getValues();
+        for (let i = 1; i < data.length; i++) {
+            if (data[i][1] === this.jobNumber) {
+                this._rowNumber = i + 1;
+                return this._rowNumber;
+            }
+        }
+        throw new ReferenceError('Project Not Found');
+    }
+
+    //yrmo should always be a string of 4 digits
+    public get yrmo (): string {
+        if (this._yrmo) {
+            return this._yrmo;
+        }
+        this._yrmo = this.title.split(' ')[0];
+        if (!regex4Digits.test(this._yrmo)) {
+            throw new ValidationError('yrmo is not 4 digits');
+        }
+        return this._yrmo;
+    }
+
+    //jobNumber should always be a string of 4 digits
+    public get jobNumber (): string {
+        if (this._jobNumber) {
+            return this._jobNumber;
+        }
+        this._jobNumber = this.title.split(' ')[1];
+        if (!regex4Digits.test(this._jobNumber)) {
+            throw new ValidationError('jobNumber is not 4 digits');
+        }
+        return this._jobNumber;
+    }
+
+    public get closed (): string {
+        if (this._closed) {
+            return this._closed;
+        }
+        const data = this.dataSheet.getDataRange().getValues();
+        this._closed = data[this.rowNumber - 1][10] as string;
+        return this._closed;
+    }
+
+    /////////////////////////////////////////////
+    //              Public Methods             //
+    /////////////////////////////////////////////
+
+    generateProject(): void {
+        if (!this.folder) {
+            this.makeFolder();
+        }
+        if (this.reconciliationSheet) {
+            throw new ValidationError('Reconciliation Sheet already exists');
+        }
+        Project.reconciliationSheetTemplate.makeCopy(this.title, Project.reconciliationFolder);
+        this.creationDate = new Date();
+        if (!this.producer) {
+            //TODO this should probably be like a whole class or something right?
+            this.producer = getFullUserName();
+        }
+    }
+
+    /////////////////////////////////////////////
+    //             Private Methods             //
+    /////////////////////////////////////////////
+
+    // VInitiative
+    protected static validateParams({ name = '', nameArray = [], folder = undefined }: InitiativeParams): void {
+        const constructorData = { name, nameArray, folder };
+        Initiative.validateParams(constructorData);
+        if (name) {
+            if (!regexJobName.test(name)) {
+                throw new ValidationError('Project Name does not match expected pattern');
+            }
+        }
+        if (nameArray.length > 0) {
+            if (nameArray.length != 5) {
+                throw new ValidationError('nameArray is not the expected length ');
+            }
+            if (!regex4Digits.test(nameArray[0])) {
+                throw new ValidationError('nameArray does not start with the yrmo pattern');
+            }
+            if (!regex4Digits.test(nameArray[1])) {
+                throw new ValidationError('nameArray does not start with the job number pattern');
+            }
+            if (!regexProposalOpen.test(nameArray[4])) {
+                throw new ValidationError('nameArray does not end with the closed pattern');
+            }
+        }
+    }
+}
+
+export class Proposal extends Initiative {
+    public type = 'PROPOSAL';
+
+    private _status?: string;
+
+    constructor ({ name = '', nameArray = [], folder = undefined }: InitiativeParams) {
+        const params = { name, nameArray, folder };
+        try {
+            Proposal.validateParams(params);
+        } catch (error) {
+            if (error instanceof ValidationError) {
+                throw new ValidationError(`Proposal Not Found: ${error.message}`);
+            }
+            throw error;
+        }
+        super(params);
+        if (nameArray.length > 0) {
+            this._yrmo = nameArray[1];
+        }
+    }
+
+    /////////////////////////////////////////////
+    //            Static Properties            //
+    /////////////////////////////////////////////
+
+    public static get costingSheetTemplate (): GoogleAppsScript.Drive.File {
+        const costingSheetTemplateId = properties.getProperty('costingSheetTemplateId') ?? '';
+        return DriveApp.getFileById(costingSheetTemplateId);
+    }
+
+    public static get proposalTemplate (): GoogleAppsScript.Drive.File {
+        const proposalTemplateId = properties.getProperty('proposalTemplateId') ?? '';
+        return DriveApp.getFileById(proposalTemplateId);
+    }
+
+    public static get proposalSheet(): GoogleAppsScript.Spreadsheet.Sheet {
+        return Initiative.dataSpreadsheet.getSheetByName('Proposals') as GoogleAppsScript.Spreadsheet.Sheet;
+    }
+
+    /////////////////////////////////////////////
+    //          Immutable Properties           //
+    /////////////////////////////////////////////
+
+    public get dataSheet (): GoogleAppsScript.Spreadsheet.Sheet {
+        if (this._dataSheet) {
+            return this._dataSheet;
+        }
+        this._dataSheet = Project.dataSpreadsheet.getSheetByName('Proposals') as GoogleAppsScript.Spreadsheet.Sheet;
+        return this._dataSheet;
+    }
+
+    public get rowNumber (): number {
+        if (this._rowNumber) {
+            return this._rowNumber;
+        }
+        const data = this.dataSheet.getDataRange().getValues();
+        for (let i = 1; i < data.length; i++) {
+            if (data[i][0] == this.yrmo && data[i][1] == this.clientName && data[i][2] == this.projectName) {
+                this._rowNumber = i + 1;
+                return this._rowNumber;
+            }
+        }
+        throw new ReferenceError('Proposal Not Found');
+    }
+
+    public get yrmo (): string {
+        if (this._yrmo) {
+            return this._yrmo;
+        }
+        this._yrmo = this.title.split(' ')[1];
+        if (!regex4Digits.test(this._yrmo)) {
+            throw new ValidationError('yrmo is not 4 digits');
+        }
+        return this._yrmo;
+    }
+
+    public get status (): string {
+        if (this._status) {
+            return this._status;
+        }
+        this._status = 'NEW';
+        if (this.folder) {
+            this._status = 'ACTIVE';
+        }
+        return this._status;           
+    }
+
+    public get shortTitle (): string {
+        return `${this.yrmo} ${this.clientName} ${this.projectName}`;
+    }
+
+    /////////////////////////////////////////////
+    //              Public Methods             //
+    /////////////////////////////////////////////
+
+    public generateProposal(): void {
+        if (this.folder) {
+            throw new ValidationError('Proposal Folder already exists');
+        }
+        const folder = this.makeFolder();
+        Proposal.proposalTemplate.makeCopy(`${this.shortTitle} Proposal`, folder);
+        Proposal.costingSheetTemplate.makeCopy(`${this.shortTitle} Costing Sheet`, folder);
+        this.creationDate = new Date();
+        //TODO lookie here its this again
+        this.producer = getFullUserName();
+    }
+
+    public acceptProposal(): void {
+        if (!this.folder) {
+            throw new ValidationError('Proposal Folder does not exist');
+        }
+        if (this.status !== 'ACTIVE') {
+            throw new ValidationError('Proposal is not active');
+        }
+        const projectSheet = Project.nextSheet;
+        const row = Project.nextRow;
+        projectSheet.getRange(row, 1).setValue(this.yrmo);
+        projectSheet.getRange(row, 3).setValue(this.clientName);
+        projectSheet.getRange(row, 4).setValue(this.projectName);
+        projectSheet.getRange(row, 6).setValue(this.producer);
+
+        const jobNumber = projectSheet.getRange(row, 2).getValue();
+        this.folder.setName(`${this.yrmo} ${jobNumber} ${this.clientName} ${this.projectName}`);
+        new Project({ nameArray: [this.yrmo, jobNumber, this.clientName, this.projectName, 'FALSE']}).generateProject();
+        this.dataSheet.deleteRow(this.rowNumber);
+    }
+
+    /////////////////////////////////////////////
+    //             Private Methods             //
+    /////////////////////////////////////////////
+
+    protected static validateParams({ name = '', nameArray = [], folder = undefined }: InitiativeParams): void {
+        const constructorData = { name, nameArray, folder };
+        Initiative.validateParams(constructorData);
+        if (name) {
+            if (!regexProposalName.test(name)) {
+                throw new ValidationError('Proposal Name does not match expected pattern');
+            }
+        }
+        if (nameArray.length > 0) {
+            if (nameArray.length != 4) {
+                throw new ValidationError('nameArray is not the expected length');
+            }
+            if (!regex4Digits.test(nameArray[1])) {
+                throw new ValidationError('nameArray does not start with the yrmo pattern');
+            }
+            if (!regexProposalOpen.test(nameArray[0])) {
+                throw new ValidationError('nameArray does not start with the proposal pattern');
+            }
+        }
+    }
+}
