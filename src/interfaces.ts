@@ -40,8 +40,23 @@ export interface SerializedInitiative {
 
 export interface InitiativeParams {
   name?: string;
-  nameArray?: string[];
+  nameArray?: ProjectNameArray | ProposalNameArray | [];
   folder?: GoogleAppsScript.Drive.Folder;
+}
+
+export interface ProjectNameArray extends Array<string> {
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
+}
+
+export interface ProposalNameArray extends Array<string> {
+  0: string;
+  1: string;
+  2: string;
+  3: string;
 }
 
 export interface ClientParams {
