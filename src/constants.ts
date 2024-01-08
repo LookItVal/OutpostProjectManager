@@ -12,6 +12,9 @@ export const costingSheetTemplateId: string = '1UJ5P8V92bFpJEcccCiIwAULAN5Cv_zb7
 // OPD Sheed Ids (these are all inside the ProjectDataSheet)
 export const proposalsSheetId: number = 202907659;
 */
+// State
+export const spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet | null  = SpreadsheetApp.getActiveSpreadsheet();
+
 export const properties = PropertiesService.getScriptProperties();
 //Regex queries
 export const regexJobName: RegExp = /^\d{4}\s\d{4}\s.*/;

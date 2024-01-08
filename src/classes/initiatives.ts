@@ -1,7 +1,8 @@
 import { ValidationError } from './errors';
-import { properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits } from '../constants';
+import { spreadsheet, properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits } from '../constants';
 import { Client } from './client';
-import { InitiativeParams, SerializedData } from '../interfaces';
+import { InitiativeParams, ProjectNameArray, ProposalNameArray, SerializedData } from '../interfaces';
+import { User } from './user';
 
 
 export abstract class Initiative {
@@ -197,15 +198,45 @@ export abstract class Initiative {
     //              Static Methods             //
     /////////////////////////////////////////////
 
-    public static getInitiative({ name = '', nameArray = [], folder = undefined }: InitiativeParams): Project | Proposal {
+    public static getInitiative({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Project | Proposal {
+        if (!name && !nameArray.length && !folder) {
+            if (spreadsheet?.getId() === properties.getProperty('projectDataSheetId')) {
+                const sheet = spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
+                const row = sheet.getActiveCell().getRow(); 
+                const dataArray = [];
+                if (sheet.getName() === 'Proposals') {
+                    if (row === 1) {
+                        throw new ValidationError('No Proposal Selected');
+                    }
+                    dataArray.push('PROPOSAL:');
+                    dataArray.push(sheet.getRange(`A${row}`).getDisplayValue());
+                    dataArray.push(sheet.getRange(`B${row}`).getDisplayValue());
+                    dataArray.push(sheet.getRange(`C${row}`).getDisplayValue());
+                } else {
+                    if (row === 1) {
+                        throw new ValidationError('No Project Selected');
+                    }
+                    dataArray.push(sheet.getRange(`A${row}`).getDisplayValue());
+                    dataArray.push(sheet.getRange(`B${row}`).getDisplayValue());
+                    dataArray.push(sheet.getRange(`C${row}`).getDisplayValue()); 
+                    dataArray.push(sheet.getRange(`D${row}`).getDisplayValue());
+                    dataArray.push(sheet.getRange(`K${row}`).getDisplayValue());
+                }
+                if (dataArray.length > 0) {
+                    throw new ValidationError('No Initiative Selected');
+                }
+                nameArray = dataArray as ProjectNameArray | ProposalNameArray;
+            }
+            throw new ValidationError('Initiative must be initialized with a name, nameArray, or folder');
+        }
         if (name) {
             if (regexProposalName.test(name)) return new Proposal({name});
             if (regexJobName.test(name)) return new Project({name});
             throw new ValidationError('Name does not match any known initiative types');
         }
-        if (nameArray.length > 0) {
-            if (regexProposalOpen.test(nameArray[0])) return new Proposal({nameArray});
-            if (regex4Digits.test(nameArray[1])) return new Project({nameArray});
+        if (nameArray.length > 1) {
+            if (regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
+            if (regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
             throw new ValidationError('Name Array does not match any known initiative types');
         }
         if (folder) {
@@ -275,10 +306,7 @@ export abstract class Initiative {
                     throw new ValidationError('One or more elements in the nameArray are missing.');
                 }
             }
-            if (nameArray.length != 4) {
-                throw new ValidationError('Name array does not fit the expected format');
-            }
-            if (!regex4Digits.test(nameArray[1])) {
+            if (!regex4Digits.test(nameArray[1] as string)) {
                 throw new ValidationError('the second element in the nameArray must be 4 digits with nothing else.');
             }
             for (const item of nameArray) {
@@ -500,8 +528,18 @@ export class Project extends Initiative {
         this.creationDate = new Date();
         if (!this.producer) {
             //TODO this should probably be like a whole class or something right?
-            this.producer = getFullUserName();
+            this.producer = User.fullName;
         }
+    }
+
+    /////////////////////////////////////////////
+    //              Static Methods             //
+    /////////////////////////////////////////////
+
+    public static getProject({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Project {
+        const project = Initiative.getInitiative({ name, nameArray, folder });
+        if (project.type !== 'PROJECT') return project as Project;
+        throw new ValidationError('Initiative is not a Project');
     }
 
     /////////////////////////////////////////////
@@ -638,7 +676,7 @@ export class Proposal extends Initiative {
         Proposal.costingSheetTemplate.makeCopy(`${this.shortTitle} Costing Sheet`, folder);
         this.creationDate = new Date();
         //TODO lookie here its this again
-        this.producer = getFullUserName();
+        this.producer = User.fullName;
     }
 
     public acceptProposal(): void {
@@ -659,6 +697,16 @@ export class Proposal extends Initiative {
         this.folder.setName(`${this.yrmo} ${jobNumber} ${this.clientName} ${this.projectName}`);
         new Project({ nameArray: [this.yrmo, jobNumber, this.clientName, this.projectName, 'FALSE']}).generateProject();
         this.dataSheet.deleteRow(this.rowNumber);
+    }
+
+    /////////////////////////////////////////////
+    //              Static Methods             //
+    /////////////////////////////////////////////
+
+    public static getProposal({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Proposal {
+        const proposal = Initiative.getInitiative({ name, nameArray, folder });
+        if (proposal.type !== 'PROPOSAL') return proposal as Proposal;
+        throw new ValidationError('Initiative is not a Proposal');
     }
 
     /////////////////////////////////////////////
