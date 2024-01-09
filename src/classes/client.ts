@@ -1,6 +1,6 @@
 import { ValidationError } from './errors';
 import { ClientParams, Initiative } from '../interfaces';
-import { properties } from '../constants';
+import { properties, regexJobName, regexProposalName } from '../constants';
 import { Project, Proposal } from './initiatives';
 
 export class Client {
@@ -110,14 +110,14 @@ export class Client {
     /////////////////////////////////////////////
     //              Public Methods             //
     /////////////////////////////////////////////
-    public isNew() {
+    public isNew(): boolean {
         if (!this.folder) {
             return true;
         }
         return false;
     }
 
-    public makeFolder() {
+    public makeFolder(): GoogleAppsScript.Drive.Folder {
         if (this.folder) {
             throw new ValidationError('Client already has a folder');
         }
@@ -128,7 +128,7 @@ export class Client {
     /////////////////////////////////////////////
     //             Static Methods              //
     /////////////////////////////////////////////
-    
+
     public static getClients(): Client[] {
         const clientFolders = Client.clientFolder.getFolders();
         const clients: Client[] = [];
@@ -138,6 +138,56 @@ export class Client {
         }
         return clients;
     }
+
+    public static cleanClientFiles(): void {
+        const clients = Client.getClients();
+        for (const client of clients) {
+            let initArchive: GoogleAppsScript.Drive.Folder | undefined = undefined;
+            const search = client.folder?.getFoldersByName('JAN 2024 ARCHIVE');
+            if (!search?.hasNext()) {
+                initArchive = client.folder?.createFolder('JAN 2024 ARCHIVE');
+            } else {
+                initArchive = search?.next() as GoogleAppsScript.Drive.Folder;
+            }
+            if (!initArchive) {
+                throw new Error('Could not create or find JAN 2024 ARCHIVE folder');
+            }
+            const archiveFolder = initArchive as GoogleAppsScript.Drive.Folder;
+            const folders = client.folder?.getFolders() as GoogleAppsScript.Drive.FolderIterator;
+            while (folders.hasNext()) {
+                const folder = folders.next();
+                if (folder.getName() === 'JAN 2024 ARCHIVE') {
+                    continue;
+                }
+                if (regexJobName.test(folder.getName()) || regexProposalName.test(folder.getName())) {
+                    continue;
+                }
+                folder.moveTo(archiveFolder);
+            }
+            const files = client.folder?.getFiles() as GoogleAppsScript.Drive.FileIterator;
+            while(files.hasNext()) {
+                const file = files.next();
+                if (regexJobName.test(file.getName()) || regexProposalName.test(file.getName())) {
+                    const initiativeId = file.getName().split(' ').slice(0, 2).join(' ');
+                    const checkFolders = client.folder?.getFolders();
+                    let breakLoop = false;
+                    while (checkFolders?.hasNext()) {
+                        const folder = folders.next();
+                        if (folder.getName().startsWith(initiativeId)) {
+                            file.moveTo(folder);
+                            breakLoop = true;
+                            break;
+                        }
+                    }
+                    if (breakLoop) {
+                        continue;
+                    }
+                }
+                file.moveTo(archiveFolder);
+            }
+        }
+    }
+
 
     /////////////////////////////////////////////
     //             Private Methods             //
