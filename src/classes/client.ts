@@ -3,6 +3,16 @@ import { ClientParams, Initiative } from '../interfaces';
 import { properties, regexJobName, regexProposalName } from '../constants';
 import { Project, Proposal } from './initiatives';
 
+interface ClientExports {
+    ValidationError: typeof ValidationError;
+    properties: typeof properties;
+    regexJobName: typeof regexJobName;
+    regexProposalName: typeof regexProposalName;
+    Project: typeof Project;
+    Proposal: typeof Proposal;
+}
+declare const exports: ClientExports;
+
 export class Client {
     
     protected _name?: string;
@@ -15,7 +25,7 @@ export class Client {
         const params: ClientParams = {name, folder};
         this.validateParams(params);
         if (!name && !folder) {
-            throw new ValidationError('Client must have a name or a folder');
+            throw new exports.ValidationError('Client must have a name or a folder');
         }
         if (folder) {
             this._folder;
@@ -30,7 +40,7 @@ export class Client {
     /////////////////////////////////////////////
 
     public static get clientFolder(): GoogleAppsScript.Drive.Folder {
-        const folderId: string = properties.getProperty('clientFolderId') ?? '';
+        const folderId: string = exports.properties.getProperty('clientFolderId') ?? '';
         const folder: GoogleAppsScript.Drive.Folder = DriveApp.getFolderById(folderId);
         return folder;
     }
@@ -75,7 +85,7 @@ export class Client {
             if (folder.getName() === '2024 ARCHIVE') {
                 continue;
             }
-            const initiative = Project.getInitiative({folder});
+            const initiative = exports.Project.getInitiative({folder});
             this._initiatives.push(initiative);
         }
         return this._initiatives;
@@ -119,7 +129,7 @@ export class Client {
 
     public makeFolder(): GoogleAppsScript.Drive.Folder {
         if (this.folder) {
-            throw new ValidationError('Client already has a folder');
+            throw new exports.ValidationError('Client already has a folder');
         }
         this._folder = Client.clientFolder.createFolder(this.name);
         return this._folder;
@@ -159,7 +169,7 @@ export class Client {
                 if (folder.getName() === 'JAN 2024 ARCHIVE') {
                     continue;
                 }
-                if (regexJobName.test(folder.getName()) || regexProposalName.test(folder.getName())) {
+                if (exports.regexJobName.test(folder.getName()) || exports.regexProposalName.test(folder.getName())) {
                     continue;
                 }
                 folder.moveTo(archiveFolder);
@@ -167,7 +177,7 @@ export class Client {
             const files = client.folder?.getFiles() as GoogleAppsScript.Drive.FileIterator;
             while(files.hasNext()) {
                 const file = files.next();
-                if (regexJobName.test(file.getName()) || regexProposalName.test(file.getName())) {
+                if (exports.regexJobName.test(file.getName()) || exports.regexProposalName.test(file.getName())) {
                     const initiativeId = file.getName().split(' ').slice(0, 2).join(' ');
                     const checkFolders = client.folder?.getFolders();
                     let breakLoop = false;
@@ -195,13 +205,13 @@ export class Client {
 
     private validateParams({name, folder}: ClientParams): void {
         if (!name && !folder) {
-            throw new ValidationError('Client must have a name or a folder');
+            throw new exports.ValidationError('Client must have a name or a folder');
         }
         if (name && folder) {
-            throw new ValidationError('Client cannot have both a name and a folder');
+            throw new exports.ValidationError('Client cannot have both a name and a folder');
         }
         if (name && typeof name !== 'string') {
-            throw new ValidationError('Client name must be a string');
+            throw new exports.ValidationError('Client name must be a string');
         }
     }
 }

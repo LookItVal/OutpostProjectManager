@@ -2,11 +2,23 @@ import { Booking } from './classes/booking';
 import { InitEvent } from './interfaces';
 import { properties } from './constants';
 
+// this next chunk deals with clasps inability to deal with imports properly.
+// it's a bit of a hack, but it works.
+// just put define everything you want to import in the export interface
+// then declare a const exports of that type.
+// always call imports from that exports object. it doesnt exist here,
+// but it will exist in the compiled code.
+interface UIExport {
+    properties: typeof properties;
+    Booking: typeof Booking;
+}
+declare const exports: UIExport;
+
 /////////////////////////////////////////////
 //                Calendar                 //
 /////////////////////////////////////////////
 
-export function calendarHomepageUi(): GoogleAppsScript.Card_Service.Card {
+export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
     return CardService.newCardBuilder()
         .setName('Card name')
         .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
@@ -19,7 +31,7 @@ export function calendarHomepageUi(): GoogleAppsScript.Card_Service.Card {
 
 export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card {
     try {
-        const booking = new Booking({event: e}) as Booking;
+        const booking = new exports.Booking({event: e}) as Booking;
         return CardService.newCardBuilder()
             .setName('Select Event')
             .setHeader(CardService.newCardHeader().setTitle('Project Details'))
@@ -31,7 +43,7 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
                         .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0`))))
             .build();
     } catch {
-        return calendarHomepageUi();
+        return calendarHomepageUI();
     }
 }
 
@@ -39,9 +51,9 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
 //                 Sheets                  //
 /////////////////////////////////////////////
 
-export function openSheetsSidebar(): GoogleAppsScript.Card_Service.Card | void {
+export function openSheetSidebar(): GoogleAppsScript.Card_Service.Card | void {
     const currentSheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
-    if (currentSheetId === properties.getProperty('sidebarSheetId')) return openOPDSidebar();
+    if (currentSheetId === exports.properties.getProperty('sidebarSheetId')) return openOPDSidebar();
     return getSheetsHomepage();
 }
 

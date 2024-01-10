@@ -1,5 +1,7 @@
 import { Project, Proposal } from './classes/initiatives';
 
+// no export interface needed here, this file will be empty on compile.
+
 export interface InitEvent {
   hostApp: string,
   userLocale: string,

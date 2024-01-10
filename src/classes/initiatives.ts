@@ -4,6 +4,19 @@ import { Client } from './client';
 import { InitiativeParams, ProjectNameArray, ProposalNameArray, SerializedData } from '../interfaces';
 import { User } from './user';
 
+interface InitiativesExport {
+    ValidationError: typeof ValidationError;
+    spreadsheet: typeof spreadsheet;
+    properties: typeof properties;
+    regex4Digits: typeof regex4Digits;
+    regexJobName: typeof regexJobName;
+    regexProposalName: typeof regexProposalName;
+    regexProposalOpen: typeof regexProposalOpen;
+    regexPullDigits: typeof regexPullDigits;
+    Client: typeof Client;
+    User: typeof User;
+}
+declare const exports: InitiativesExport;
 
 export abstract class Initiative {
     [key: string]: string | number | object | undefined;
@@ -45,7 +58,7 @@ export abstract class Initiative {
             this.title = folder.getName();
             return;
         }
-        throw new ValidationError('Initiative must be initialized with a name, nameArray, or folder');
+        throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
     }
 
     /////////////////////////////////////////////
@@ -53,7 +66,7 @@ export abstract class Initiative {
     /////////////////////////////////////////////
 
     public static get dataSpreadsheet (): GoogleAppsScript.Spreadsheet.Spreadsheet {
-        const projectDataSheetId = properties.getProperty('projectDataSheetId') ?? '';
+        const projectDataSheetId = exports.properties.getProperty('projectDataSheetId') ?? '';
         return SpreadsheetApp.openById(projectDataSheetId);
     }
 
@@ -73,7 +86,7 @@ export abstract class Initiative {
         }
         const clientProject: string = this.title.split(' ').slice(2).join(' ');
         // would i define the client to be the Client class?
-        const clientNames: string[] = Client.getClients().map(client => client.name);
+        const clientNames: string[] = exports.Client.getClients().map(client => client.name);
         for (const client of clientNames) {
             if (clientProject.includes(client)) {
                 this._clientName = client;
@@ -90,7 +103,7 @@ export abstract class Initiative {
         if (this._client) {
             return this._client;
         }
-        this._client = new Client({ name: this.clientName });
+        this._client = new exports.Client({ name: this.clientName });
         return this._client;
     }
 
@@ -100,7 +113,7 @@ export abstract class Initiative {
         }
         const clientProject: string = this.title.split(' ').slice(2).join(' ');
         if (!this.clientName) {
-            throw new ValidationError('Cannot get Project Name without Client Name');
+            throw new exports.ValidationError('Cannot get Project Name without Client Name');
         }
         this._projectName = clientProject.replace(this.clientName, '').trim();
         return this._projectName;
@@ -200,13 +213,13 @@ export abstract class Initiative {
 
     public static getInitiative({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Project | Proposal {
         if (!name && !nameArray.length && !folder) {
-            if (spreadsheet?.getId() === properties.getProperty('projectDataSheetId')) {
-                const sheet = spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
+            if (exports.spreadsheet?.getId() === exports.properties.getProperty('projectDataSheetId')) {
+                const sheet = exports.spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
                 const row = sheet.getActiveCell().getRow(); 
                 const dataArray = [];
                 if (sheet.getName() === 'Proposals') {
                     if (row === 1) {
-                        throw new ValidationError('No Proposal Selected');
+                        throw new exports.ValidationError('No Proposal Selected');
                     }
                     dataArray.push('PROPOSAL:');
                     dataArray.push(sheet.getRange(`A${row}`).getDisplayValue());
@@ -214,7 +227,7 @@ export abstract class Initiative {
                     dataArray.push(sheet.getRange(`C${row}`).getDisplayValue());
                 } else {
                     if (row === 1) {
-                        throw new ValidationError('No Project Selected');
+                        throw new exports.ValidationError('No Project Selected');
                     }
                     dataArray.push(sheet.getRange(`A${row}`).getDisplayValue());
                     dataArray.push(sheet.getRange(`B${row}`).getDisplayValue());
@@ -223,29 +236,29 @@ export abstract class Initiative {
                     dataArray.push(sheet.getRange(`K${row}`).getDisplayValue());
                 }
                 if (dataArray.length > 0) {
-                    throw new ValidationError('No Initiative Selected');
+                    throw new exports.ValidationError('No Initiative Selected');
                 }
                 nameArray = dataArray as ProjectNameArray | ProposalNameArray;
             }
-            throw new ValidationError('Initiative must be initialized with a name, nameArray, or folder');
+            throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
         }
         if (name) {
-            if (regexProposalName.test(name)) return new Proposal({name});
-            if (regexJobName.test(name)) return new Project({name});
-            throw new ValidationError('Name does not match any known initiative types');
+            if (exports.regexProposalName.test(name)) return new Proposal({name});
+            if (exports.regexJobName.test(name)) return new Project({name});
+            throw new exports.ValidationError('Name does not match any known initiative types');
         }
         if (nameArray.length > 1) {
-            if (regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
-            if (regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
-            throw new ValidationError('Name Array does not match any known initiative types');
+            if (exports.regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
+            if (exports.regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
+            throw new exports.ValidationError('Name Array does not match any known initiative types');
         }
         if (folder) {
             const folderName = folder.getName();
-            if (regexProposalName.test(folderName)) return new Proposal({folder});
-            if (regexJobName.test(folderName)) return new Project({folder});
-            throw new ValidationError('Folder does not match any known initiative types');
+            if (exports.regexProposalName.test(folderName)) return new Proposal({folder});
+            if (exports.regexJobName.test(folderName)) return new Project({folder});
+            throw new exports.ValidationError('Folder does not match any known initiative types');
         }
-        throw new ValidationError('Initiative must be initialized with a name, nameArray, or folder');
+        throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
     }
 
     /////////////////////////////////////////////
@@ -275,7 +288,7 @@ export abstract class Initiative {
     // this should fix itself when there is a client class
     public makeFolder (): GoogleAppsScript.Drive.Folder {
         if (this.folder) {
-            throw new ValidationError('Folder already exists');
+            throw new exports.ValidationError('Folder already exists');
         }
         if (this.client.isNew()) {
             this._folder =  this.client.makeFolder().createFolder(this.title);
@@ -292,26 +305,26 @@ export abstract class Initiative {
     // Validation for the constructor
     protected static validateParams ({ name = '', nameArray = [], folder = undefined }: InitiativeParams): void {
         if (name && (nameArray.length > 0) && folder) {
-            throw new ValidationError('Initiative must be initialized with a name, nameArray, or folder');
+            throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
         }
         // make sure only one of the three is not null
         const countNonNull: number = [name, nameArray, folder].filter(value => !!value).length;
         if (countNonNull !== 1) {
-            throw new ValidationError('Too Much Data: Initiative must be constructed with either a Name, Name Array, or Folder');
+            throw new exports.ValidationError('Too Much Data: Initiative must be constructed with either a Name, Name Array, or Folder');
         }
         // nameArray Validation
         if (nameArray.length > 0) {
             for (const item of nameArray) {
                 if (item === '') {
-                    throw new ValidationError('One or more elements in the nameArray are missing.');
+                    throw new exports.ValidationError('One or more elements in the nameArray are missing.');
                 }
             }
-            if (!regex4Digits.test(nameArray[1] as string)) {
-                throw new ValidationError('the second element in the nameArray must be 4 digits with nothing else.');
+            if (!exports.regex4Digits.test(nameArray[1] as string)) {
+                throw new exports.ValidationError('the second element in the nameArray must be 4 digits with nothing else.');
             }
             for (const item of nameArray) {
                 if (item === '') {
-                    throw new ValidationError('One or more elements in the nameArray are missing.');
+                    throw new exports.ValidationError('One or more elements in the nameArray are missing.');
                 }
             }
         }
@@ -333,8 +346,8 @@ export class Project extends Initiative {
         try {
             Project.validateParams(params);
         } catch (error) {
-            if (error instanceof ValidationError) {
-                throw new ValidationError(`Project Not Found: ${error.message}`);
+            if (error instanceof exports.ValidationError) {
+                throw new exports.ValidationError(`Project Not Found: ${error.message}`);
             }
             throw error;
         }
@@ -386,7 +399,7 @@ export class Project extends Initiative {
         if (recentSheet.getRange('A51').isBlank()) {
             return recentSheet;
         }
-        let digits = recentSheet.getName().match(regexPullDigits) ?? [];
+        let digits = recentSheet.getName().match(exports.regexPullDigits) ?? [];
         if (digits.length !== 2) {
             throw new ReferenceError('No Digits Found');
         }
@@ -409,12 +422,12 @@ export class Project extends Initiative {
     }
 
     public static get reconciliationFolder (): GoogleAppsScript.Drive.Folder {
-        const reconciliationFolderId = properties.getProperty('reconciliationFolderId') ?? '';
+        const reconciliationFolderId = exports.properties.getProperty('reconciliationFolderId') ?? '';
         return DriveApp.getFolderById(reconciliationFolderId);
     }
 
     public static get reconciliationSheetTemplate (): GoogleAppsScript.Drive.File {
-        const reconciliationSheetTemplateId = properties.getProperty('reconciliationSheetTemplateId') ?? '';
+        const reconciliationSheetTemplateId = exports.properties.getProperty('reconciliationSheetTemplateId') ?? '';
         return DriveApp.getFileById(reconciliationSheetTemplateId);
     }
 
@@ -486,8 +499,8 @@ export class Project extends Initiative {
             return this._yrmo;
         }
         this._yrmo = this.title.split(' ')[0];
-        if (!regex4Digits.test(this._yrmo)) {
-            throw new ValidationError('yrmo is not 4 digits');
+        if (!exports.regex4Digits.test(this._yrmo)) {
+            throw new exports.ValidationError('yrmo is not 4 digits');
         }
         return this._yrmo;
     }
@@ -498,8 +511,8 @@ export class Project extends Initiative {
             return this._jobNumber;
         }
         this._jobNumber = this.title.split(' ')[1];
-        if (!regex4Digits.test(this._jobNumber)) {
-            throw new ValidationError('jobNumber is not 4 digits');
+        if (!exports.regex4Digits.test(this._jobNumber)) {
+            throw new exports.ValidationError('jobNumber is not 4 digits');
         }
         return this._jobNumber;
     }
@@ -522,13 +535,13 @@ export class Project extends Initiative {
             this.makeFolder();
         }
         if (this.reconciliationSheet) {
-            throw new ValidationError('Reconciliation Sheet already exists');
+            throw new exports.ValidationError('Reconciliation Sheet already exists');
         }
         Project.reconciliationSheetTemplate.makeCopy(this.title, Project.reconciliationFolder);
         this.creationDate = new Date();
         if (!this.producer) {
             //TODO this should probably be like a whole class or something right?
-            this.producer = User.fullName;
+            this.producer = exports.User.fullName;
         }
     }
 
@@ -539,7 +552,7 @@ export class Project extends Initiative {
     public static getProject({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Project {
         const project = Initiative.getInitiative({ name, nameArray, folder });
         if (project.type !== 'PROJECT') return project as Project;
-        throw new ValidationError('Initiative is not a Project');
+        throw new exports.ValidationError('Initiative is not a Project');
     }
 
     /////////////////////////////////////////////
@@ -551,22 +564,22 @@ export class Project extends Initiative {
         const constructorData = { name, nameArray, folder };
         Initiative.validateParams(constructorData);
         if (name) {
-            if (!regexJobName.test(name)) {
-                throw new ValidationError('Project Name does not match expected pattern');
+            if (!exports.regexJobName.test(name)) {
+                throw new exports.ValidationError('Project Name does not match expected pattern');
             }
         }
         if (nameArray.length > 0) {
             if (nameArray.length != 5) {
-                throw new ValidationError('nameArray is not the expected length ');
+                throw new exports.ValidationError('nameArray is not the expected length ');
             }
-            if (!regex4Digits.test(nameArray[0])) {
-                throw new ValidationError('nameArray does not start with the yrmo pattern');
+            if (!exports.regex4Digits.test(nameArray[0])) {
+                throw new exports.ValidationError('nameArray does not start with the yrmo pattern');
             }
-            if (!regex4Digits.test(nameArray[1])) {
-                throw new ValidationError('nameArray does not start with the job number pattern');
+            if (!exports.regex4Digits.test(nameArray[1])) {
+                throw new exports.ValidationError('nameArray does not start with the job number pattern');
             }
-            if (!regexProposalOpen.test(nameArray[4])) {
-                throw new ValidationError('nameArray does not end with the closed pattern');
+            if (!exports.regexProposalOpen.test(nameArray[4])) {
+                throw new exports.ValidationError('nameArray does not end with the closed pattern');
             }
         }
     }
@@ -582,8 +595,8 @@ export class Proposal extends Initiative {
         try {
             Proposal.validateParams(params);
         } catch (error) {
-            if (error instanceof ValidationError) {
-                throw new ValidationError(`Proposal Not Found: ${error.message}`);
+            if (error instanceof exports.ValidationError) {
+                throw new exports.ValidationError(`Proposal Not Found: ${error.message}`);
             }
             throw error;
         }
@@ -598,12 +611,12 @@ export class Proposal extends Initiative {
     /////////////////////////////////////////////
 
     public static get costingSheetTemplate (): GoogleAppsScript.Drive.File {
-        const costingSheetTemplateId = properties.getProperty('costingSheetTemplateId') ?? '';
+        const costingSheetTemplateId = exports.properties.getProperty('costingSheetTemplateId') ?? '';
         return DriveApp.getFileById(costingSheetTemplateId);
     }
 
     public static get proposalTemplate (): GoogleAppsScript.Drive.File {
-        const proposalTemplateId = properties.getProperty('proposalTemplateId') ?? '';
+        const proposalTemplateId = exports.properties.getProperty('proposalTemplateId') ?? '';
         return DriveApp.getFileById(proposalTemplateId);
     }
 
@@ -642,8 +655,8 @@ export class Proposal extends Initiative {
             return this._yrmo;
         }
         this._yrmo = this.title.split(' ')[1];
-        if (!regex4Digits.test(this._yrmo)) {
-            throw new ValidationError('yrmo is not 4 digits');
+        if (!exports.regex4Digits.test(this._yrmo)) {
+            throw new exports.ValidationError('yrmo is not 4 digits');
         }
         return this._yrmo;
     }
@@ -669,22 +682,22 @@ export class Proposal extends Initiative {
 
     public generateProposal(): void {
         if (this.folder) {
-            throw new ValidationError('Proposal Folder already exists');
+            throw new exports.ValidationError('Proposal Folder already exists');
         }
         const folder = this.makeFolder();
         Proposal.proposalTemplate.makeCopy(`${this.shortTitle} Proposal`, folder);
         Proposal.costingSheetTemplate.makeCopy(`${this.shortTitle} Costing Sheet`, folder);
         this.creationDate = new Date();
         //TODO lookie here its this again
-        this.producer = User.fullName;
+        this.producer = exports.User.fullName;
     }
 
     public acceptProposal(): void {
         if (!this.folder) {
-            throw new ValidationError('Proposal Folder does not exist');
+            throw new exports.ValidationError('Proposal Folder does not exist');
         }
         if (this.status !== 'ACTIVE') {
-            throw new ValidationError('Proposal is not active');
+            throw new exports.ValidationError('Proposal is not active');
         }
         const projectSheet = Project.nextSheet;
         const row = Project.nextRow;
@@ -706,7 +719,7 @@ export class Proposal extends Initiative {
     public static getProposal({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Proposal {
         const proposal = Initiative.getInitiative({ name, nameArray, folder });
         if (proposal.type !== 'PROPOSAL') return proposal as Proposal;
-        throw new ValidationError('Initiative is not a Proposal');
+        throw new exports.ValidationError('Initiative is not a Proposal');
     }
 
     /////////////////////////////////////////////
@@ -717,19 +730,19 @@ export class Proposal extends Initiative {
         const constructorData = { name, nameArray, folder };
         Initiative.validateParams(constructorData);
         if (name) {
-            if (!regexProposalName.test(name)) {
-                throw new ValidationError('Proposal Name does not match expected pattern');
+            if (!exports.regexProposalName.test(name)) {
+                throw new exports.ValidationError('Proposal Name does not match expected pattern');
             }
         }
         if (nameArray.length > 0) {
             if (nameArray.length != 4) {
-                throw new ValidationError('nameArray is not the expected length');
+                throw new exports.ValidationError('nameArray is not the expected length');
             }
-            if (!regex4Digits.test(nameArray[1])) {
-                throw new ValidationError('nameArray does not start with the yrmo pattern');
+            if (!exports.regex4Digits.test(nameArray[1])) {
+                throw new exports.ValidationError('nameArray does not start with the yrmo pattern');
             }
-            if (!regexProposalOpen.test(nameArray[0])) {
-                throw new ValidationError('nameArray does not start with the proposal pattern');
+            if (!exports.regexProposalOpen.test(nameArray[0])) {
+                throw new exports.ValidationError('nameArray does not start with the proposal pattern');
             }
         }
     }
