@@ -1,6 +1,11 @@
-import { BookingParams } from '../interfaces';
+import { BookingParams, Initiative } from '../interfaces';
 import { Project, Proposal } from './initiatives';
-import { Initiative } from '../interfaces';
+
+interface BookingExports {
+    Project: typeof Project;
+    Proposal: typeof Proposal;
+}
+declare const exports: BookingExports;
 
 export class Booking {
     public eventId?: string;
@@ -20,7 +25,7 @@ export class Booking {
     public get project(): Initiative | undefined {
         if (this._project) return this._project;
         if (this.calendarEvent) {
-            this._project = Project.getInitiative({ name: this.calendarEvent.getTitle() });
+            this._project = exports.Project.getInitiative({ name: this.calendarEvent.getTitle() });
             return this._project;
         }
         return undefined;
@@ -43,7 +48,7 @@ export class Booking {
     }
 
     public get sheetId(): string {
-        if (this.project instanceof Proposal) return '';
+        if (this.project instanceof exports.Proposal) return '';
         return this.project?.reconciliationSheetId ?? '';
     }
 
