@@ -6,7 +6,7 @@
   $(function() {
     // Assign handler functions to sidebar elements here, if needed.
     $('#project-refresh-button').click(refreshSidebar);
-    $('#jump-to-job-button').click(jumpToJob);
+    $('#jump-to-job-button').click(jumpToProject);
     $('#jump-to-proposals-button').click(jumpToProposal);
     $('#create-proposal-button').click(requestProposalGeneration);
     $('#open-costing-button').click(openCostingSheet);
@@ -91,7 +91,7 @@
     }).withFailureHandler(function(msg, element) {
       console.log(msg, element);
       $('#project-title').text("Error With Addon: Check Frontend Console For Details")
-    }).getProject();
+    }).getInitiative();
   }
 
   function refreshUI() {
@@ -162,7 +162,7 @@
 
 
   // Calls the server to change the active sheet to the most recent job.
-  function jumpToJob() {
+  function jumpToProject() {
     loading();
       google.script.run
       .withFailureHandler(function(msg, element) {
@@ -172,7 +172,7 @@
       .withSuccessHandler(function() {
         refreshSidebar();
       })
-      .jumpToJob();
+      .jumpToProject();
   }
   
   // Calls The server to change the active sheet to the proposal sheet.
