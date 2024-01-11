@@ -9,8 +9,8 @@ import { properties } from './constants';
 // always call imports from that exports object. it doesnt exist here,
 // but it will exist in the compiled code.
 interface UIExport {
-    properties: typeof properties;
-    Booking: typeof Booking;
+  properties: typeof properties;
+  Booking: typeof Booking;
 }
 declare const exports: UIExport;
 
@@ -19,32 +19,32 @@ declare const exports: UIExport;
 /////////////////////////////////////////////
 
 export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
-    return CardService.newCardBuilder()
-        .setName('Card name')
-        .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
-        .addSection(CardService.newCardSection()
-            .setHeader('No Event Selected.')
-            .addWidget(CardService.newTextParagraph()
-                .setText('Select an event to find its reconciliation sheet.')))
-        .build();
+  return CardService.newCardBuilder()
+    .setName('Card name')
+    .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
+    .addSection(CardService.newCardSection()
+      .setHeader('No Event Selected.')
+      .addWidget(CardService.newTextParagraph()
+        .setText('Select an event to find its reconciliation sheet.')))
+    .build();
 }
 
 export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card {
-    try {
-        const booking = new exports.Booking({event: e}) as Booking;
-        return CardService.newCardBuilder()
-            .setName('Select Event')
-            .setHeader(CardService.newCardHeader().setTitle('Project Details'))
-            .addSection(CardService.newCardSection()
-                .setHeader(booking.calendarEvent?.getTitle() ?? 'Booking Error')
-                .addWidget(CardService.newTextButton()
-                    .setText('Open Reconciliation')
-                    .setOpenLink(CardService.newOpenLink()
-                        .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0`))))
-            .build();
-    } catch {
-        return calendarHomepageUI();
-    }
+  try {
+    const booking = new exports.Booking({event: e}) as Booking;
+    return CardService.newCardBuilder()
+      .setName('Select Event')
+      .setHeader(CardService.newCardHeader().setTitle('Project Details'))
+      .addSection(CardService.newCardSection()
+        .setHeader(booking.calendarEvent?.getTitle() ?? 'Booking Error')
+        .addWidget(CardService.newTextButton()
+          .setText('Open Reconciliation')
+          .setOpenLink(CardService.newOpenLink()
+            .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0`))))
+      .build();
+  } catch {
+    return calendarHomepageUI();
+  }
 }
 
 /////////////////////////////////////////////
@@ -52,26 +52,27 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
 /////////////////////////////////////////////
 
 export function openSheetSidebar(): GoogleAppsScript.Card_Service.Card | void {
-    const currentSheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
-    if (currentSheetId === exports.properties.getProperty('sidebarSheetId')) return openOPDSidebar();
-    return getSheetsHomepage();
+  const currentSheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
+  console.log(currentSheetId, exports.properties.getProperty('projectDataSpreadsheetId'));
+  if (currentSheetId === exports.properties.getProperty('projectDataSpreadsheetId')) return openOPDSidebar();
+  return getSheetsHomepage();
 }
 
 export function getSheetsHomepage(): GoogleAppsScript.Card_Service.Card {
-    return CardService.newCardBuilder()
-        .setName('Card name')
-        .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
-        .addSection(CardService.newCardSection()
-            .setHeader('Incompatable Sheet')
-            .addWidget(CardService.newTextParagraph()
-                .setText('This sheet does not have any special functionality associated with it.')))
-        .build();
+  return CardService.newCardBuilder()
+    .setName('Card name')
+    .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
+    .addSection(CardService.newCardSection()
+      .setHeader('Incompatable Sheet')
+      .addWidget(CardService.newTextParagraph()
+        .setText('This sheet does not have any special functionality associated with it.')))
+    .build();
 }
 
 export function openOPDSidebar(): void {
-    const ui = HtmlService.createTemplateFromFile('opd/sidebar')
-        .evaluate()
-        .setTitle('Outpost Project Manager')
-        .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-    SpreadsheetApp.getUi().showSidebar(ui);
+  const ui = HtmlService.createTemplateFromFile('src/opd/html/sidebar')
+    .evaluate()
+    .setTitle('Outpost Project Manager')
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+  SpreadsheetApp.getUi().showSidebar(ui);
 }
