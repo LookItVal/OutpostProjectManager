@@ -34,13 +34,16 @@ export function jumpToProject(): void {
 }
 
 export function getInitiative(): SerializedData {
-  //let nameArray = getProjectNameArray();
   try {
-    return Project.getInitiative().serialize();
+    const lucky_charms = Project.getInitiative().serialize();
+    console.log(lucky_charms);
+    return lucky_charms;
   } catch (e: unknown) {
     if (e instanceof ValidationError) {
+      console.error(e.message);
       return {'title': e.message.split(':')[0]} as SerializedData;
     }
+    console.error(e);
     return {'title': 'A fatal error has occured.'} as SerializedData;
   }
 }

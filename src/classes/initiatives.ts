@@ -107,6 +107,7 @@ export abstract class Initiative {
       if (this._client) {
         return this._client;
       }
+      console.log('making client from name:', this.clientName);
       this._client = new exports.Client({ name: this.clientName });
       return this._client;
     }
@@ -131,11 +132,14 @@ export abstract class Initiative {
         this._folder = DriveApp.getFolderById(this._folderId);
         return this._folder;
       }
+      console.log('folder info');
+      console.log(this.client.folder);
       // find folder by name
       if (!this.client.folder) {
         return undefined;
       }
       const folders = this.client.folder.getFoldersByName(this.title);
+      
       if (!folders.hasNext()) {
         return undefined;
       }
@@ -162,10 +166,12 @@ export abstract class Initiative {
       if (this._costingSheetId) {
         return this._costingSheetId;
       }
+      console.log(this.folder);
       if (!this.folder) {
         return undefined;
       }
       const search = this.folder.getFilesByName(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`);
+      console.log(search);
       if (!search.hasNext()) {
         return undefined;
       }
@@ -217,13 +223,13 @@ export abstract class Initiative {
 
     public static getInitiative({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Project | Proposal {
       if (!name && !nameArray.length && !folder) {
-        if (exports.spreadsheet?.getId() === exports.properties.getProperty('projectDataSheetId')) {
+        if (exports.spreadsheet?.getId() === exports.properties.getProperty('projectDataSpreadsheetId')) {
           const sheet = exports.spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
           const row = sheet.getActiveCell().getRow(); 
           const dataArray = [];
           if (sheet.getName() === 'Proposals') {
             if (row === 1) {
-              throw new exports.ValidationError('No Proposal Selected');
+              throw new exports.ValidationError('Proposal Not Found: No Proposal Selected');
             }
             dataArray.push('PROPOSAL:');
             dataArray.push(sheet.getRange(`A${row}`).getDisplayValue());
@@ -231,7 +237,7 @@ export abstract class Initiative {
             dataArray.push(sheet.getRange(`C${row}`).getDisplayValue());
           } else {
             if (row === 1) {
-              throw new exports.ValidationError('No Project Selected');
+              throw new exports.ValidationError('Project Not Found: No Project Selected');
             }
             dataArray.push(sheet.getRange(`A${row}`).getDisplayValue());
             dataArray.push(sheet.getRange(`B${row}`).getDisplayValue());
@@ -239,12 +245,11 @@ export abstract class Initiative {
             dataArray.push(sheet.getRange(`D${row}`).getDisplayValue());
             dataArray.push(sheet.getRange(`K${row}`).getDisplayValue());
           }
-          if (dataArray.length > 0) {
+          if (dataArray.length < 4) {
             throw new exports.ValidationError('No Initiative Selected');
           }
           nameArray = dataArray as ProjectNameArray | ProposalNameArray;
         }
-        throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
       }
       if (name) {
         if (exports.regexProposalName.test(name)) return new Proposal({name});
@@ -252,6 +257,7 @@ export abstract class Initiative {
         throw new exports.ValidationError('Name does not match any known initiative types');
       }
       if (nameArray.length > 1) {
+        console.log(nameArray);
         if (exports.regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
         if (exports.regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
         throw new exports.ValidationError('Name Array does not match any known initiative types');
@@ -271,19 +277,18 @@ export abstract class Initiative {
 
     public serialize (): SerializedData {
       const initiative: SerializedData = {};
-      this.costingSheetId;
-      this.proposalDocumentId;
+      console.log(this.costingSheetId);
+      console.log(this.proposalDocumentId);
       for (const key of Object.keys(this)) {
         if (this[key] === undefined) {
           continue;
-        } else if (typeof this[key] !== 'object') {
+        } else if (typeof this[key] == 'object') {
           continue;
-        } else if (key.startsWith('_')) {
+        }
+        if (key.startsWith('_')) {
           initiative[key.slice(1)] = this[key] as string;
-        } else  if (typeof this[key] === 'string') {
-          initiative[key] = this[key] as string;
-        } else if (typeof this[key] === 'number') {
-          initiative[key] = this[key]?.toString() as string;
+        } else  if (typeof this[key] === 'string' || typeof this[key] === 'number') {
+          initiative[key] = String(this[key]) as string;
         }
       }
       return initiative;
@@ -557,7 +562,6 @@ export class Project extends Initiative {
     Project.reconciliationSheetTemplate.makeCopy(this.title, Project.reconciliationFolder);
     this.creationDate = new Date();
     if (!this.producer) {
-      //TODO this should probably be like a whole class or something right?
       this.producer = exports.User.fullName;
     }
   }
@@ -595,7 +599,7 @@ export class Project extends Initiative {
       if (!exports.regex4Digits.test(nameArray[1])) {
         throw new exports.ValidationError('nameArray does not start with the job number pattern');
       }
-      if (!exports.regexProposalOpen.test(nameArray[4])) {
+      if (!nameArray[4].match(/TRUE|FALSE/)) {
         throw new exports.ValidationError('nameArray does not end with the closed pattern');
       }
     }
