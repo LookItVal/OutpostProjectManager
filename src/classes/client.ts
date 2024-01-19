@@ -33,6 +33,7 @@ export class Client {
     if (name) {
       this._name;
     }
+    console.log('client Object', this);
   }
 
   /////////////////////////////////////////////
@@ -64,6 +65,7 @@ export class Client {
     if (this._folder) {
       return this._folder;
     }
+    console.log('client folder info', this._name);
     if (this._name) {
       const folders = Client.clientFolder.getFoldersByName(this._name);
       if (folders.hasNext()) {
