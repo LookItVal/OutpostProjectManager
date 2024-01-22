@@ -277,8 +277,8 @@ export abstract class Initiative {
 
     public serialize (): SerializedData {
       const initiative: SerializedData = {};
-      console.log(this.costingSheetId);
-      console.log(this.proposalDocumentId);
+      console.log('tryna find the costing sheet:', this.costingSheetId);
+      console.log('tryna find the proposal document:', this.proposalDocumentId);
       for (const key of Object.keys(this)) {
         if (this[key] === undefined) {
           continue;
@@ -552,7 +552,12 @@ export class Project extends Initiative {
   //              Public Methods             //
   /////////////////////////////////////////////
 
-  generateProject(): void {
+  public serialize(): SerializedData {
+    !this.reconciliationSheetId && console.log('trying to find the reconciliation sheet:', this.reconciliationSheetId);
+    return super.serialize();
+  }
+
+  public generateProject(): void {
     if (!this.folder) {
       this.makeFolder();
     }

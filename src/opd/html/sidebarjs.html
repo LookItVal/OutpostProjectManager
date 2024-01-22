@@ -40,13 +40,13 @@
   // Fade in the closed job section.
   function closedJobFadeIn() {
     $('.info-message').text("Project Closed. Below are any archived files easily found.");
-    if (!globalInitiative.proposalId && !globalInitiative.sheetId) {
+    if (!globalInitiative.proposalId && !globalInitiative.reconciliationSheetId) {
       $('.info-message').text("Project Closed. No archived files found.");
     }
     if (globalInitiative.proposalId) {
       $('.proposal-section').fadeIn();
     }
-    if (globalInitiative.sheetId) {
+    if (globalInitiative.reconciliationSheetId) {
       $('.reconciliation-section').fadeIn();
     }
     $('.info-message').fadeIn();
@@ -59,13 +59,13 @@
 
   // Fade in the existing job section.
   function existingJobFadeIn() {
-    if (globalInitiative.sheetId) {
+    if (globalInitiative.reconciliationSheetId) {
       $('.reconciliation-section').fadeIn();
     }
     if (globalInitiative.proposalId) {
       $('.proposal-section').fadeIn();
     }
-    if (!globalInitiative.proposalId && !globalInitiative.sheetId) {
+    if (!globalInitiative.proposalId && !globalInitiative.reconciliationSheetId) {
       $('.info-message').text("Project Loaded. No Proposal or Reconciliation Sheet Found.");
       $('.info-message').fadeIn();
     }
@@ -102,7 +102,7 @@
       $('.info-message').fadeIn();
     } else if (initiative.type === "PROJECT") {
       if (initiative.closed == "FALSE") {
-        if (!initiative.sheetId) {
+        if (!initiative.reconciliationSheetId) {
           newJobFadeIn();
         } else {
           existingJobFadeIn();
@@ -147,13 +147,13 @@
   }
 
   function openReconciliationSheet() {
-    //if sheetId is set
-    if (globalInitiative.sheetId) {
-      const url = "https://docs.google.com/spreadsheets/d/"+globalInitiative.sheetId+"/edit#gid=0";
+    //if reconciliationSheetId is set
+    if (globalInitiative.reconciliationSheetId) {
+      const url = "https://docs.google.com/spreadsheets/d/"+globalInitiative.reconciliationSheetId+"/edit#gid=0";
       window.open(url, "_blank");
       return
     }
-    //if sheetId is not set
+    //if reconciliationSheetId is not set
     console.log("initiative not set");
     console.log(globalInitiative);
     $('#project-title').text("Error With Addon: Check Frontend Console For Details");
