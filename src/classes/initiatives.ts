@@ -506,7 +506,8 @@ export class Project extends Initiative {
     }
     const data = this.dataSheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
-      if (data[i][1] === this.jobNumber) {
+      console.log('data[i][1]', data[i][1], 'this.jobNumber', this.jobNumber);
+      if (data[i][1] == this.jobNumber) {
         this._rowNumber = i + 1;
         return this._rowNumber;
       }
