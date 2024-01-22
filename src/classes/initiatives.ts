@@ -104,10 +104,10 @@ export abstract class Initiative {
     }
 
     public get client(): Client {
-      if (this._client) {
+      if (this._client && Object.keys(this._client).length !== 0) {
         return this._client;
       }
-      console.log('making client from name:', this.clientName);
+      console.info('making client from name:', this.clientName);
       this._client = new exports.Client({ name: this.clientName });
       return this._client;
     }
@@ -132,10 +132,11 @@ export abstract class Initiative {
         this._folder = DriveApp.getFolderById(this._folderId);
         return this._folder;
       }
-      console.log('folder info');
-      console.log(this.client.folder);
+
       // find folder by name
       if (!this.client.folder) {
+        console.warn('Trying to find Client Folder:', this.client.folder);
+        console.info('Client info:', this.client);
         return undefined;
       }
       const folders = this.client.folder.getFoldersByName(this.title);
@@ -166,12 +167,11 @@ export abstract class Initiative {
       if (this._costingSheetId) {
         return this._costingSheetId;
       }
-      console.log(this.folder);
       if (!this.folder) {
+        console.warn('Trying to find folder:', this.folder);
         return undefined;
       }
       const search = this.folder.getFilesByName(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`);
-      console.log(search);
       if (!search.hasNext()) {
         return undefined;
       }
@@ -257,7 +257,6 @@ export abstract class Initiative {
         throw new exports.ValidationError('Name does not match any known initiative types');
       }
       if (nameArray.length > 1) {
-        console.log(nameArray);
         if (exports.regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
         if (exports.regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
         throw new exports.ValidationError('Name Array does not match any known initiative types');
@@ -277,8 +276,8 @@ export abstract class Initiative {
 
     public serialize (): SerializedData {
       const initiative: SerializedData = {};
-      console.log('tryna find the costing sheet:', this.costingSheetId);
-      console.log('tryna find the proposal document:', this.proposalDocumentId);
+      !this.costingSheetId && console.warn('Trying to find the costing sheet:', this.costingSheetId);
+      !this.proposalDocumentId && console.warn('Trying to find the proposal document:', this.proposalDocumentId);
       for (const key of Object.keys(this)) {
         if (this[key] === undefined) {
           continue;
@@ -553,7 +552,7 @@ export class Project extends Initiative {
   /////////////////////////////////////////////
 
   public serialize(): SerializedData {
-    !this.reconciliationSheetId && console.log('trying to find the reconciliation sheet:', this.reconciliationSheetId);
+    !this.reconciliationSheetId && console.warn('trying to find the reconciliation sheet:', this.reconciliationSheetId);
     return super.serialize();
   }
 
@@ -705,6 +704,11 @@ export class Proposal extends Initiative {
   /////////////////////////////////////////////
   //              Public Methods             //
   /////////////////////////////////////////////
+
+  public serialize(): SerializedData {
+    this.status;
+    return super.serialize();
+  }
 
   public generateProposal(): void {
     if (this.folder) {

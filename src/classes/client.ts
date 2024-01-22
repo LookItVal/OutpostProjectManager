@@ -24,16 +24,19 @@ export class Client {
   constructor({name = '', folder = undefined}: ClientParams) {
     const params: ClientParams = {name, folder};
     this.validateParams(params);
+    // why is this here?
     if (!name && !folder) {
       throw new exports.ValidationError('Client must have a name or a folder');
     }
     if (folder) {
-      this._folder;
+      this._folder = folder;
     }
     if (name) {
-      this._name;
+      console.log('YOU SHOULD MAKE IT HERE', name);
+      this._name = name;
     }
-    console.log('client Object', this);
+    console.log('the name of the client we just created is', this.name);
+    console.log('Client new object returned:', this);
   }
 
   /////////////////////////////////////////////
