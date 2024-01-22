@@ -435,7 +435,7 @@ export class Project extends Initiative {
   public static get nextRow (): number {
     const data = Project.nextSheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
-      if (data[i][1] === '') {
+      if (data[i][0] === '') {
         return i + 1;
       }
     }
