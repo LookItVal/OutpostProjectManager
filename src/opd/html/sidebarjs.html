@@ -40,10 +40,10 @@
   // Fade in the closed job section.
   function closedJobFadeIn() {
     $('.info-message').text("Project Closed. Below are any archived files easily found.");
-    if (!globalInitiative.proposalId && !globalInitiative.reconciliationSheetId) {
+    if (!globalInitiative.proposalDocumentId && !globalInitiative.reconciliationSheetId) {
       $('.info-message').text("Project Closed. No archived files found.");
     }
-    if (globalInitiative.proposalId) {
+    if (globalInitiative.proposalDocumentId) {
       $('.proposal-section').fadeIn();
     }
     if (globalInitiative.reconciliationSheetId) {
@@ -62,10 +62,10 @@
     if (globalInitiative.reconciliationSheetId) {
       $('.reconciliation-section').fadeIn();
     }
-    if (globalInitiative.proposalId) {
+    if (globalInitiative.proposalDocumentId) {
       $('.proposal-section').fadeIn();
     }
-    if (!globalInitiative.proposalId && !globalInitiative.reconciliationSheetId) {
+    if (!globalInitiative.proposalDocumentId && !globalInitiative.reconciliationSheetId) {
       $('.info-message').text("Project Loaded. No Proposal or Reconciliation Sheet Found.");
       $('.info-message').fadeIn();
     }
@@ -135,8 +135,8 @@
 
   function openProposal() {
     //if initiative is set
-    if (globalInitiative.proposalId) {
-      const url = "https://docs.google.com/document/d/"+globalInitiative.proposalId+"/edit";
+    if (globalInitiative.proposalDocumentId) {
+      const url = "https://docs.google.com/document/d/"+globalInitiative.proposalDocumentId+"/edit";
       window.open(url, "_blank");
       return
     }
