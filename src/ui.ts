@@ -32,6 +32,7 @@ export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
 export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card {
   try {
     const booking = new exports.Booking({event: e}) as Booking;
+    console.log('the booking object', booking.sheetId);
     return CardService.newCardBuilder()
       .setName('Select Event')
       .setHeader(CardService.newCardHeader().setTitle('Project Details'))
