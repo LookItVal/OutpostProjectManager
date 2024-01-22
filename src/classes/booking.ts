@@ -48,6 +48,7 @@ export class Booking {
   }
 
   public get sheetId(): string {
+    //TODO fix this, this is all kinds of fucky and now the get sheet button in the calendar entry isnt working.
     if (this.project instanceof exports.Proposal) return '';
     return this.project?.reconciliationSheetId ?? '';
   }
