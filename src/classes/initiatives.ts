@@ -576,7 +576,7 @@ export class Project extends Initiative {
 
   public static getProject({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Project {
     const project = Initiative.getInitiative({ name, nameArray, folder });
-    if (project.type !== 'PROJECT') return project as Project;
+    if (project.type == 'PROJECT') return project as Project;
     throw new exports.ValidationError('Initiative is not a Project');
   }
 
@@ -748,7 +748,7 @@ export class Proposal extends Initiative {
 
   public static getProposal({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Proposal {
     const proposal = Initiative.getInitiative({ name, nameArray, folder });
-    if (proposal.type !== 'PROPOSAL') return proposal as Proposal;
+    if (proposal.type == 'PROPOSAL') return proposal as Proposal;
     throw new exports.ValidationError('Initiative is not a Proposal');
   }
 
