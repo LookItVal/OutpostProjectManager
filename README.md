@@ -23,3 +23,15 @@
 
 ## Contact
 [Provide contact information for users to reach out to you with questions or feedback.]
+
+
+## Todo
+- Build this out.
+- Give instructions from the Google Drive file on how to get here.
+- Show folders in the OPD sidebar.
+- Link calendar bookings and specific lines of the reconciliation sheet.
+- Fill calendar booking sidebar with info from the reconciliation sheet.
+- Add something to the reconciliation sheet to show when something has been confirmed.
+- If admin, be able to close reconciliation sheets.
+- In reconciliation sheet, be able to get information about calendar bookings through rows.
+- Link up items in the costing sheet with the proposal document.
