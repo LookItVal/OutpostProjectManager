@@ -145,6 +145,7 @@ export abstract class Initiative {
         return undefined;
       }
       this._folder = this.client.folder.getFoldersByName(this.title).next();
+      this._folderId = this._folder.getId();
       return this._folder;
     }
 
