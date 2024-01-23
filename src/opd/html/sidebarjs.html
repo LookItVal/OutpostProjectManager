@@ -18,6 +18,45 @@
     $('#accept-proposal-button').click(requestProposalAccept);
     $('#create-job-button').click(requestJobGeneration);
 
+    $('#open-folder-button').hover(
+      function() {
+        // Mouse enter
+        $(this).find(".material-symbols-outlined").text('folder_open');
+      }, function() {
+        // Mouse leave
+        $(this).find(".material-symbols-outlined").text('folder');
+      }
+    );
+
+    $("#project-refresh-button").mouseenter(function() {
+      $(this).find(".spinner").addClass("spin-once");
+    });
+    $("#project-refresh-button .spinner").on('webkitAnimationEnd oanimationend msAnimationEnd animationend',   
+    function() {
+      $(this).removeClass("spin-once");
+    });
+
+    $('#open-costing-button').hover(
+      function() {
+        // Mouse enter
+        $(this).find(".material-symbols-outlined").text('file_open');
+      }, function() {
+        // Mouse leave
+        $(this).find(".material-symbols-outlined").text('request_page');
+      }
+    );
+
+    $('#open-proposal-button').hover(
+      function() {
+        // Mouse enter
+        $(this).find(".material-symbols-outlined").text('contract_edit');
+      }, function() {
+        // Mouse leave
+        $(this).find(".material-symbols-outlined").text('contract');
+      }
+    );
+
+
     refreshSidebar();
     // Call the server here to retrieve any information needed to build
     // the dialog, if necessary.
