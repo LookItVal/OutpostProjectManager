@@ -38,7 +38,7 @@ export abstract class Initiative {
     protected _costingSheetId?: string;
     protected _costingSheet?: GoogleAppsScript.Drive.File;
 
-    constructor ({ name = '', nameArray = [], folder = undefined }: InitiativeParams) {
+    constructor ({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams) {
       if (new.target === Initiative) {
         throw new TypeError('Cannot construct Abstract instances directly');
       }
@@ -46,7 +46,7 @@ export abstract class Initiative {
         this.title = name;
         return;
       }
-      if (nameArray.length > 0) {
+      if (nameArray) {
         this.title = `${nameArray[0]} ${nameArray[1]} ${nameArray[2]} ${nameArray[3]}`;
         this._clientName = nameArray[2];
         this._projectName = nameArray[3];
@@ -221,8 +221,8 @@ export abstract class Initiative {
     //              Static Methods             //
     /////////////////////////////////////////////
 
-    public static getInitiative({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Project | Proposal {
-      if (!name && !nameArray.length && !folder) {
+    public static getInitiative({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams = {}): Project | Proposal {
+      if (!name && !nameArray && !folder) {
         if (exports.spreadsheet?.getId() === exports.properties.getProperty('projectDataSpreadsheetId')) {
           const sheet = exports.spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
           const row = sheet.getActiveCell().getRow(); 
@@ -256,7 +256,7 @@ export abstract class Initiative {
         if (exports.regexJobName.test(name)) return new Project({name});
         throw new exports.ValidationError('Name does not match any known initiative types');
       }
-      if (nameArray.length > 1) {
+      if (nameArray && nameArray.length > 1) {
         if (exports.regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
         if (exports.regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
         throw new exports.ValidationError('Name Array does not match any known initiative types');
@@ -311,17 +311,21 @@ export abstract class Initiative {
     /////////////////////////////////////////////
 
     // Validation for the constructor
-    protected static validateParams ({ name = '', nameArray = [], folder = undefined }: InitiativeParams): void {
-      if (name && (nameArray.length > 0) && folder) {
+    protected static validateParams ({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams): void {
+      if (!name && !nameArray && !folder) {
         throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
       }
       // make sure only one of the three is not null
       const countNonNull: number = [name, nameArray, folder].filter(value => !!value).length;
       if (countNonNull !== 1) {
+        console.warn('countNonNull', countNonNull);
+        console.warn('name', name, 'Truthy?', !!name);
+        console.warn('nameArray', nameArray, 'Truthy?', !!nameArray);
+        console.warn('folder', folder, 'Truthy?', !!folder);
         throw new exports.ValidationError('Too Much Data: Initiative must be constructed with either a Name, Name Array, or Folder');
       }
       // nameArray Validation
-      if (nameArray.length > 0) {
+      if (nameArray) {
         for (const item of nameArray) {
           if (item === '') {
             throw new exports.ValidationError('One or more elements in the nameArray are missing.');
@@ -349,7 +353,7 @@ export class Project extends Initiative {
 
 
 
-  constructor ({ name = '', nameArray = [], folder = undefined}: InitiativeParams) {
+  constructor ({ name = '', nameArray = undefined, folder = undefined}: InitiativeParams) {
     const params = { name, nameArray, folder };
     try {
       Project.validateParams(params);
@@ -360,7 +364,7 @@ export class Project extends Initiative {
       throw error;
     }
     super(params);
-    if (nameArray.length > 0) {
+    if (nameArray) {
       this._yrmo = nameArray[0];
       this._jobNumber = nameArray[1];
       this._closed = nameArray[4];
@@ -575,7 +579,7 @@ export class Project extends Initiative {
   //              Static Methods             //
   /////////////////////////////////////////////
 
-  public static getProject({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Project {
+  public static getProject({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams = {}): Project {
     const project = Initiative.getInitiative({ name, nameArray, folder });
     if (project.type == 'PROJECT') return project as Project;
     throw new exports.ValidationError('Initiative is not a Project');
@@ -586,7 +590,7 @@ export class Project extends Initiative {
   /////////////////////////////////////////////
 
   // VInitiative
-  protected static validateParams({ name = '', nameArray = [], folder = undefined }: InitiativeParams): void {
+  protected static validateParams({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams): void {
     const constructorData = { name, nameArray, folder };
     Initiative.validateParams(constructorData);
     if (name) {
@@ -594,7 +598,7 @@ export class Project extends Initiative {
         throw new exports.ValidationError('Project Name does not match expected pattern');
       }
     }
-    if (nameArray.length > 0) {
+    if (nameArray) {
       if (nameArray.length != 5) {
         throw new exports.ValidationError('nameArray is not the expected length ');
       }
@@ -616,7 +620,7 @@ export class Proposal extends Initiative {
 
   private _status?: string;
 
-  constructor ({ name = '', nameArray = [], folder = undefined }: InitiativeParams) {
+  constructor ({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams) {
     const params = { name, nameArray, folder };
     try {
       Proposal.validateParams(params);
@@ -627,7 +631,7 @@ export class Proposal extends Initiative {
       throw error;
     }
     super(params);
-    if (nameArray.length > 0) {
+    if (nameArray) {
       this._yrmo = nameArray[1];
     }
   }
@@ -747,7 +751,7 @@ export class Proposal extends Initiative {
   //              Static Methods             //
   /////////////////////////////////////////////
 
-  public static getProposal({ name = '', nameArray = [], folder = undefined }: InitiativeParams = {}): Proposal {
+  public static getProposal({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams = {}): Proposal {
     const proposal = Initiative.getInitiative({ name, nameArray, folder });
     if (proposal.type == 'PROPOSAL') return proposal as Proposal;
     throw new exports.ValidationError('Initiative is not a Proposal');
@@ -757,7 +761,7 @@ export class Proposal extends Initiative {
   //             Private Methods             //
   /////////////////////////////////////////////
 
-  protected static validateParams({ name = '', nameArray = [], folder = undefined }: InitiativeParams): void {
+  protected static validateParams({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams): void {
     const constructorData = { name, nameArray, folder };
     Initiative.validateParams(constructorData);
     if (name) {
@@ -765,7 +769,7 @@ export class Proposal extends Initiative {
         throw new exports.ValidationError('Proposal Name does not match expected pattern');
       }
     }
-    if (nameArray.length > 0) {
+    if (nameArray) {
       if (nameArray.length != 4) {
         throw new exports.ValidationError('nameArray is not the expected length');
       }
