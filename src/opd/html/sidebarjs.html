@@ -29,7 +29,9 @@
     );
 
     $("#project-refresh-button").mouseenter(function() {
-      $(this).find(".spinner").addClass("spin-once");
+      if ($(this).find(".material-symbols-outlined").hasClass("icon-paused")) {
+        $(this).find(".spinner").addClass("spin-once");
+      }
     });
     $("#project-refresh-button .spinner").on('webkitAnimationEnd oanimationend msAnimationEnd animationend',   
     function() {
