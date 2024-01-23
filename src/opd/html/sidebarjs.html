@@ -35,6 +35,33 @@
     $('.accept-proposal-section').fadeOut();
     $('.create-job-section').fadeOut();
     $('.create-proposal-section').fadeOut();
+    $('.open-folder-section').fadeOut();
+  }
+
+  function fadeInAnyInfo() {
+    if (globalInitiative.reconciliationSheetId) {
+      $('.reconciliation-section').fadeIn();
+    }
+    fadeInProposalInfo();
+    if (globalInitiative.folderId) {
+      $('.open-folder-section').fadeIn();
+    }
+  }
+
+  function fadeInProposalInfo() {
+    let count = 0;
+    if (globalInitiative.proposalDocumentId) {
+      count++;
+      $('#open-proposal-button').fadeIn();
+    }
+    if (globalInitiative.costingSheetId) {
+      count++;
+      $('#open-costing-button').fadeIn();
+    }
+    if (count == 1) {
+      $('.half-width').addClass('full-width');
+      $('.half-width').removeClass('half-width');
+    }
   }
 
   // Fade in the closed job section.
@@ -48,6 +75,9 @@
     }
     if (globalInitiative.reconciliationSheetId) {
       $('.reconciliation-section').fadeIn();
+    }
+    if (globalInitiative.folderId) {
+      $('.open-folder-section').fadeIn();
     }
     $('.info-message').fadeIn();
   }
@@ -65,6 +95,9 @@
     if (globalInitiative.proposalDocumentId) {
       $('.proposal-section').fadeIn();
     }
+    if (globalInitiative.folderId) {
+      $('.open-folder-section').fadeIn();
+    }
     if (!globalInitiative.proposalDocumentId && !globalInitiative.reconciliationSheetId) {
       $('.info-message').text("Project Loaded. No Proposal or Reconciliation Sheet Found.");
       $('.info-message').fadeIn();
@@ -80,6 +113,9 @@
   function existingProposalFadeIn() {
     $('.proposal-section').fadeIn();
     $('.accept-proposal-section').fadeIn();
+    if (globalInitiative.folderId) {
+      $('.open-folder-section').fadeIn();
+    }
   }
 
   // Get the current project info from the server and display the appropriate dynamic content.
