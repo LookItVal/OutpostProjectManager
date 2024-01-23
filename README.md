@@ -30,7 +30,7 @@
 - [ ] Build this readme out.
 - [ ] Give instructions from the Google Drive file on how to get here.
 - [x] Show folders in the OPD sidebar.
-- [ ] Fix formatting on some buttons.
+- [x] Fix formatting on some buttons.
 - [x] Add Icons to items in the OPD sidebar.
 - [ ] Make Icons Move on hover
 - [ ] Link calendar bookings and specific lines of the reconciliation sheet.
@@ -41,3 +41,4 @@
 - [ ] Link up items in the costing sheet with the proposal document.
 - [ ] Have every initiative initialize from serialized data and back them up to properties
   - The key of each property is the YR/MO + job number
+- [ ] Add requirement so you can do red button actions
