@@ -26,7 +26,7 @@
 
 
 ## Todo
-- Build this out.
+- Build this readme out.
 - Give instructions from the Google Drive file on how to get here.
 - Show folders in the OPD sidebar.
 - Link calendar bookings and specific lines of the reconciliation sheet.
