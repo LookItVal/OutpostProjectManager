@@ -10,11 +10,6 @@
     <!-- Below is the HTML code that defines the sidebar element structure. -->
     <div class="top-bar width-100">
       <div class="refresh-section">
-        <div class="refresh-text">
-          <p>
-            To pick a project, select it in the spreadsheet then click this refresh button to load information about that project.
-          </p>
-        </div>
         <div class="refresh-button">
           <button id="project-refresh-button" class="action full-width">
             <span class="material-symbols-outlined">
@@ -25,14 +20,15 @@
               sync
             </span>
           </button>
+        </div>
+        <br> 
+        <hr>
+        <div class="title-section">
+          <h3 id="project-title">
+            No Project Selected
+          </h3>
+        </div> 
       </div>
-      <br> 
-      <hr>
-      <div class="title-section">
-        <h3 id="project-title">
-          No Project Selected
-        </h3>
-      </div> 
     </div>
     
     <!-- Dynamic Content -->
@@ -44,30 +40,26 @@
     </div>
 
     <!-- Open Folder Section -->
-    <div class="open-folder-section" style="display: none;">
-      <button id="open-folder-button" class="folder-button full-width">
-        <span class="material-symbols-outlined">
-          folder_open
-        </span>
-        Open Folder
-        <span class="material-symbols-outlined">
-          folder_open
-        </span>
-      </button>
-    </div>
+    <button id="open-folder-button" class="folder-button full-width">
+      <span class="material-symbols-outlined">
+        folder_open
+      </span>
+      Open Folder
+      <span class="material-symbols-outlined">
+        folder_open
+      </span>
+    </button>
 
     <!-- Reconciliation Section -->
-    <div class="reconciliation-section" style="display: none;">
-      <button id="open-reconciliation-button" class="share full-width">
-        <span class="material-symbols-outlined">
-          done_outline
-        </span>
-        Reconciliation Sheet
-        <span class="material-symbols-outlined">
-          done_outline
-        </span>
-      </button>
-    </div>
+    <button id="open-reconciliation-button" class="share full-width">
+      <span class="material-symbols-outlined">
+        done_outline
+      </span>
+      Reconciliation Sheet
+      <span class="material-symbols-outlined">
+        done_outline
+      </span>
+    </button>
 
     <!-- Proposal Section -->
     <div class="proposal-section button-box" style="display: none;">
@@ -92,43 +84,37 @@
     </div>
 
     <!-- Accept Proposal Section -->
-    <div class="accept-proposal-section" style="display: none;">
-      <button id="accept-proposal-button" class="create full-width">
-        <span class="material-symbols-outlined">
-          check
+    <button id="accept-proposal-button" class="create full-width">
+      <span class="material-symbols-outlined">
+        check
+      </span>
+      Proposal Accepted
+      <span class="material-symbols-outlined">
+        check
         </span>
-        Proposal Accepted
-        <span class="material-symbols-outlined">
-          check
-          </span>
-        </button>
-    </div>
+      </button>
 
     <!-- Create Job Section -->
-    <div class="create-job-section" style="display: none;">
-      <button id="create-job-button" class="create full-width">
-        <span class="material-symbols-outlined">
-          post_add
-        </span>
-        Generate New Project
-        <span class="material-symbols-outlined">
-          post_add
-        </span>
-      </button>
-    </div>
+    <button id="create-job-button" class="create full-width">
+      <span class="material-symbols-outlined">
+        post_add
+      </span>
+      Generate New Project
+      <span class="material-symbols-outlined">
+        post_add
+      </span>
+    </button>
 
     <!-- Create Proposal Section -->
-    <div class="create-proposal-section" style="display: none;">
-      <button id="create-proposal-button" class="create full-width">
-        <span class="material-symbols-outlined">
-          post_add
-        </span>
-        Generate New Proposal
-        <span class="material-symbols-outlined">
-          post_add
-        </span>
-      </button>
-    </div>
+    <button id="create-proposal-button" class="create full-width">
+      <span class="material-symbols-outlined">
+        post_add
+      </span>
+      Generate New Proposal
+      <span class="material-symbols-outlined">
+        post_add
+      </span>
+    </button>
 
     <!-- Sidebar bottom-branding. -->
     <div class="sidebar bottom width-100">

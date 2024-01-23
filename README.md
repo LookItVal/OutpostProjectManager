@@ -28,8 +28,10 @@
 ## Todo
 - Build this readme out.
 - Give instructions from the Google Drive file on how to get here.
-- Show folders in the OPD sidebar.
-- Add Icons to items in the OPD sidebar.
+x Show folders in the OPD sidebar.
+- Fix formatting on some buttons.
+x Add Icons to items in the OPD sidebar.
+- Make Icons Move on hover
 - Link calendar bookings and specific lines of the reconciliation sheet.
 - Fill calendar booking sidebar with info from the reconciliation sheet.
 - Add something to the reconciliation sheet to show when something has been confirmed.
