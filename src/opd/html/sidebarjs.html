@@ -1,11 +1,14 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-  var globalInitiative = {};
+  let globalInitiative = {};
+  let loadingInterval;
+
 
   // Run initializations on sidebar load.
   $(function() {
     // Assign handler functions to sidebar elements here, if needed.
     $('#project-refresh-button').click(refreshSidebar);
+    $('#open-folder-button').click(openFolder);
     $('#jump-to-job-button').click(jumpToProject);
     $('#jump-to-proposals-button').click(jumpToProposal);
     $('#create-proposal-button').click(requestProposalGeneration);
@@ -21,30 +24,69 @@
   });
 
   // Update the ui to show loading info and remove dynamic content.
-  function loading() {
-    $('#project-title').text("Loading...");
-    $('#info-text').text('Fill out the sheet with information then hit load project to refresh.');
+  function startLoading() {
+    let dots = '';
     fadeOutAll();
+    if (loadingInterval) {
+      clearInterval(loadingInterval);
+    }
+    loadingInterval = setInterval(function() {
+      dots = dots.length < 3 ? dots + '.' : '';
+      $('#project-title').text("Loading" + dots);
+    }, 500);
+    $('#project-refresh-button .material-symbols-outlined').addClass('icon-spin');
+    $('#project-refresh-button .material-symbols-outlined').removeClass('icon-paused');
+    $('#project-refresh-button').prop('disabled', true);
+  }
+
+  function stopLoading() {
+    if (loadingInterval) {
+      clearInterval(loadingInterval);
+    }
+    $('#project-refresh-button .material-symbols-outlined').addClass('icon-paused');
+    $('#project-refresh-button').prop('disabled', false);
   }
 
   // Fade out all dynamic content.
   function fadeOutAll() {
     $('.info-message').fadeOut();
-    $('.reconciliation-section').fadeOut();
+    $('#open-folder-button').fadeOut();
+    $('#open-reconciliation-button').fadeOut();
     $('.proposal-section').fadeOut();
-    $('.accept-proposal-section').fadeOut();
-    $('.create-job-section').fadeOut();
-    $('.create-proposal-section').fadeOut();
-    $('.open-folder-section').fadeOut();
+    $('#open-costing-button').fadeOut();
+    $('#open-proposal-button').fadeOut();
+    $('#accept-proposal-button').fadeOut();
+    $('#create-job-button').fadeOut();
+    $('#create-proposal-button').fadeOut();
   }
 
   function fadeInAnyInfo() {
     if (globalInitiative.reconciliationSheetId) {
-      $('.reconciliation-section').fadeIn();
+      $('#open-reconciliation-button').fadeIn();
     }
     fadeInProposalInfo();
     if (globalInitiative.folderId) {
-      $('.open-folder-section').fadeIn();
+      $('#open-folder-button').fadeIn();
+    }
+    if (globalInitiative.type === "PROJECT") {
+      if(globalInitiative.closed === "TRUE") {
+        $('.info-message').text("Project Closed. Below are any archived files easily found.");
+        $('.info-message').fadeIn();
+        if (!globalInitiative.folderId) {
+          $('.info-message').text("Project Closed. No Project Folder or Reconciliation Sheet Found.");
+          $('.info-message').fadeIn();
+        }
+      } else if(!globalInitiative.reconciliationSheetId) {
+        $('#create-job-button').fadeIn();
+      } 
+    }
+    if (globalInitiative.type === "PROPOSAL") {
+      if (globalInitiative.status === "ACTIVE") {
+        $('#accept-proposal-button').fadeIn();
+      }
+      if (globalInitiative.status === "NEW") {
+        $('#create-proposal-button').fadeIn();
+      }
     }
   }
 
@@ -58,73 +100,37 @@
       count++;
       $('#open-costing-button').fadeIn();
     }
-    if (count == 1) {
-      $('.half-width').addClass('full-width');
-      $('.half-width').removeClass('half-width');
-    }
-  }
-
-  // Fade in the closed job section.
-  function closedJobFadeIn() {
-    $('.info-message').text("Project Closed. Below are any archived files easily found.");
-    if (!globalInitiative.proposalDocumentId && !globalInitiative.reconciliationSheetId) {
-      $('.info-message').text("Project Closed. No archived files found.");
-    }
-    if (globalInitiative.proposalDocumentId) {
+    if (count == 0) {
+      $('#open-costing-button').removeClass('full-width');
+      $('#open-costing-button').addClass('half-width');
+      $('#open-proposal-button').removeClass('full-width');
+      $('#open-proposal-button').addClass('half-width');
+    } else if (count == 1) {
       $('.proposal-section').fadeIn();
-    }
-    if (globalInitiative.reconciliationSheetId) {
-      $('.reconciliation-section').fadeIn();
-    }
-    if (globalInitiative.folderId) {
-      $('.open-folder-section').fadeIn();
-    }
-    $('.info-message').fadeIn();
-  }
-
-  // Fade in the new job section.
-  function newJobFadeIn() {
-    $('.create-job-section').fadeIn();
-  }
-
-  // Fade in the existing job section.
-  function existingJobFadeIn() {
-    if (globalInitiative.reconciliationSheetId) {
-      $('.reconciliation-section').fadeIn();
-    }
-    if (globalInitiative.proposalDocumentId) {
+      $('#open-costing-button').removeClass('half-width');
+      $('#open-costing-button').addClass('full-width');
+      $('#open-proposal-button').removeClass('half-width');
+      $('#open-proposal-button').addClass('full-width');
+    } else if (count == 2) {
       $('.proposal-section').fadeIn();
-    }
-    if (globalInitiative.folderId) {
-      $('.open-folder-section').fadeIn();
-    }
-    if (!globalInitiative.proposalDocumentId && !globalInitiative.reconciliationSheetId) {
-      $('.info-message').text("Project Loaded. No Proposal or Reconciliation Sheet Found.");
-      $('.info-message').fadeIn();
-    }
-  }
-
-  // Fade in the new proposal section.
-  function newProposalFadeIn() {
-    $('.create-proposal-section').fadeIn();
-  }
-
-  // Fade in the existing proposal section.
-  function existingProposalFadeIn() {
-    $('.proposal-section').fadeIn();
-    $('.accept-proposal-section').fadeIn();
-    if (globalInitiative.folderId) {
-      $('.open-folder-section').fadeIn();
+      $('#open-costing-button').removeClass('full-width');
+      $('#open-costing-button').addClass('half-width');
+      $('#open-proposal-button').removeClass('full-width');
+      $('#open-proposal-button').addClass('half-width');
+    } else {
+      throw new Error("Invalid count value. Count must be 0, 1, or 2.");
     }
   }
 
   // Get the current project info from the server and display the appropriate dynamic content.
   function refreshSidebar() {
-    loading();
+    startLoading();
     google.script.run.withSuccessHandler(function(initiative) {
+      stopLoading();
       globalInitiative = initiative;
       refreshUI();
     }).withFailureHandler(function(msg, element) {
+      stopLoading();
       console.log(msg, element);
       $('#project-title').text("Error With Addon: Check Frontend Console For Details")
     }).getInitiative();
@@ -135,24 +141,10 @@
     console.log(initiative);
     $('#project-title').text(initiative.title);
     if (!initiative.type) {
+      $('.info-message').text("Select a project and hit load project to refresh.");
       $('.info-message').fadeIn();
-    } else if (initiative.type === "PROJECT") {
-      if (initiative.closed == "FALSE") {
-        if (!initiative.reconciliationSheetId) {
-          newJobFadeIn();
-        } else {
-          existingJobFadeIn();
-        }
-      } else {
-        closedJobFadeIn();
-      }
-    } else if (initiative.type === "PROPOSAL") {
-      if (initiative.status === "NEW") {
-        newProposalFadeIn();
-      } else if (initiative.status === "ACTIVE") {
-        existingProposalFadeIn();
-      }
-    }
+    } 
+    fadeInAnyInfo();
   }
 
   //gets the local initiative object and opens in a new tab the costing sheet
@@ -194,14 +186,26 @@
     console.log(globalInitiative);
     $('#project-title').text("Error With Addon: Check Frontend Console For Details");
   }
+
+  function openFolder() {
+    //if folderId is set
+    if (globalInitiative.folderId) {
+      const url = "https://drive.google.com/drive/folders/"+globalInitiative.folderId;
+      window.open(url, "_blank");
+      return
+    }
+    //if folderId is not set
+    console.log("initiative not set");
+    console.log(globalInitiative);
+    $('.info-message').text("Error With Addon: Check Frontend Console For Details");
+  }
     
-
-
   // Calls the server to change the active sheet to the most recent job.
   function jumpToProject() {
-    loading();
+    startLoading();
       google.script.run
       .withFailureHandler(function(msg, element) {
+        stopLoading();
         console.log(msg, element);
         element.disabled = false;
       })
@@ -213,9 +217,10 @@
   
   // Calls The server to change the active sheet to the proposal sheet.
   function jumpToProposal() {
-    loading();
+    startLoading();
     google.script.run
       .withFailureHandler(function(msg, element) {
+        stopLoading();
         console.log(msg, element);
         element.disabled = false;
       })

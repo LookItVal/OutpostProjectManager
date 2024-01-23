@@ -724,7 +724,6 @@ export class Proposal extends Initiative {
     Proposal.proposalTemplate.makeCopy(`${this.shortTitle} Proposal`, folder);
     Proposal.costingSheetTemplate.makeCopy(`${this.shortTitle} Costing Sheet`, folder);
     this.creationDate = new Date();
-    //TODO lookie here its this again
     this.producer = exports.User.fullName;
   }
 
