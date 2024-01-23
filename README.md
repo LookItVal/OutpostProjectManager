@@ -35,3 +35,5 @@
 - If admin, be able to close reconciliation sheets.
 - In reconciliation sheet, be able to get information about calendar bookings through rows.
 - Link up items in the costing sheet with the proposal document.
+- Have every initiative initialize from serialized data and back them up to properties
+  - The key of each property is the YR/MO + job number
