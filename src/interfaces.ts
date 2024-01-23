@@ -42,7 +42,7 @@ export interface SerializedInitiative {
 
 export interface InitiativeParams {
   name?: string;
-  nameArray?: ProjectNameArray | ProposalNameArray | [];
+  nameArray?: ProjectNameArray | ProposalNameArray;
   folder?: GoogleAppsScript.Drive.Folder;
 }
 

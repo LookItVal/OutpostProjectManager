@@ -43,7 +43,8 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
           .setOpenLink(CardService.newOpenLink()
             .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0`))))
       .build();
-  } catch {
+  } catch (e: unknown) {
+    console.error(e);
     return calendarHomepageUI();
   }
 }
