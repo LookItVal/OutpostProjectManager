@@ -25,18 +25,19 @@
 [Provide contact information for users to reach out to you with questions or feedback.]
 
 
+
 ## Todo
-- Build this readme out.
-- Give instructions from the Google Drive file on how to get here.
-x Show folders in the OPD sidebar.
-- Fix formatting on some buttons.
-x Add Icons to items in the OPD sidebar.
-- Make Icons Move on hover
-- Link calendar bookings and specific lines of the reconciliation sheet.
-- Fill calendar booking sidebar with info from the reconciliation sheet.
-- Add something to the reconciliation sheet to show when something has been confirmed.
-- If admin, be able to close reconciliation sheets.
-- In reconciliation sheet, be able to get information about calendar bookings through rows.
-- Link up items in the costing sheet with the proposal document.
-- Have every initiative initialize from serialized data and back them up to properties
+- [ ] Build this readme out.
+- [ ] Give instructions from the Google Drive file on how to get here.
+- [x] Show folders in the OPD sidebar.
+- [ ] Fix formatting on some buttons.
+- [x] Add Icons to items in the OPD sidebar.
+- [ ] Make Icons Move on hover
+- [ ] Link calendar bookings and specific lines of the reconciliation sheet.
+- [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
+- [ ] Add something to the reconciliation sheet to show when something has been confirmed.
+- [ ] If admin, be able to close reconciliation sheets.
+- [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
+- [ ] Link up items in the costing sheet with the proposal document.
+- [ ] Have every initiative initialize from serialized data and back them up to properties
   - The key of each property is the YR/MO + job number
