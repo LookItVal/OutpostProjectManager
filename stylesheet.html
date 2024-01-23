@@ -179,26 +179,6 @@ input[type="submit"].grey:disabled {
   100% { transform: rotate(0deg); }
 }
 
-@-webkit-keyframes halfSpin {
-  0% { -webkit-transform: rotate(180deg); }
-  100% { -webkit-transform: rotate(0deg); }
-}
-
-@-moz-keyframes halfSpin {
-  0% { -moz-transform: rotate(180deg); }
-  100% { -moz-transform: rotate(0deg); }
-}
-
-@-o-keyframes halfSpin {
-  0% { -o-transform: rotate(180deg); }
-  100% { -o-transform: rotate(0deg); }
-}
-
-@keyframes halfSpin {
-  0% { transform: rotate(180deg); }
-  100% { transform: rotate(0deg); }
-}
-
 .icon-spin {
   -webkit-animation: spin 2s infinite linear;
   -moz-animation: spin 2s infinite linear;
@@ -213,11 +193,11 @@ input[type="submit"].grey:disabled {
   animation-play-state: paused;
 }
 
-#project-refresh-button:not(:disabled):hover .spinner  {
-  -webkit-animation: halfSpin 0.5s cubic-bezier(.5, -1, .5, 2) ;
-  -moz-animation: halfSpin 0.5s cubic-bezier(.5, -1, .5, 2) 1;
-  -o-animation: halfSpin 0.5s cubic-bezier(.5, -1, .5, 2) 1;
-  animation: halfSpin 0.5s cubic-bezier(.5, -1, .5, 2) 1;
+.spin-once {
+  -webkit-animation: spin 0.4s cubic-bezier(.5, -.5, .5, 1.5) 1 forwards;
+  -moz-animation: spin 0.4s cubic-bezier(.5, -.5, .5, 1.5) 1 forwards;
+  -o-animation: spin 0.4s cubic-bezier(.5, -.5, .5, 1.5) 1 forwards;
+  animation: spin 0.4s cubic-bezier(.5, -.5, .5, 1.5) 1 forwards;
 }
 
 .spinner span {
