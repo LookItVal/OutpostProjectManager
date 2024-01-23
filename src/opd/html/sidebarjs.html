@@ -53,8 +53,12 @@
     $('#open-folder-button').fadeOut();
     $('#open-reconciliation-button').fadeOut();
     $('.proposal-section').fadeOut();
-    $('#open-costing-button').fadeOut();
-    $('#open-proposal-button').fadeOut();
+    $('#open-costing-button').fadeOut(function() {
+      $(this).hide();
+    });
+    $('#open-proposal-button').fadeOut(function() {
+      $(this).hide();
+    });
     $('#accept-proposal-button').fadeOut();
     $('#create-job-button').fadeOut();
     $('#create-proposal-button').fadeOut();
@@ -95,10 +99,14 @@
     if (globalInitiative.proposalDocumentId) {
       count++;
       $('#open-proposal-button').fadeIn();
+      $('#open-proposal-button').addClass('item');
+      $('#open-costing-button').removeClass('item')
     }
     if (globalInitiative.costingSheetId) {
       count++;
       $('#open-costing-button').fadeIn();
+      $('#open-costing-button').addClass('item');
+      $('#open-proposal-button').removeClass('item')
     }
     if (count == 0) {
       $('#open-costing-button').removeClass('full-width');

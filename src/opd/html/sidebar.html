@@ -11,6 +11,7 @@
     <div class="top-bar width-100">
       <div class="refresh-section">
         <div class="refresh-button">
+          <br>
           <button id="project-refresh-button" class="action full-width">
             <span class="material-symbols-outlined">
               sync
@@ -21,7 +22,7 @@
             </span>
           </button>
         </div>
-        <br> 
+        <br>
         <hr>
         <div class="title-section">
           <h3 id="project-title">
@@ -33,88 +34,91 @@
     
     <!-- Dynamic Content -->
     <!-- Info Section -->
-    <div class="info-message" style="display: none;">
-      <p id="info-text">
-        Fill out the sheet with information then hit load project to refresh.
-      </p>
+    <div class="dynamic-menu">
+      <div class="info-message row" style="display: none;">
+        <p id="info-text">
+          Fill out the sheet with information then hit load project to refresh.
+        </p>
+      </div>
+
+      
+      <!-- Open Folder Section -->
+      <button id="open-folder-button" class="folder-button full-width row" style="display: none;">
+        <span class="material-symbols-outlined">
+          folder_open
+        </span>
+        Open Folder
+        <span class="material-symbols-outlined">
+          folder_open
+        </span>
+      </button>
+
+      <!-- Reconciliation Section -->
+      <button id="open-reconciliation-button" class="share full-width row" style="display: none;">
+        <span class="material-symbols-outlined">
+          done_outline
+        </span>
+        Reconciliation Sheet
+        <span class="material-symbols-outlined">
+          done_outline
+        </span>
+      </button>
+
+      <!-- Proposal Section -->
+      <div id="proposal-section" class="proposal-section row" style="display: none;">
+        <button id="open-costing-button" class="action half-width" style="display: none;">
+          <span class="material-symbols-outlined">
+            request_page
+          </span>
+          Job Costing
+          <span class="material-symbols-outlined">
+            request_page
+          </span>
+        </button>
+        <button id="open-proposal-button" class="action half-width" style="display: none;">
+          <span class="material-symbols-outlined">
+            contract
+          </span>
+          Proposal
+          <span class="material-symbols-outlined">
+            contract
+          </span>
+        </button>
+      </div>
+
+      <!-- Accept Proposal Section -->
+      <button id="accept-proposal-button" class="create full-width row" style="display: none;">
+        <span class="material-symbols-outlined">
+          check
+        </span>
+        Proposal Accepted
+        <span class="material-symbols-outlined">
+          check
+        </span>
+      </button>
+
+      <!-- Create Job Section -->
+      <button id="create-job-button" class="create full-width row" style="display: none;">
+        <span class="material-symbols-outlined">
+          post_add
+        </span>
+        Generate New Project
+        <span class="material-symbols-outlined">
+          post_add
+        </span>
+      </button>
+
+      <!-- Create Proposal Section -->
+      <button id="create-proposal-button" class="create full-width row" style="display: none;">
+        <span class="material-symbols-outlined">
+          post_add
+        </span>
+        Generate New Proposal
+        <span class="material-symbols-outlined">
+          post_add
+        </span>
+      </button>
     </div>
-
-    <!-- Open Folder Section -->
-    <button id="open-folder-button" class="folder-button full-width">
-      <span class="material-symbols-outlined">
-        folder_open
-      </span>
-      Open Folder
-      <span class="material-symbols-outlined">
-        folder_open
-      </span>
-    </button>
-
-    <!-- Reconciliation Section -->
-    <button id="open-reconciliation-button" class="share full-width">
-      <span class="material-symbols-outlined">
-        done_outline
-      </span>
-      Reconciliation Sheet
-      <span class="material-symbols-outlined">
-        done_outline
-      </span>
-    </button>
-
-    <!-- Proposal Section -->
-    <div class="proposal-section button-box" style="display: none;">
-      <button id="open-costing-button" class="action half-width">
-        <span class="material-symbols-outlined">
-          request_page
-        </span>
-        Job Costing
-        <span class="material-symbols-outlined">
-          request_page
-        </span>
-      </button>
-      <button id="open-proposal-button" class="action half-width">
-        <span class="material-symbols-outlined">
-          contract
-        </span>
-        Proposal
-        <span class="material-symbols-outlined">
-          contract
-        </span>
-      </button>
-    </div>
-
-    <!-- Accept Proposal Section -->
-    <button id="accept-proposal-button" class="create full-width">
-      <span class="material-symbols-outlined">
-        check
-      </span>
-      Proposal Accepted
-      <span class="material-symbols-outlined">
-        check
-        </span>
-      </button>
-
-    <!-- Create Job Section -->
-    <button id="create-job-button" class="create full-width">
-      <span class="material-symbols-outlined">
-        post_add
-      </span>
-      Generate New Project
-      <span class="material-symbols-outlined">
-        post_add
-      </span>
-    </button>
-
-    <!-- Create Proposal Section -->
-    <button id="create-proposal-button" class="create full-width">
-      <span class="material-symbols-outlined">
-        post_add
-      </span>
-      Generate New Proposal
-      <span class="material-symbols-outlined">
-        post_add
-      </span>
-    </button>
 
     <!-- Sidebar bottom-branding. -->
     <div class="sidebar bottom width-100">

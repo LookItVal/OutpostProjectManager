@@ -60,14 +60,10 @@ label {
 
 .full-width {
   width: 100%;
-  margin-top: 10px;
-  margin-bottom: 10px;
 }
 
 .half-width {
-  width: 50%;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  width: 47%;
 }
 
 .button-box {
@@ -75,6 +71,25 @@ label {
   justify-content: space-between;
   align-items: center;
   text-align: center;
+}
+
+.dynamic-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic-menu .row {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.dynamic-menu .proposal-section {
+  display: flex;
+  justify-content: space-between;
+}
+
+button + button {
+  margin-left: 0;
 }
 
 .button.folder-button,
