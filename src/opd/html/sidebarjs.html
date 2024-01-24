@@ -65,7 +65,7 @@
   });
 
   // Update the ui to show loading info and remove dynamic content.
-  function startLoading() {
+  function startLoading(loadingText = "Loading") {
     let dots = '';
     fadeOutAll();
     if (loadingInterval) {
@@ -73,7 +73,7 @@
     }
     loadingInterval = setInterval(function() {
       dots = dots.length < 3 ? dots + '.' : '';
-      $('#project-title').text("Loading" + dots);
+      $('#project-title').text(loadingText + dots);
     }, 500);
     $('#project-refresh-button .material-symbols-outlined').addClass('icon-spin');
     $('#project-refresh-button .material-symbols-outlined').removeClass('icon-paused');
@@ -251,7 +251,7 @@
     
   // Calls the server to change the active sheet to the most recent job.
   function jumpToProject() {
-    startLoading();
+    startLoading(loadingText = 'Looking for Project');
       google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
@@ -266,7 +266,7 @@
   
   // Calls The server to change the active sheet to the proposal sheet.
   function jumpToProposal() {
-    startLoading();
+    startLoading(loadingText = 'Looking for Proposal');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
@@ -281,13 +281,15 @@
 
   // Calls the server to generate a new proposal.
   function requestProposalGeneration() {
-    $('#project-title').text("Prepairing Proposal...");
+    startLoading(loadingText = 'Making A Proposal to Send');
     google.script.run
       .withFailureHandler(function(msg, element) {
+        stopLoading();
         console.log(msg, element);
         element.disabled = false;
       })
       .withSuccessHandler(function(result) {
+        stopLoading();
         if (result) {
           $('#project-title').text("Proposal Being Generated...");
           $('#info-text').text('Please wait while the proposal is generated. This may take a few moments.');
@@ -302,26 +304,31 @@
   }
 
   function generateProposal() {
+    startLoading(loadingText = 'Making New Proposal Documents');
     google.script.run
       .withFailureHandler(function(msg, element) {
+        stopLoading();
         $('#info-text').text('An error occured. Please check the console for details.');
         console.log(msg, element);
         element.disabled = false;
       })
       .withSuccessHandler(function() {
+        stopLoading();
         refreshSidebar();
       })
       .generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 
   function requestProposalAccept() {
-    $('#project-title').text("Prepairing Proposal...");
+    startLoading(loadingText = 'Gathering A Proposal Information');
     google.script.run
       .withFailureHandler(function(msg, element) {
+        stopLoading();
         console.log(msg, element);
         element.disabled = false;
       })
       .withSuccessHandler(function(result) {
+        stopLoading();
         if (result) {
           $('#project-title').text("Project Being Generated...");
           $('#info-text').text('Please wait while the proposal is converted. This may take a few moments.');
@@ -336,27 +343,32 @@
   }
 
   function acceptProposal() {
+    startLoading(loadingText = 'Converting Proposal to Project');
     google.script.run
       .withFailureHandler(function(msg, element) {
+        stopLoading();
         $('#info-text').text('An error occured. Please check the console for details.');
         console.log(msg, element);
         element.disabled = false;
       })
       .withSuccessHandler(function() {
+        stopLoading();
         refreshSidebar();
       })
       .acceptProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 
   function requestJobGeneration() {
-    $('#project-title').text("Prepairing Project...");
+    startLoading(loadingText = 'Making A Project to Send');
     google.script.run
       .withFailureHandler(function(msg, element) {
+        stopLoading();
         $('#info-text').text('An error occured. Please check the console for details.');
         console.log(msg, element);
         element.disabled = false;
       })
       .withSuccessHandler(function(result) {
+        stopLoading();
         if (result) {
           $('#project-title').text("Project Being Generated...");
           $('#info-text').text('Please wait while the project is generated. This may take a few moments.');
@@ -371,13 +383,16 @@
   }
 
   function generateJob() {
+    startLoading(loadingText = 'Making New Reconciliation Sheet');
     google.script.run
       .withFailureHandler(function(msg, element) {
+        stopLoading();
         $('#info-text').text('An error occured. Please check the console for details.');
         console.log(msg, element);
         element.disabled = false;
       })
       .withSuccessHandler(function() {
+        stopLoading();
         refreshSidebar();
       })
       .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
