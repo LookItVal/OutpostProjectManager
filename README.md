@@ -43,4 +43,5 @@
   - The key of each property is the YR/MO + job number
 - [ ] Add requirement so you can do red button actions
 - [ ] Make sure load button is disabled when loading projects, and that the right info message is up when loading complex functions
+- [ ] Make generative functions do things based on what has been selected previously, not what is currently selected if they have changed
 - [ ] Run the client folder cleanup function.
