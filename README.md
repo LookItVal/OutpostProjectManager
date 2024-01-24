@@ -15,24 +15,21 @@
 ## Usage
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
-## Contributing
-[Explain how others can contribute to your project. Include guidelines for submitting pull requests and reporting issues.]
-
-## License
-[Specify the license under which your project is distributed.]
-
-## Contact
-[Provide contact information for users to reach out to you with questions or feedback.]
-
-
+## Changelog
+### [1.2.0] - Shiny Colors Update - 2024-01-24
+- Added Changelog
+- Fully Converted Codebase Into Typescript.
+- Began Readme and some documentation.
+- Added Better organization to frontend, with bigger text and icons with subtle animations.
+- Prepared the code base for more rapid changes.
 
 ## Todo
 - [ ] Build this readme out.
 - [ ] Give instructions from the Google Drive file on how to get here.
-- [x] Show folders in the OPD sidebar.
-- [x] Fix formatting on some buttons.
-- [x] Add Icons to items in the OPD sidebar.
-- [x] Make Icons Move on hover
+- [x] ~~Show folders in the OPD sidebar.~~
+- [x] ~~Fix formatting on some buttons.~~
+- [x] ~~Add Icons to items in the OPD sidebar.~~
+- [x] ~~Make Icons Move on hover~~
 - [ ] Link calendar bookings and specific lines of the reconciliation sheet.
 - [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
 - [ ] Add something to the reconciliation sheet to show when something has been confirmed.
