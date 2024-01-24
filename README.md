@@ -32,7 +32,7 @@
 - [x] Show folders in the OPD sidebar.
 - [x] Fix formatting on some buttons.
 - [x] Add Icons to items in the OPD sidebar.
-- [ ] Make Icons Move on hover
+- [x] Make Icons Move on hover
 - [ ] Link calendar bookings and specific lines of the reconciliation sheet.
 - [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
 - [ ] Add something to the reconciliation sheet to show when something has been confirmed.
@@ -42,3 +42,5 @@
 - [ ] Have every initiative initialize from serialized data and back them up to properties
   - The key of each property is the YR/MO + job number
 - [ ] Add requirement so you can do red button actions
+- [ ] Make sure load button is disabled when loading projects, and that the right info message is up when loading complex functions
+- [ ] Run the client folder cleanup function.
