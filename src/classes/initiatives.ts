@@ -44,70 +44,38 @@ export abstract class Initiative {
         throw new TypeError('Cannot construct Abstract instances directly');
       }
       if (serializedData) {
-        this.title = '';
         // TODO perform validation at each step
-        for (const key of Object.keys(serializedData)) {
-          if (key == 'title') {
-            this.title = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'yrmo') {
-            this._yrmo = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'clientName') {
-            this._clientName = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'projectName') {
-            this._projectName = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'creationDate') {
-            this._creationDate = new Date(serializedData[key] as string);
-            continue;
-          }
-          if (key == 'producer') {
-            this._producer = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'folderId') {
-            this._folderId = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'proposalDocumentId') {
-            this._proposalDocumentId = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'costingSheetId') {
-            this._costingSheetId = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'reconciliationSheetId') {
-            this._reconciliationSheetId = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'status') {
-            this._status = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'closed') {
-            this._closed = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'jobNumber') {
-            this._jobNumber = serializedData[key] as string;
-            continue;
-          }
-          if (key == 'rowNumber') {
-            this._rowNumber = Number(serializedData[key]) as number;
-            continue;
-          }
-          console.warn('Unknown value in serializedData');
-          console.warn('key', key, 'value', serializedData[key]);
-        }
-        if (!this.title) {
+        if (serializedData['title']) {
+          this.title = serializedData['title'] as string;
+        } else {
           throw new exports.ValidationError('Serialized Data must contain a title');
+        }
+        if (serializedData['yrmo']) {
+          this._yrmo = serializedData['yrmo'] as string;
+        }
+        if (serializedData['clientName']) {
+          this._clientName = serializedData['clientName'] as string;
+        }
+        if (serializedData['projectName']) {
+          this._projectName = serializedData['projectName'] as string;
+        }
+        if (serializedData['creationDate']) {
+          this._creationDate = new Date(serializedData['creationDate'] as string);
+        }
+        if (serializedData['producer']) {
+          this._producer = serializedData['producer'] as string;
+        }
+        if (serializedData['folderId']) {
+          this._folderId = serializedData['folderId'] as string;
+        }
+        if (serializedData['proposalDocumentId']) {
+          this._proposalDocumentId = serializedData['proposalDocumentId'] as string;
+        }
+        if (serializedData['costingSheetId']) {
+          this._costingSheetId = serializedData['costingSheetId'] as string;
+        }
+        if (serializedData['rowNumber']) {
+          this._rowNumber = Number(serializedData['rowNumber']) as number;
         }
       }
       if (name) {
@@ -380,18 +348,64 @@ export abstract class Initiative {
     /////////////////////////////////////////////
 
     // Validation for the constructor
-    protected static validateParams ({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams): void {
-      if (!name && !nameArray && !folder) {
+    protected static validateParams ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams): SerializedData | void {
+      if (!name && !nameArray && !folder && !serializedData) {
         throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
       }
       // make sure only one of the three is not null
-      const countNonNull: number = [name, nameArray, folder].filter(value => !!value).length;
+      const countNonNull: number = [name, nameArray, folder, serializedData].filter(value => !!value).length;
       if (countNonNull !== 1) {
         console.warn('countNonNull', countNonNull);
         console.warn('name', name, 'Truthy?', !!name);
         console.warn('nameArray', nameArray, 'Truthy?', !!nameArray);
         console.warn('folder', folder, 'Truthy?', !!folder);
+        console.warn('serializedData', serializedData, 'Truthy?', !!serializedData);
         throw new exports.ValidationError('Too Much Data: Initiative must be constructed with either a Name, Name Array, or Folder');
+      }
+      // serializedData Validation
+      if (serializedData) {
+        if (!serializedData['type']) {
+          throw new exports.ValidationError('Serialized Data must contain a type');
+        }
+        const extraData: SerializedData = {};
+        for (const key of Object.keys(serializedData)) {
+          if (key.startsWith('_')) {
+            throw new exports.ValidationError('Serialized Data cannot contain keys that start with an underscore');
+          }
+          if (key === 'type') {
+            if (serializedData[key] !== 'PROJECT' && serializedData[key] !== 'PROPOSAL') {
+              throw new ValidationError('Invalid value for type');
+            }
+            continue;
+          }
+          if (key === 'yrmo') {
+            if (!exports.regex4Digits.test(serializedData[key] as string)) {
+              throw new ValidationError('yrmo is not 4 digits');
+            }
+            continue;
+          }
+          if (key === 'title') {continue;}
+          if (key === 'clientName') {continue;}
+          if (key === 'projectName') {continue;}
+          if (key === 'producer') {continue;}
+          if (key === 'folderId') {continue;}
+          if (key === 'proposalDocumentId') {continue;}
+          if (key === 'costingSheetId') {continue;}
+          if (key === 'creationDate') {
+            if (isNaN(Date.parse(serializedData[key] as string))) {
+              throw new ValidationError('creationDate is not a valid date');
+            }
+            continue;
+          }
+          if (key === 'rowNumber') {
+            if (isNaN(Number(serializedData[key]))) {
+              throw new ValidationError('rowNumber is not a valid number');
+            }
+            continue;
+          }
+          extraData[key] = serializedData[key];
+        }
+        return extraData;
       }
       // nameArray Validation
       if (nameArray) {
@@ -419,10 +433,8 @@ export class Project extends Initiative {
   private _reconciliationSheetId?: string;
   private _reconciliationSheet?: GoogleAppsScript.Drive.File;
 
-
-
-  constructor ({ name = '', nameArray = undefined, folder = undefined}: InitiativeParams) {
-    const params = { name, nameArray, folder };
+  constructor ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams) {
+    const params = { name, nameArray, folder, serializedData };
     try {
       Project.validateParams(params);
     } catch (error) {
@@ -432,12 +444,22 @@ export class Project extends Initiative {
       throw error;
     }
     super(params);
+    if (serializedData) {
+      if (serializedData['jobNumber']) {
+        this._jobNumber = serializedData['jobNumber'] as string;
+      }
+      if (serializedData['closed']) {
+        this._closed = serializedData['closed'] as string;
+      }
+      if (serializedData['reconciliationSheetId']) {
+        this._reconciliationSheetId = serializedData['reconciliationSheetId'] as string;
+      }
+    }
     if (nameArray) {
       this._yrmo = nameArray[0];
       this._jobNumber = nameArray[1];
       this._closed = nameArray[4];
     }
-
   }
     
   /////////////////////////////////////////////
@@ -658,9 +680,33 @@ export class Project extends Initiative {
   /////////////////////////////////////////////
 
   // VInitiative
-  protected static validateParams({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams): void {
-    const constructorData = { name, nameArray, folder };
-    Initiative.validateParams(constructorData);
+  protected static validateParams({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams): void {
+    const constructorData = { name, nameArray, folder, serializedData };
+    const extraData = Initiative.validateParams(constructorData);
+    if (extraData && !serializedData) {
+      throw new exports.ValidationError(`Project Not Found: Extra Keys: ${Object.keys(extraData)}`);
+    }
+    if (serializedData && !extraData) {
+      throw new exports.ValidationError('Project Not Found: Missing Keys');
+    }
+    if (serializedData && extraData) {
+      for (const key of Object.keys(extraData)) {
+        if (key === 'jobNumber') {
+          if (!exports.regex4Digits.test(extraData[key] as string)) {
+            throw new exports.ValidationError('jobNumber is not 4 digits');
+          }
+          continue;
+        }
+        if (key === 'closed') {
+          if (extraData[key] !== 'TRUE' && extraData[key] !== 'FALSE') {
+            throw new exports.ValidationError('closed is not TRUE or FALSE');
+          }
+          continue;
+        }
+        if (key === 'reconciliationSheetId') {continue;}
+        throw new exports.ValidationError(`Project Not Found: Extra Keys: ${Object.keys(extraData)}`);
+      }
+    }
     if (name) {
       if (!exports.regexJobName.test(name)) {
         throw new exports.ValidationError('Project Name does not match expected pattern');
@@ -688,8 +734,8 @@ export class Proposal extends Initiative {
 
   private _status?: string;
 
-  constructor ({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams) {
-    const params = { name, nameArray, folder };
+  constructor ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined}: InitiativeParams) {
+    const params = { name, nameArray, folder, serializedData };
     try {
       Proposal.validateParams(params);
     } catch (error) {
@@ -699,6 +745,11 @@ export class Proposal extends Initiative {
       throw error;
     }
     super(params);
+    if (serializedData) {
+      if (serializedData['status']) {
+        this._status = serializedData['status'] as string;
+      }
+    }
     if (nameArray) {
       this._yrmo = nameArray[1];
     }
@@ -828,9 +879,32 @@ export class Proposal extends Initiative {
   //             Private Methods             //
   /////////////////////////////////////////////
 
-  protected static validateParams({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams): void {
-    const constructorData = { name, nameArray, folder };
-    Initiative.validateParams(constructorData);
+  protected static validateParams({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams): void {
+    const constructorData = { name, nameArray, folder, serializedData };
+    const extraData = Initiative.validateParams(constructorData);
+    if (extraData && !serializedData) {
+      throw new exports.ValidationError(`Proposal Not Found: Extra Keys: ${Object.keys(extraData)}`);
+    }
+    if (serializedData && !extraData) {
+      throw new exports.ValidationError('Proposal Not Found: Missing Keys');
+    }
+    if (serializedData && extraData) {
+      for (const key of Object.keys(extraData)) {
+        if (key === 'jobNumber') {
+          if (!exports.regex4Digits.test(extraData[key] as string)) {
+            throw new exports.ValidationError('jobNumber is not 4 digits');
+          }
+          continue;
+        }
+        if (key === 'status') {
+          if (extraData[key] !== 'NEW' && extraData[key] !== 'ACTIVE') {
+            throw new exports.ValidationError('status is not NEW or ACTIVE');
+          }
+          continue;
+        }
+        throw new exports.ValidationError(`Proposal Not Found: Extra Keys: ${Object.keys(extraData)}`);
+      }
+    }
     if (name) {
       if (!exports.regexProposalName.test(name)) {
         throw new exports.ValidationError('Proposal Name does not match expected pattern');
