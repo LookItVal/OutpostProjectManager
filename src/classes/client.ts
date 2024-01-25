@@ -137,6 +137,8 @@ export class Client {
       throw new exports.ValidationError('Client already has a folder');
     }
     this._folder = Client.clientFolder.createFolder(this.name);
+    const sheet = exports.Project.dataSpreadsheet.getSheetByName('Clients') as GoogleAppsScript.Spreadsheet.Sheet;
+    sheet.appendRow([this.name, this._folder?.getId() ?? '']);
     return this._folder;
   }
 
@@ -217,6 +219,68 @@ export class Client {
     logFileStructure();
   }
 
+  public static updateOPDClientList(): void {
+    const clients = Client.getClients();
+    const spreadsheet = exports.Project.dataSpreadsheet;
+    const sheet = spreadsheet.getSheetByName('Clients') as GoogleAppsScript.Spreadsheet.Sheet;
+    // get data from sheet
+    for (const client of clients) {
+      console.log('WORKING ON CLIENT:', client.name);
+      const clientNames = sheet.getRange('A:A').getValues().map(row => row[0]);
+      console.log('    LOOKING FOR CLIENT IN SHEET:', clientNames);
+      const clientRow = clientNames.indexOf(client.name) + 1;
+      if (clientRow === 0) {
+        console.log('    CLIENT NOT FOUND IN SHEET');
+        console.log('    ADDING CLIENT TO SHEET');
+        sheet.appendRow([client.name, client.folder?.getId() ?? '']);
+        continue;
+      }
+      if (clientRow === 1) {
+        throw new Error('Client row is 1');
+      }
+      console.log('    CLIENT FOUND IN SHEET');
+      console.log('    CHECKING CLIENT FOLDER ID');
+      const clientFolderId = sheet.getRange(clientRow, 2).getValue() as string;
+      if (clientFolderId === client.folder?.getId()) {
+        console.log('    CLIENT FOLDER ID MATCHES');
+        continue;
+      }
+      console.log('    CLIENT FOLDER ID DOES NOT MATCH');
+      console.log('    UPDATING CLIENT FOLDER ID');
+      sheet.getRange(clientRow, 2).setValue(client.folder?.getId() ?? '');
+    }
+    console.log('CLIENT LIST UPDATE COMPLETE');
+    console.log('CHECKING THROUGH SHEET');
+    const data = sheet.getDataRange().getValues();
+    for (const row of data) {
+      console.log('WORKING ON ROW:', row, row[0]);
+      if (row[0] === 'Client Name') {
+        console.log('    ROW IS HEADER');
+        continue;
+      }
+      if (row[0] === '') {
+        console.log('    ROW IS EMPTY');
+        continue;
+      }
+      console.log('    CHECKING NAME OF FOLDER');
+      if (row[1] === '') {
+        console.warn('    ROW HAS NO FOLDER ID');
+        continue;
+      }
+      try {
+        if (DriveApp.getFolderById(row[1]).getName() === row[0]) {
+          console.log('    NAME OF FOLDER MATCHES');
+          continue;
+        }
+      }
+      catch (e: unknown) {
+        console.warn('    FOLDER ID IS INVALID', e);
+        continue;
+      }
+      console.error('    NAME OF FOLDER DOES NOT MATCH');
+    }
+  }
+
   /////////////////////////////////////////////
   //             Private Methods             //
   /////////////////////////////////////////////
@@ -236,6 +300,10 @@ export class Client {
 
 export function cleanClientFiles(): void {
   Client.cleanClientFiles();
+}
+
+export function updateOPDClientList(): void {
+  Client.updateOPDClientList();
 }
 
 //take the array of clients and recursively go through every fild and folder in the client folder

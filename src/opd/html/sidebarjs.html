@@ -311,7 +311,12 @@
       })
       .withSuccessHandler(function() {
         stopLoading();
-        refreshSidebar();
+        startLoading(loadingText = 'Loading New Proposal');
+        // wait one second for everything to fully register
+        setTimeout(function() {
+          stopLoading(); 
+          refreshSidebar();
+        }, 1000);
       })
       .generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
@@ -349,7 +354,7 @@
         startLoading(loadingText = 'Loading New Project');
         // wait one second for everything to fully register
         setTimeout(function() {
-          stopLoading();
+          stopLoading(); 
           refreshSidebar();
         }, 1000);
       })
