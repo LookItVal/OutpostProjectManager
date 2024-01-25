@@ -22,6 +22,7 @@ export abstract class Initiative {
     [key: string]: string | number | object | undefined;
 
     public title: string;
+    public abstract type: 'PROJECT' | 'PROPOSAL';
 
     protected _yrmo?: string;
     protected _clientName?: string;
@@ -38,9 +39,76 @@ export abstract class Initiative {
     protected _costingSheetId?: string;
     protected _costingSheet?: GoogleAppsScript.Drive.File;
 
-    constructor ({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams) {
+    constructor ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams) {
       if (new.target === Initiative) {
         throw new TypeError('Cannot construct Abstract instances directly');
+      }
+      if (serializedData) {
+        this.title = '';
+        // TODO perform validation at each step
+        for (const key of Object.keys(serializedData)) {
+          if (key == 'title') {
+            this.title = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'yrmo') {
+            this._yrmo = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'clientName') {
+            this._clientName = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'projectName') {
+            this._projectName = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'creationDate') {
+            this._creationDate = new Date(serializedData[key] as string);
+            continue;
+          }
+          if (key == 'producer') {
+            this._producer = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'folderId') {
+            this._folderId = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'proposalDocumentId') {
+            this._proposalDocumentId = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'costingSheetId') {
+            this._costingSheetId = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'reconciliationSheetId') {
+            this._reconciliationSheetId = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'status') {
+            this._status = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'closed') {
+            this._closed = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'jobNumber') {
+            this._jobNumber = serializedData[key] as string;
+            continue;
+          }
+          if (key == 'rowNumber') {
+            this._rowNumber = Number(serializedData[key]) as number;
+            continue;
+          }
+          console.warn('Unknown value in serializedData');
+          console.warn('key', key, 'value', serializedData[key]);
+        }
+        if (!this.title) {
+          throw new exports.ValidationError('Serialized Data must contain a title');
+        }
       }
       if (name) {
         this.title = name;
@@ -345,8 +413,7 @@ export abstract class Initiative {
 }
 
 export class Project extends Initiative {
-  public type = 'PROJECT';
-
+  public type: 'PROJECT' | 'PROPOSAL' = 'PROJECT';
   private _jobNumber?: string;
   private _closed?: string;
   private _reconciliationSheetId?: string;
@@ -617,7 +684,7 @@ export class Project extends Initiative {
 }
 
 export class Proposal extends Initiative {
-  public type = 'PROPOSAL';
+  public type: 'PROJECT' | 'PROPOSAL' = 'PROPOSAL';
 
   private _status?: string;
 
