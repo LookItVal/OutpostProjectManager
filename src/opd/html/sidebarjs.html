@@ -185,6 +185,7 @@
     }).getInitiative();
   }
 
+  // update the ui with whatever is liaded as the state
   function refreshUI() {
     initiative = globalInitiative;
     console.log(initiative);
@@ -291,14 +292,10 @@
       .withSuccessHandler(function(result) {
         stopLoading();
         if (result) {
-          $('#project-title').text("Proposal Being Generated...");
-          $('#info-text').text('Please wait while the proposal is generated. This may take a few moments.');
-          fadeOutAll();
-          $('.info-message').fadeIn();
           generateProposal();
           return;
         }
-        $('#project-title').text(globalInitiative.title);
+        refreshUI();
       })
       .requestProposalGeneration();
   }
@@ -320,7 +317,7 @@
   }
 
   function requestProposalAccept() {
-    startLoading(loadingText = 'Gathering A Proposal Information');
+    startLoading(loadingText = 'Gathering Proposal Information');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
@@ -330,14 +327,10 @@
       .withSuccessHandler(function(result) {
         stopLoading();
         if (result) {
-          $('#project-title').text("Project Being Generated...");
-          $('#info-text').text('Please wait while the proposal is converted. This may take a few moments.');
-          fadeOutAll();
-          $('.info-message').fadeIn();
           acceptProposal();
           return;
         }
-        $('#project-title').text(globalInitiative.title);
+        refreshUI();
       })
       .requestProposalAccept();
   }
@@ -353,7 +346,12 @@
       })
       .withSuccessHandler(function() {
         stopLoading();
-        refreshSidebar();
+        startLoading(loadingText = 'Loading New Project');
+        // wait one second for everything to fully register
+        setTimeout(function() {
+          stopLoading();
+          refreshSidebar();
+        }, 1000);
       })
       .acceptProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
@@ -370,14 +368,10 @@
       .withSuccessHandler(function(result) {
         stopLoading();
         if (result) {
-          $('#project-title').text("Project Being Generated...");
-          $('#info-text').text('Please wait while the project is generated. This may take a few moments.');
-          fadeOutAll();
-          $('.info-message').fadeIn();
           generateJob();
           return;
         }
-        $('#project-title').text(globalInitiative.title);
+        refreshUI();
       })
       .requestJobGeneration();
   }
