@@ -36,14 +36,11 @@ export interface InitEvent {
 export interface SerializedData {
   [key: string]: string | SerializedData | SerializedData[];
 }
-export interface SerializedInitiative {
-  [key: string]: string | number;
-}
-
 export interface InitiativeParams {
   name?: string;
   nameArray?: ProjectNameArray | ProposalNameArray;
   folder?: GoogleAppsScript.Drive.Folder;
+  serializedData?: SerializedData;
 }
 
 export interface ProjectNameArray extends Array<string> {
