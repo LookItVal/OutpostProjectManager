@@ -32,7 +32,7 @@
   - 1.2.1
 - [x] ~~Make sure load button is disabled when loading projects, and that the right info message is up when loading complex functions~~
   - 1.2.1
-- [ ] Run the client folder cleanup function.
+- [x] Run the client folder cleanup function.
   - BEFORE 1.3
 - [ ] Have initiatives and other object be able to be initiated by serialized data.
   - BEFORE 1.3
@@ -53,11 +53,13 @@
   -BY 1.4
 - [ ] Give instructions from the Google Drive file on how to get here.
   -BY 1.4
+- [ ] Add function to add new page in the OPD
+  - By 1.5
 - [ ] Link calendar bookings and specific lines of the reconciliation sheet.
-  - BY 1.5
+  - BY 1.6
 - [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
-  - BY 1.5
+  - BY 1.6
 - [ ] Add something to the reconciliation sheet to show when something has been confirmed.
-  - BY 1.5
+  - BY 1.6
 - [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
-  - BY 1.5
+  - BY 1.6
