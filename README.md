@@ -30,22 +30,10 @@
 - [x] ~~Make Icons Move on hover~~
 - [x] ~~Change text that only appears for a second on generation.~~
   - 1.2.1
-- [ ] Make sure load button is disabled when loading projects, and that the right info message is up when loading complex functions
-  - BY 1.2.2
-- [ ] Link calendar bookings and specific lines of the reconciliation sheet.
-  - BY 1.5
-- [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
-  - BY 1.5
-- [ ] Add something to the reconciliation sheet to show when something has been confirmed.
-  - BY 1.5
-- [ ] If admin, be able to close reconciliation sheets.
-  - BY 1.4
-- [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
-  - BY 1.5
-- [ ] Link up items in the costing sheet with the proposal document.
-  - By 1.4
-- [ ] Make client fields in OPD autofill based on the list of clients.
-  - BY 1.4
+- [x] ~~Make sure load button is disabled when loading projects, and that the right info message is up when loading complex functions~~
+  - 1.2.1
+- [ ] Run the client folder cleanup function.
+  - BEFORE 1.3
 - [ ] Have initiatives and other object be able to be initiated by serialized data.
   - BEFORE 1.3
 - [ ] Have every initiative initialize from serialized data and back them up to properties
@@ -55,10 +43,21 @@
   - BY 1.3
 - [ ] Make generative functions do things based on what has been selected previously, not what is currently selected if they have changed
   - BY 1.3
-- [ ] Run the client folder cleanup function.
-  - BEFORE 1.3
-
+- [ ] If admin, be able to close reconciliation sheets.
+  - BY 1.4
+- [ ] Link up items in the costing sheet with the proposal document.
+  - By 1.4
+- [ ] Make client fields in OPD autofill based on the list of clients.
+  - BY 1.4
 - [ ] Build this readme out.
   -BY 1.4
 - [ ] Give instructions from the Google Drive file on how to get here.
   -BY 1.4
+- [ ] Link calendar bookings and specific lines of the reconciliation sheet.
+  - BY 1.5
+- [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
+  - BY 1.5
+- [ ] Add something to the reconciliation sheet to show when something has been confirmed.
+  - BY 1.5
+- [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
+  - BY 1.5
