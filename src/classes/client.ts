@@ -156,12 +156,15 @@ export class Client {
 
   public static cleanClientFiles(): void {
     const clients = Client.getClients();
+    console.warn('BEGINING CLEANING PROCESS');
     for (const client of clients) {
       let initArchive: GoogleAppsScript.Drive.Folder | undefined = undefined;
       const search = client.folder?.getFoldersByName('JAN 2024 ARCHIVE');
       if (!search?.hasNext()) {
+        console.log('the archive folder has generated for this client', client.name);
         initArchive = client.folder?.createFolder('JAN 2024 ARCHIVE');
       } else {
+        console.log('the archive folder has been found for this client', client.name);
         initArchive = search?.next() as GoogleAppsScript.Drive.Folder;
       }
       if (!initArchive) {
@@ -171,24 +174,32 @@ export class Client {
       const folders = client.folder?.getFolders() as GoogleAppsScript.Drive.FolderIterator;
       while (folders.hasNext()) {
         const folder = folders.next();
+        console.log('working on folder:', client.name, folder.getName());
         if (folder.getName() === 'JAN 2024 ARCHIVE') {
+          console.log('skipping archive folder');
           continue;
         }
         if (exports.regexJobName.test(folder.getName()) || exports.regexProposalName.test(folder.getName())) {
+          console.log('skipping initiative folder');
           continue;
         }
+        console.log('moving folder to archive');
         folder.moveTo(archiveFolder);
       }
       const files = client.folder?.getFiles() as GoogleAppsScript.Drive.FileIterator;
+      console.log('moving files to archive');
       while(files.hasNext()) {
         const file = files.next();
+        console.log('working on file:', client.name, file.getName());
         if (exports.regexJobName.test(file.getName()) || exports.regexProposalName.test(file.getName())) {
+          console.log('looking for folder to move file to');
           const initiativeId = file.getName().split(' ').slice(0, 2).join(' ');
           const checkFolders = client.folder?.getFolders();
           let breakLoop = false;
           while (checkFolders?.hasNext()) {
-            const folder = folders.next();
+            const folder = checkFolders.next();
             if (folder.getName().startsWith(initiativeId)) {
+              console.log('found folder to move file to');
               file.moveTo(folder);
               breakLoop = true;
               break;
@@ -197,12 +208,14 @@ export class Client {
           if (breakLoop) {
             continue;
           }
+          console.log('did not find folder to move file to');
         }
+        console.log('moving file to archive');
         file.moveTo(archiveFolder);
       }
     }
+    logFileStructure();
   }
-
 
   /////////////////////////////////////////////
   //             Private Methods             //
@@ -217,6 +230,38 @@ export class Client {
     }
     if (name && typeof name !== 'string') {
       throw new exports.ValidationError('Client name must be a string');
+    }
+  }
+}
+
+export function cleanClientFiles(): void {
+  Client.cleanClientFiles();
+}
+
+//take the array of clients and recursively go through every fild and folder in the client folder
+function logFileStructure(): void {
+  const clients = Client.getClients();
+  for (const client of clients) {
+    console.log('CLIENT:', client.name);
+    const folders = client.folder?.getFolders();
+    while (folders?.hasNext()) {
+      const folder = folders.next();
+      console.log('FOLDER:', folder.getName());
+      const subFolders = folder.getFolders();
+      while (subFolders?.hasNext()) {
+        const subFolder = subFolders.next();
+        console.log('SUBFOLDER:', subFolder.getName());
+      }
+      const files = folder.getFiles();
+      while (files?.hasNext()) {
+        const file = files.next();
+        console.log('FILE:', file.getName());
+      }
+    }
+    const files = client.folder?.getFiles();
+    while (files?.hasNext()) {
+      const file = files.next();
+      console.log('FILE:', file.getName());
     }
   }
 }
