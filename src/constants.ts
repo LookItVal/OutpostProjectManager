@@ -8,6 +8,7 @@ export const regexProposalName: RegExp = /^PROPOSAL: \d{4}\s.*/;
 export const regex4Digits: RegExp = /^\d{4}/;
 export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
+export const regexGetIdFromProjectName: RegExp = /^\d{4}\s\d{4}/;
 
 //Changelog
 export const version = '1.3.0';

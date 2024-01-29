@@ -1,5 +1,5 @@
 import { ValidationError } from './errors';
-import { spreadsheet, properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits } from '../constants';
+import { spreadsheet, properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits, regexGetIdFromProjectName } from '../constants';
 import { Client } from './client';
 import { InitiativeParams, ProjectNameArray, ProposalNameArray, SerializedData } from '../interfaces';
 import { User } from './user';
@@ -13,6 +13,7 @@ interface InitiativesExport {
     regexProposalName: typeof regexProposalName;
     regexProposalOpen: typeof regexProposalOpen;
     regexPullDigits: typeof regexPullDigits;
+    regexGetIdFromProjectName: typeof regexGetIdFromProjectName;
     Client: typeof Client;
     User: typeof User;
 }
@@ -77,6 +78,7 @@ export abstract class Initiative {
         if (serializedData['rowNumber']) {
           this._rowNumber = Number(serializedData['rowNumber']) as number;
         }
+        return;
       }
       if (name) {
         this.title = name;
@@ -94,7 +96,7 @@ export abstract class Initiative {
         this.title = folder.getName();
         return;
       }
-      throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
+      throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, folder, or serializedData');
     }
 
     /////////////////////////////////////////////
@@ -258,8 +260,8 @@ export abstract class Initiative {
     //              Static Methods             //
     /////////////////////////////////////////////
 
-    public static getInitiative({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams = {}): Project | Proposal {
-      if (!name && !nameArray && !folder) {
+    public static getInitiative({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams = {}): Project | Proposal {
+      if (!name && !nameArray && !folder && !serializedData) {
         if (exports.spreadsheet?.getId() === exports.properties.getProperty('projectDataSpreadsheetId')) {
           const sheet = exports.spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
           const row = sheet.getActiveCell().getRow(); 
@@ -288,23 +290,67 @@ export abstract class Initiative {
           nameArray = dataArray as ProjectNameArray | ProposalNameArray;
         }
       }
+      if (serializedData) {
+        if (serializedData['type'] === 'PROJECT') {
+          return new Project({serializedData});
+        }
+        if (serializedData['type'] === 'PROPOSAL') {
+          return new Proposal({serializedData});
+        }
+        throw new exports.ValidationError('Serialized Data must contain a type');
+      }
       if (name) {
-        if (exports.regexProposalName.test(name)) return new Proposal({name});
-        if (exports.regexJobName.test(name)) return new Project({name});
+        if (exports.regexProposalName.test(name)) {
+          if (exports.properties.getProperty(name)) {
+            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(name) as string) });
+          }
+          return new Proposal({name});
+        }
+        if (exports.regexJobName.test(name)) {
+          const id = name.match(exports.regexGetIdFromProjectName)?.[0].split(' ').join('') as string;
+          if (exports.properties.getProperty(id)) {
+            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(id) as string) });
+          }
+          return new Project({name});
+        }
         throw new exports.ValidationError('Name does not match any known initiative types');
       }
       if (nameArray && nameArray.length > 1) {
-        if (exports.regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
-        if (exports.regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
+        let initiativeId = '';
+        if (exports.regexProposalOpen.test(nameArray[0] as string)) {
+          initiativeId = `${nameArray[0]} ${nameArray[1]} ${nameArray[2]} ${nameArray[3]}`;
+          if (exports.properties.getProperty(initiativeId)) {
+            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
+          }
+          return new Proposal({nameArray});
+        }
+        if (exports.regex4Digits.test(nameArray[1] as string)) {
+          initiativeId = nameArray[0]+nameArray[1];
+          if (exports.properties.getProperty(initiativeId)) {
+            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
+          }
+          return new Project({nameArray});
+        }
         throw new exports.ValidationError('Name Array does not match any known initiative types');
       }
       if (folder) {
         const folderName = folder.getName();
-        if (exports.regexProposalName.test(folderName)) return new Proposal({folder});
-        if (exports.regexJobName.test(folderName)) return new Project({folder});
+        if (exports.regexProposalName.test(folderName)) {
+          if (exports.properties.getProperty(folderName)) {
+            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(folderName) as string) });
+          }
+          return new Proposal({folder});
+        }
+        if (exports.regexJobName.test(folderName)) {
+          const id = folderName.match(exports.regexGetIdFromProjectName)?.[0].split(' ').join('') as string;
+          if (exports.properties.getProperty(id)) {
+            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(id) as string) });
+          }
+          return new Project({folder});
+        }
         throw new exports.ValidationError('Folder does not match any known initiative types');
       }
-      throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
+      throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, folder, or serializedData');
     }
 
     /////////////////////////////////////////////
@@ -350,7 +396,7 @@ export abstract class Initiative {
     // Validation for the constructor
     protected static validateParams ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams): SerializedData | void {
       if (!name && !nameArray && !folder && !serializedData) {
-        throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
+        throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, folder, or serializedData');
       }
       // make sure only one of the three is not null
       const countNonNull: number = [name, nameArray, folder, serializedData].filter(value => !!value).length;
@@ -460,6 +506,7 @@ export class Project extends Initiative {
       this._jobNumber = nameArray[1];
       this._closed = nameArray[4];
     }
+    this.save();
   }
     
   /////////////////////////////////////////////
@@ -665,6 +712,10 @@ export class Project extends Initiative {
     }
   }
 
+  public save(): void {
+    exports.properties.setProperty(this.yrmo+this.jobNumber, JSON.stringify(this.serialize()));
+  }
+
   /////////////////////////////////////////////
   //              Static Methods             //
   /////////////////////////////////////////////
@@ -753,6 +804,7 @@ export class Proposal extends Initiative {
     if (nameArray) {
       this._yrmo = nameArray[1];
     }
+    this.save();
   }
 
   /////////////////////////////////////////////
@@ -863,6 +915,10 @@ export class Proposal extends Initiative {
     this.folder.setName(`${this.yrmo} ${jobNumber} ${this.clientName} ${this.projectName}`);
     new Project({ nameArray: [this.yrmo, jobNumber, this.clientName, this.projectName, 'FALSE']}).generateProject();
     this.dataSheet.deleteRow(this.rowNumber);
+  }
+
+  public save(): void {
+    exports.properties.setProperty(this.title, JSON.stringify(this.serialize()));
   }
 
   /////////////////////////////////////////////
