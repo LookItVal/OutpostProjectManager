@@ -38,7 +38,9 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
       .addSection(CardService.newCardSection()
         .setHeader(booking.calendarEvent?.getTitle() ?? 'Booking Error')
         .addWidget(CardService.newTextButton()
-          .setText('Open Reconciliation')
+          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+          .setBackgroundColor('#3d9400')
+          .setText('✓ Open Reconciliation ✓')
           .setOpenLink(CardService.newOpenLink()
             .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0`))))
       .build();
