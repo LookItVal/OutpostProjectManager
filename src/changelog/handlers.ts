@@ -6,7 +6,7 @@ interface ChangelogHandlersExport {
 }
 declare const exports: ChangelogHandlersExport;
 
-export function openChangeLog(): GoogleAppsScript.Card_Service.Card {
+export function openCardChangelog(): GoogleAppsScript.Card_Service.Card {
   const changelog: ChangelogDict = exports.changelog;
   const card = CardService.newCardBuilder();
   console.log(changelog);
@@ -33,5 +33,31 @@ export function openChangeLog(): GoogleAppsScript.Card_Service.Card {
   return card.build();
 }
 
-
+export function openChangelogAsModalDialogue(): GoogleAppsScript.HTML.HtmlOutput {
+  const changelog: ChangelogDict = exports.changelog;
+  const output = HtmlService.createTemplateFromFile('src/changelog/html/changelog').evaluate();
+  for (const minorVersionKey of Object.keys(changelog[1]).reverse()) {
+    const minorVersion = parseInt(minorVersionKey);
+    output.append('<details>');
+    output.append(`<summary>Version 1.${minorVersion}: ${changelog[1][minorVersion][0]}</summary>`);
+    for (const patchVersionKey of Object.keys(changelog[1][minorVersion][1]).reverse()) {
+      const patchVersion = parseInt(patchVersionKey);
+      const patches = changelog[1][minorVersion][1][patchVersion];
+      output.append(`<p>--- Release 1.${minorVersion}.${patchVersion} ---</p>`);
+      for (const changeKey of Object.keys(patches).reverse()) {
+        const change = patches[parseInt(changeKey)] as string[];
+        output.append('<div class="changelog-item">');
+        output.append(`<p><b>${change[1]}</b>`);
+        output.append(`<br>${change[0]}</p>`);
+      }
+      output.append('<br>');
+    }
+    output.append('</details>');
+    output.append('<br>');
+  }
+  output.append('</body>');
+  output.append('</html>');
+  console.log(output.getContent());
+  return output;
+}
 

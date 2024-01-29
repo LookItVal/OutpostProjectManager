@@ -24,6 +24,7 @@ export const changelog = {
           ['Cleaned Up Client Folder Structure', 'Maintaniance'],
           ['Added Cursor Pointing to buttons in the HTML stylesheet', 'UI Change'],
           ['Added Changelog to the calendar sidebar', 'UI Change'],
+          ['Added Changelog to the project sidebar', 'UI Change']
         ],
         1: [
           ['Stopped text from flashing on project generation', 'Bug Fix'],

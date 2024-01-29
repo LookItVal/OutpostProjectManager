@@ -2,7 +2,7 @@
 <script>
   let globalInitiative = {};
   let loadingInterval;
-
+  let version;
 
   // Run initializations on sidebar load.
   $(function() {
@@ -17,6 +17,7 @@
     $('#open-reconciliation-button').click(openReconciliationSheet);
     $('#accept-proposal-button').click(requestProposalAccept);
     $('#create-job-button').click(requestJobGeneration);
+    $('#versionChangelog').click(openChangelog);
 
     $('#open-folder-button').hover(
       function() {
@@ -27,7 +28,6 @@
         $(this).find(".material-symbols-outlined").text('folder');
       }
     );
-
     $("#project-refresh-button").mouseenter(function() {
       if ($(this).find(".material-symbols-outlined").hasClass("icon-paused")) {
         $(this).find(".spinner").addClass("spin-once");
@@ -37,7 +37,6 @@
     function() {
       $(this).removeClass("spin-once");
     });
-
     $('#open-costing-button').hover(
       function() {
         // Mouse enter
@@ -47,7 +46,6 @@
         $(this).find(".material-symbols-outlined").text('request_page');
       }
     );
-
     $('#open-proposal-button').hover(
       function() {
         // Mouse enter
@@ -57,7 +55,6 @@
         $(this).find(".material-symbols-outlined").text('contract');
       }
     );
-
     $('#jump-to-job-button').hover(
       function() {
         // Mouse enter
@@ -67,7 +64,6 @@
         $(this).find(".material-symbols-outlined").text('text_select_jump_to_beginning');
       }
     );
-
     $('#jump-to-proposals-button').hover(
       function() {
         // Mouse enter
@@ -78,11 +74,24 @@
       }
     );
 
-
+    initConstants();
     refreshSidebar();
     // Call the server here to retrieve any information needed to build
     // the dialog, if necessary.
   });
+
+  function initConstants() {
+    google.script.run.withSuccessHandler(function(constants) {
+      console.log(constants);
+      if (constants.version) {
+        version = constants.version;
+        $('#versionChangelog').text(version);
+      } else {
+        version = "Unknown";
+      }
+    }).initConstants();
+
+  }
 
   // Update the ui to show loading info and remove dynamic content.
   function startLoading(loadingText = "Loading") {
@@ -415,5 +424,21 @@
         refreshSidebar();
       })
       .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+  }
+
+  function openChangelog() {
+    startLoading(loadingText = 'Opening Changelog');
+    google.script.run
+      .withFailureHandler(function () {
+        stopLoading();
+        $('#info-text').text('An error occured. Please check the console for details.');
+        console.log(msg, element);
+        element.disabled = false;
+      })
+      .withSuccessHandler(function () {
+        stopLoading();
+        refreshSidebar();
+      })
+    .openSheetChangelog();
   }
 </script>
