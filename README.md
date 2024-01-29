@@ -28,7 +28,6 @@
   - Stopped text from flashing on project generation
   - Disabled Load Button when loading new content
   - Reorganized folder structure
-  - Added Autofill
 
 ### [1.2.0] - Shiny Colors Update - 2024-01-24
 - Added Changelog
