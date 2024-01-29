@@ -67,4 +67,18 @@ export interface BookingParams {
   event?: InitEvent;
 }
 
+export interface ChangelogDict {
+  // Outermost key is the major version number
+  [key: number]: {
+    // Minor version number
+    [key: number]: (string | {
+        // Innermost key is the patch version number
+        [key: number]: 
+          // Array of [description, type]
+          string[][]
+      }
+    )[];
+  };
+}
+
 export type Initiative = Project | Proposal;

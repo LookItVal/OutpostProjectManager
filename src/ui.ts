@@ -1,6 +1,6 @@
 import { Booking } from './classes/booking';
 import { InitEvent } from './interfaces';
-import { properties } from './constants';
+import { properties, version} from './constants';
 
 // this next chunk deals with clasps inability to deal with imports properly.
 // it's a bit of a hack, but it works.
@@ -11,6 +11,7 @@ import { properties } from './constants';
 interface UIExport {
   properties: typeof properties;
   Booking: typeof Booking;
+  version: typeof version;
 }
 declare const exports: UIExport;
 
@@ -26,6 +27,7 @@ export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
       .setHeader('No Event Selected.')
       .addWidget(CardService.newTextParagraph()
         .setText('Select an event to find its reconciliation sheet.')))
+    .setFixedFooter(mainFooter())
     .build();
 }
 
@@ -43,6 +45,7 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
           .setText('✓ Open Reconciliation ✓')
           .setOpenLink(CardService.newOpenLink()
             .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0`))))
+      .setFixedFooter(mainFooter())
       .build();
   } catch (e: unknown) {
     console.error(e);
@@ -77,4 +80,17 @@ export function openOPDSidebar(): void {
     .setTitle('Outpost Project Manager')
     .setSandboxMode(HtmlService.SandboxMode.IFRAME);
   SpreadsheetApp.getUi().showSidebar(ui);
+}
+
+/////////////////////////////////////////////
+//                  Misc                   //
+/////////////////////////////////////////////
+
+export function mainFooter(): GoogleAppsScript.Card_Service.FixedFooter {
+  return CardService.newFixedFooter()
+    .setPrimaryButton(CardService.newTextButton()
+      .setText(`${exports.version} Changelog`)
+      .setTextButtonStyle(CardService.TextButtonStyle.TEXT)
+      .setOnClickAction(CardService.newAction()
+        .setFunctionName('openChangeLog')));
 }
