@@ -58,6 +58,26 @@
       }
     );
 
+    $('#jump-to-job-button').hover(
+      function() {
+        // Mouse enter
+        $(this).find(".material-symbols-outlined").text('text_select_move_back_word');
+      }, function() {
+        // Mouse leave
+        $(this).find(".material-symbols-outlined").text('text_select_jump_to_beginning');
+      }
+    );
+
+    $('#jump-to-proposals-button').hover(
+      function() {
+        // Mouse enter
+        $(this).find(".material-symbols-outlined").text('text_select_move_forward_word');
+      }, function() {
+        // Mouse leave
+        $(this).find(".material-symbols-outlined").text('text_select_jump_to_end');
+      }
+    );
+
 
     refreshSidebar();
     // Call the server here to retrieve any information needed to build

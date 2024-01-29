@@ -16,6 +16,14 @@
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
 ## Changelog
+#### [1.2.2]
+  - Cleaned up log statements
+  - Managed Git Repo
+  - Added Auto-filling for Client Names in the Outpost Project Database
+  - Added Animation to Projects and Proposals Buttons
+  - Cleaned Up Client Folder Structure
+  - Added Cursor Pointing to buttons in the HTML stylesheet
+
 #### [1.2.1]
   - Stopped text from flashing on project generation
   - Disabled Load Button when loading new content
@@ -39,10 +47,14 @@
   - 1.2.1
 - [x] ~~Make sure load button is disabled when loading projects, and that the right info message is up when loading complex functions~~
   - 1.2.1
-- [x] Run the client folder cleanup function.
+- [x] ~~Run the client folder cleanup function.~~
   - 1.2.1
-- [x] Make client fields in OPD autofill based on the list of clients.
+- [x] ~~Make client fields in OPD autofill based on the list of clients.~~
   - 1.2.1
+- [x] ~~Add hover animation for Projects and Proposals Buttons~~
+ -  1.2.2
+- [ ] Add Changelog in app
+  - by 1.3
 - [ ] Have initiatives and other object be able to be initiated by serialized data.
   - BEFORE 1.3
 - [ ] Have every initiative initialize from serialized data and back them up to properties
