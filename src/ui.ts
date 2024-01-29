@@ -92,5 +92,5 @@ export function mainFooter(): GoogleAppsScript.Card_Service.FixedFooter {
       .setText(`${exports.version} Changelog`)
       .setTextButtonStyle(CardService.TextButtonStyle.TEXT)
       .setOnClickAction(CardService.newAction()
-        .setFunctionName('openChangeLog')));
+        .setFunctionName('openCardChangelog')));
 }

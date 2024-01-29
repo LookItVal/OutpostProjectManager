@@ -1,7 +1,8 @@
 import { Project, Proposal } from '../classes/initiatives';
 import { SerializedData, ProposalNameArray } from '../interfaces';
 import { ValidationError } from '../classes/errors';
-import { properties, spreadsheet } from '../constants';
+import { properties, spreadsheet, version } from '../constants';
+import { openChangelogAsModalDialogue } from '../changelog/handlers';
 
 interface RequestHandlersExports {
   Project: typeof Project;
@@ -9,6 +10,8 @@ interface RequestHandlersExports {
   ValidationError: typeof ValidationError;
   properties: typeof properties;
   spreadsheet: typeof spreadsheet;
+  version: typeof version;
+  openChangelogAsModalDialogue: typeof openChangelogAsModalDialogue;
 }
 declare const exports: RequestHandlersExports;
 
@@ -109,4 +112,13 @@ export function requestJobGeneration(): boolean {
 
 export function generateJob(nameArray: ProposalNameArray): void {
   Project.getProject({nameArray}).generateProject();
+}
+
+export function openSheetChangelog(): void {
+  const ui = SpreadsheetApp.getUi();
+  ui.showModalDialog(exports.openChangelogAsModalDialogue(), 'Changelog');
+}
+
+export function initConstants(): SerializedData {
+  return {version: exports.version};
 }
