@@ -36,7 +36,6 @@ export function jumpToProject(): void {
 export function getInitiative(): SerializedData {
   try {
     const lucky_charms = Project.getInitiative().serialize();
-    console.log('the lucky charms log', lucky_charms);
     return lucky_charms;
   } catch (e: unknown) {
     if (e instanceof ValidationError) {
