@@ -143,7 +143,7 @@ export abstract class Initiative {
       if (this._client && Object.keys(this._client).length !== 0) {
         return this._client;
       }
-      console.info('making client from name:', this.clientName);
+      console.info('Making client from name:', this.clientName);
       this._client = new exports.Client({ name: this.clientName });
       return this._client;
     }

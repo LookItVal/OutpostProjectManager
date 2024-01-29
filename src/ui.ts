@@ -32,7 +32,6 @@ export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
 export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card {
   try {
     const booking = new exports.Booking({event: e}) as Booking;
-    console.log('the booking object', booking.sheetId);
     return CardService.newCardBuilder()
       .setName('Select Event')
       .setHeader(CardService.newCardHeader().setTitle('Project Details'))
@@ -55,7 +54,6 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
 
 export function openSheetSidebar(): GoogleAppsScript.Card_Service.Card | void {
   const currentSheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
-  console.log(currentSheetId, exports.properties.getProperty('projectDataSpreadsheetId'));
   if (currentSheetId === exports.properties.getProperty('projectDataSpreadsheetId')) return openOPDSidebar();
   return getSheetsHomepage();
 }

@@ -32,11 +32,8 @@ export class Client {
       this._folder = folder;
     }
     if (name) {
-      console.log('YOU SHOULD MAKE IT HERE', name);
       this._name = name;
     }
-    console.log('the name of the client we just created is', this.name);
-    console.log('Client new object returned:', this);
   }
 
   /////////////////////////////////////////////
@@ -68,7 +65,6 @@ export class Client {
     if (this._folder) {
       return this._folder;
     }
-    console.log('client folder info', this._name);
     if (this._name) {
       const folders = Client.clientFolder.getFoldersByName(this._name);
       if (folders.hasNext()) {
@@ -160,48 +156,49 @@ export class Client {
     const clients = Client.getClients();
     console.warn('BEGINING CLEANING PROCESS');
     for (const client of clients) {
+      console.count(`Working on Client: ${client.name}\n Number of Clients Found:`);
       let initArchive: GoogleAppsScript.Drive.Folder | undefined = undefined;
       const search = client.folder?.getFoldersByName('JAN 2024 ARCHIVE');
       if (!search?.hasNext()) {
-        console.log('the archive folder has generated for this client', client.name);
+        console.info('the archive folder has generated for this client', client.name);
         initArchive = client.folder?.createFolder('JAN 2024 ARCHIVE');
       } else {
-        console.log('the archive folder has been found for this client', client.name);
+        console.info('the archive folder has been found for this client', client.name);
         initArchive = search?.next() as GoogleAppsScript.Drive.Folder;
       }
       if (!initArchive) {
-        throw new Error('Could not create or find JAN 2024 ARCHIVE folder');
+        console.error('Could not create or find JAN 2024 ARCHIVE folder');
       }
       const archiveFolder = initArchive as GoogleAppsScript.Drive.Folder;
       const folders = client.folder?.getFolders() as GoogleAppsScript.Drive.FolderIterator;
       while (folders.hasNext()) {
         const folder = folders.next();
-        console.log('working on folder:', client.name, folder.getName());
+        console.count(`Working on Client: ${client.name} \nFolder: ${folder.getName()} \nNumber of Folders Found in ${client.name}:`);
         if (folder.getName() === 'JAN 2024 ARCHIVE') {
-          console.log('skipping archive folder');
+          console.info('skipping archive folder');
           continue;
         }
         if (exports.regexJobName.test(folder.getName()) || exports.regexProposalName.test(folder.getName())) {
-          console.log('skipping initiative folder');
+          console.info('Skipping initiative folder');
           continue;
         }
-        console.log('moving folder to archive');
+        console.info('Moving folder to archive');
         folder.moveTo(archiveFolder);
       }
       const files = client.folder?.getFiles() as GoogleAppsScript.Drive.FileIterator;
-      console.log('moving files to archive');
+      console.info('Moving files to archive');
       while(files.hasNext()) {
         const file = files.next();
-        console.log('working on file:', client.name, file.getName());
+        console.count(`Working on Client: ${client.name} \nFile: ${file.getName()} \nNumber of Files Found in ${client.name}:`);
         if (exports.regexJobName.test(file.getName()) || exports.regexProposalName.test(file.getName())) {
-          console.log('looking for folder to move file to');
+          console.info('looking for folder to move file to');
           const initiativeId = file.getName().split(' ').slice(0, 2).join(' ');
           const checkFolders = client.folder?.getFolders();
           let breakLoop = false;
           while (checkFolders?.hasNext()) {
             const folder = checkFolders.next();
             if (folder.getName().startsWith(initiativeId)) {
-              console.log('found folder to move file to');
+              console.info('Found folder to move file to');
               file.moveTo(folder);
               breakLoop = true;
               break;
@@ -210,15 +207,18 @@ export class Client {
           if (breakLoop) {
             continue;
           }
-          console.log('did not find folder to move file to');
+          console.info('Did not find folder to move file to');
         }
-        console.log('moving file to archive');
+        console.info('Moving file to archive');
         file.moveTo(archiveFolder);
       }
     }
     logFileStructure();
   }
 
+  // this function will update the client list in the data spreadsheet
+  // this function currently does not check for duplicate client names
+  // it should before it is ever run again.
   public static updateOPDClientList(): void {
     const clients = Client.getClients();
     const spreadsheet = exports.Project.dataSpreadsheet;
@@ -309,27 +309,28 @@ export function updateOPDClientList(): void {
 //take the array of clients and recursively go through every fild and folder in the client folder
 function logFileStructure(): void {
   const clients = Client.getClients();
+  console.warn('LOGGING FILE STRUCTURE');
   for (const client of clients) {
-    console.log('CLIENT:', client.name);
+    console.info('CLIENT:', client.name);
     const folders = client.folder?.getFolders();
     while (folders?.hasNext()) {
       const folder = folders.next();
-      console.log('FOLDER:', folder.getName());
+      console.info('FOLDER:', folder.getName());
       const subFolders = folder.getFolders();
       while (subFolders?.hasNext()) {
         const subFolder = subFolders.next();
-        console.log('SUBFOLDER:', subFolder.getName());
+        console.info('SUBFOLDER:', subFolder.getName());
       }
       const files = folder.getFiles();
       while (files?.hasNext()) {
         const file = files.next();
-        console.log('FILE:', file.getName());
+        console.info('FILE:', file.getName());
       }
     }
     const files = client.folder?.getFiles();
     while (files?.hasNext()) {
       const file = files.next();
-      console.log('FILE:', file.getName());
+      console.info('FILE:', file.getName());
     }
   }
 }

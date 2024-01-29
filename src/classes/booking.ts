@@ -25,7 +25,6 @@ export class Booking {
   public get project(): Initiative | undefined {
     if (this._project) return this._project;
     if (this.calendarEvent) {
-      console.log('the calendar event title', this.calendarEvent.getTitle());
       this._project = exports.Project.getInitiative({ name: this.calendarEvent.getTitle() });
       return this._project;
     }
