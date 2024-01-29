@@ -23,6 +23,7 @@
   - Added Animation to Projects and Proposals Buttons
   - Cleaned Up Client Folder Structure
   - Added Cursor Pointing to buttons in the HTML stylesheet
+  - 
 
 #### [1.2.1]
   - Stopped text from flashing on project generation
@@ -52,9 +53,9 @@
   - 1.2.1
 - [x] ~~Add hover animation for Projects and Proposals Buttons~~
  -  1.2.2
-- [ ] Add Changelog in app
+- [x] Add Changelog in app
   - by 1.3
-- [ ] Have initiatives and other object be able to be initiated by serialized data.
+- [x] Have initiatives and other object be able to be initiated by serialized data.
   - BEFORE 1.3
 - [ ] Have every initiative initialize from serialized data and back them up to properties
   - The key of each property is the YR/MO + job number
