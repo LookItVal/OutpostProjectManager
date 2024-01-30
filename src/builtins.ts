@@ -12,3 +12,8 @@ export function onEdit(e: object): void {
   console.log(e);
 }
 
+export function onSelectionChange(e: object): void {
+  // yea idk what goin on here
+  console.log(e);
+}
+

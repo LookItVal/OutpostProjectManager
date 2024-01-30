@@ -57,20 +57,34 @@
   - by 1.3
 - [x] Have initiatives and other object be able to be initiated by serialized data.
   - BEFORE 1.3
+- [ ] Add Benchmarking
+  - By 1.3
 - [ ] Have every initiative initialize from serialized data and back them up to properties
   - The key of each property is the YR/MO + job number
   - add function to check the object to make sure everything is up to date
   - BY 1.3
 - [ ] Add requirement so you can do red button actions
   - BY 1.3
+- [ ] Change text to say generating and not making
+  -BY 1.3
+- [ ] Make frontend sends always come with a version number, to check to see if you need to update
+  - BY 1.3
+- [ ] Make sure calendar only add a button if it found anything at all
+  - BY 1.3
 - [ ] Make generative functions do things based on what has been selected previously, not what is currently selected if they have changed
   - BY 1.3
 - [ ] If admin, be able to close reconciliation sheets.
-  - BY 1.4
+  - BY 1.3
 - [ ] Link up items in the costing sheet with the proposal document.
   - By 1.4
+- [ ] The Changelog html is really just the base for any html file, change its name accordingly
+  -BY 1.4
 - [ ] Build this readme out.
   -BY 1.4
+- [ ] Add some kind of bug reporter
+  - BY 1.4
+- [ ] Add some kind of Feature Request
+  - By 1.4
 - [ ] Give instructions from the Google Drive file on how to get here.
   -BY 1.4
 - [ ] Add function to add new page in the OPD

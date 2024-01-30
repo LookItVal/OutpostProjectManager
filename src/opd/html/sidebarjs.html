@@ -202,15 +202,18 @@
 
   // Get the current project info from the server and display the appropriate dynamic content.
   function refreshSidebar() {
+    console.time("refreshSidebar benchmark");
     startLoading();
     google.script.run.withSuccessHandler(function(initiative) {
       stopLoading();
       globalInitiative = initiative;
       refreshUI();
+      console.timeEnd("refreshSidebar benchmark");
     }).withFailureHandler(function(msg, element) {
       stopLoading();
       console.log(msg, element);
       $('#project-title').text("Error With Addon: Check Frontend Console For Details")
+      console.timeEnd("refreshSidebar benchmark");
     }).getInitiative();
   }
 
@@ -281,30 +284,36 @@
     
   // Calls the server to change the active sheet to the most recent job.
   function jumpToProject() {
+    console.time("jumpToProject benchmark");
     startLoading(loadingText = 'Looking for Project');
-      google.script.run
+    google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
         console.log(msg, element);
         element.disabled = false;
+        console.timeEnd("jumpToProject benchmark");
       })
       .withSuccessHandler(function() {
         refreshSidebar();
+        console.timeEnd("jumpToProject benchmark");
       })
       .jumpToProject();
   }
   
   // Calls The server to change the active sheet to the proposal sheet.
   function jumpToProposal() {
+    console.time("jumpToProposal benchmark");
     startLoading(loadingText = 'Looking for Proposal');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
         console.log(msg, element);
         element.disabled = false;
+        console.timeEnd("jumpToProposal benchmark");
       })
       .withSuccessHandler(function() {
         refreshSidebar();
+        console.timeEnd("jumpToProposal benchmark");
       })
       .jumpToProposal();
   }
@@ -330,6 +339,7 @@
   }
 
   function generateProposal() {
+    console.time("generateProposal benchmark");
     startLoading(loadingText = 'Making New Proposal Documents');
     google.script.run
       .withFailureHandler(function(msg, element) {
@@ -337,6 +347,7 @@
         $('#info-text').text('An error occured. Please check the console for details.');
         console.log(msg, element);
         element.disabled = false;
+        console.timeEnd("generateProposal benchmark");
       })
       .withSuccessHandler(function() {
         stopLoading();
@@ -345,7 +356,8 @@
         setTimeout(function() {
           stopLoading(); 
           refreshSidebar();
-        }, 1000);
+        }, 500);
+        console.timeEnd("generateProposal benchmark");
       })
       .generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
@@ -370,6 +382,7 @@
   }
 
   function acceptProposal() {
+    console.time("acceptProposal benchmark");
     startLoading(loadingText = 'Converting Proposal to Project');
     google.script.run
       .withFailureHandler(function(msg, element) {
@@ -377,6 +390,7 @@
         $('#info-text').text('An error occured. Please check the console for details.');
         console.log(msg, element);
         element.disabled = false;
+        console.timeEnd("acceptProposal benchmark");
       })
       .withSuccessHandler(function() {
         stopLoading();
@@ -385,7 +399,8 @@
         setTimeout(function() {
           stopLoading(); 
           refreshSidebar();
-        }, 1000);
+        }, 500);
+        console.timeEnd("acceptProposal benchmark");
       })
       .acceptProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
@@ -411,6 +426,7 @@
   }
 
   function generateJob() {
+    console.time("generateJob benchmark");
     startLoading(loadingText = 'Making New Reconciliation Sheet');
     google.script.run
       .withFailureHandler(function(msg, element) {
@@ -418,15 +434,18 @@
         $('#info-text').text('An error occured. Please check the console for details.');
         console.log(msg, element);
         element.disabled = false;
+        console.timeEnd("generateJob benchmark");
       })
       .withSuccessHandler(function() {
         stopLoading();
         refreshSidebar();
+        console.timeEnd("generateJob benchmark");
       })
       .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
   }
 
   function openChangelog() {
+    console.time("openChangelog benchmark");
     startLoading(loadingText = 'Opening Changelog');
     google.script.run
       .withFailureHandler(function () {
@@ -434,10 +453,12 @@
         $('#info-text').text('An error occured. Please check the console for details.');
         console.log(msg, element);
         element.disabled = false;
+        console.timeEnd("openChangelog benchmark");
       })
       .withSuccessHandler(function () {
         stopLoading();
         refreshSidebar();
+        console.timeEnd("openChangelog benchmark");
       })
     .openSheetChangelog();
   }

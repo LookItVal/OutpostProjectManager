@@ -81,4 +81,56 @@ export interface ChangelogDict {
   };
 }
 
+export interface BasicTestJSON {
+  'Raw': [
+    {[key: string]: number}
+  ],
+  'Statistics'?: {
+    'Mean Total': number,
+    'Mean Per Process': {[key: string]: number},
+    'Range Total': number,
+    'Range Per Process': {[key: string]: number}
+  }
+}
+
+export interface OPDSheetJSONTests {
+  'jumpToProjects'?: BasicTestJSON,
+  'jumpToProposals'?: BasicTestJSON,
+  'getInitiative from empty project'?: BasicTestJSON,
+  'getInitiative from empty proposal'?: BasicTestJSON,
+  'getInitiative from proposal with all docs'?: BasicTestJSON,
+  'getInitiative from project with all docs'?: BasicTestJSON,
+  'getInitiative from proposal with no docs'?: BasicTestJSON,
+  'getInitiative from project with no docs'?: BasicTestJSON,
+  'generateProposal from existing client'?: BasicTestJSON,
+  'generateProposal from new client'?: BasicTestJSON,
+  'acceptProposal'?: BasicTestJSON,
+  'rejectProposal'?: BasicTestJSON,
+  'generateProject from existing client'?: BasicTestJSON,
+  'generateProject from new client'?: BasicTestJSON,
+  'openChangelog'?:  BasicTestJSON
+}
+
+export interface CalendarJSONTests {
+  'openChangelog'?: BasicTestJSON,
+  'getEvent from new event'?: BasicTestJSON,
+  'getEvent from never loaded event with reconciliation sheet'?: BasicTestJSON,
+  'getEvent from never loaded event without reconciliation sheet'?: BasicTestJSON,
+  'getEvent from loaded event with reconciliation sheet'?: BasicTestJSON,
+  'getEvent from loaded event without reconciliation sheet'?: BasicTestJSON
+}
+
+export interface BenchmarkJSON {
+  'OPD Sheet'?: {
+    'Frontend': OPDSheetJSONTests,
+    'Backend': OPDSheetJSONTests
+  },
+  'Calendar'?: {
+    'Frontend': CalendarJSONTests,
+    'Backend': CalendarJSONTests
+  }
+}
+
 export type Initiative = Project | Proposal;
+
+export type unknownFunction = (...args: unknown[]) => unknown;
