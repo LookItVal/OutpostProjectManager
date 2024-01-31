@@ -105,7 +105,6 @@ export interface OPDSheetJSONTests {
   'generateProposal from existing client'?: BasicTestJSON,
   'generateProposal from new client'?: BasicTestJSON,
   'acceptProposal'?: BasicTestJSON,
-  'rejectProposal'?: BasicTestJSON,
   'generateProject from existing client'?: BasicTestJSON,
   'generateProject from new client'?: BasicTestJSON,
   'openChangelog'?:  BasicTestJSON
@@ -121,7 +120,7 @@ export interface CalendarJSONTests {
 }
 
 export interface BenchmarkJSON {
-  'OPD Sheet'?: {
+  'OPDSheet'?: {
     'Frontend': OPDSheetJSONTests,
     'Backend': OPDSheetJSONTests
   },
@@ -129,6 +128,10 @@ export interface BenchmarkJSON {
     'Frontend': CalendarJSONTests,
     'Backend': CalendarJSONTests
   }
+}
+
+export interface Method {
+  (...args: unknown[]): unknown;
 }
 
 export type Initiative = Project | Proposal;

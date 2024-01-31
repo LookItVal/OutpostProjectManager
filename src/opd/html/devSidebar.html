@@ -1,0 +1,26 @@
+<button id="benchmark-button" class="create full-width row">
+  <span class="material-symbols-outlined">
+    speed
+  </span>
+  Run Benchmark
+  <span class="material-symbols-outlined">
+    speed
+  </span>
+</button>
+<script>
+  $(function() {
+    $('#benchmark-button').click(requestBenchmark);
+  });
+  
+  function requestBenchmark() {
+    google.script.run
+      .withSuccessHandler(function() {
+        alert('Benchmark complete');
+      })
+      .withFailureHandler(function(error) {
+        console.error('Benchmark failed: ' + error.message);
+        alert('Benchmark failed: ' + error.message);
+      })
+      .requestBenchmark();
+  }
+</script>

@@ -1,5 +1,5 @@
-import { changelog } from '../constants';
-import { ChangelogDict } from '../interfaces';
+import { changelog } from './constants';
+import { ChangelogDict } from './interfaces';
 
 interface ChangelogHandlersExport {
   changelog: typeof changelog;
@@ -35,7 +35,7 @@ export function openCardChangelog(): GoogleAppsScript.Card_Service.Card {
 
 export function openChangelogAsModalDialogue(): GoogleAppsScript.HTML.HtmlOutput {
   const changelog: ChangelogDict = exports.changelog;
-  const output = HtmlService.createTemplateFromFile('src/changelog/html/changelog').evaluate();
+  const output = HtmlService.createTemplateFromFile('src/html/baseStyle').evaluate();
   for (const minorVersionKey of Object.keys(changelog[1]).reverse()) {
     const minorVersion = parseInt(minorVersionKey);
     output.append('<details>');

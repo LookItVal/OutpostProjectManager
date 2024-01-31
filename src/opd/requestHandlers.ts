@@ -2,7 +2,7 @@ import { Project, Proposal } from '../classes/initiatives';
 import { SerializedData, ProposalNameArray, InitiativeParams } from '../interfaces';
 import { ValidationError } from '../classes/errors';
 import { properties, spreadsheet, version } from '../constants';
-import { openChangelogAsModalDialogue } from '../changelog/handlers';
+import { openChangelogAsModalDialogue } from '../changelog';
 import { benchmark, verboseLog } from '../utilities';
 
 interface RequestHandlersExports {
@@ -149,4 +149,16 @@ export function openSheetChangelog(): void {
 
 export function initConstants(): SerializedData {
   return {version: exports.version};
+}
+
+export function requestBenchmark(): boolean | undefined {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    'Benchmark',
+    'Would you like to run a benchmark?',
+    ui.ButtonSet.YES_NO);
+  if (response === ui.Button.YES) {
+    return true;
+  }
+  return undefined;
 }

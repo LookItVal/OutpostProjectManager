@@ -1,158 +1,116 @@
- <!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
-    <?!= HtmlService.createHtmlOutputFromFile('stylesheet').getContent(); ?>
-  </head>
-  <body>
-    <!-- Below is the HTML code that defines the sidebar element structure. -->
-    <div class="top-bar width-100">
-      <div class="refresh-section">
-        <div class="refresh-button">
-          <br>
-          <button id="project-refresh-button" class="action full-width">
-            <div class="spinner">
-              <span class="material-symbols-outlined">
-                sync
-              </span>
-            </div>
-            Load Project
-            <div class="spinner">
-              <span class="material-symbols-outlined">
-                sync
-              </span>
-            </div>
-          </button>
+<!-- Below is the HTML code that defines the sidebar element structure. -->
+<div class="top-bar width-100">
+  <div class="refresh-section">
+    <div class="refresh-button">
+      <br>
+      <button id="project-refresh-button" class="action full-width">
+        <div class="spinner">
+          <span class="material-symbols-outlined">
+            sync
+          </span>
         </div>
-        <br>
-        <hr>
-        <div class="title-section">
-          <h3 id="project-title">
-            No Project Selected
-          </h3>
-        </div> 
-      </div>
-    </div>
-    
-    <!-- Dynamic Content -->
-    <!-- Info Section -->
-    <div class="dynamic-menu">
-      <div class="info-message row" style="display: none;">
-        <p id="info-text">
-          Fill out the sheet with information then hit load project to refresh.
-        </p>
-      </div>
-
-      
-      <!-- Open Folder Section -->
-      <button id="open-folder-button" class="folder-button full-width row" style="display: none;">
-        <span class="material-symbols-outlined">
-          folder
-        </span>
-        Open Folder
-        <span class="material-symbols-outlined">
-          folder
-        </span>
-      </button>
-
-      <!-- Reconciliation Section -->
-      <button id="open-reconciliation-button" class="share full-width row" style="display: none;">
-        <span class="material-symbols-outlined">
-          done_outline
-        </span>
-        Reconciliation Sheet
-        <span class="material-symbols-outlined">
-          done_outline
-        </span>
-      </button>
-
-      <!-- Proposal Section -->
-      <div id="proposal-section" class="proposal-section row" style="display: none;">
-        <button id="open-costing-button" class="action half-width" style="display: none;">
+        Load Project
+        <div class="spinner">
           <span class="material-symbols-outlined">
-            request_page
+            sync
           </span>
-          Costing
-          <span class="material-symbols-outlined">
-            request_page
-          </span>
-        </button>
-        <button id="open-proposal-button" class="action half-width" style="display: none;">
-          <span class="material-symbols-outlined">
-            contract
-          </span>
-          Proposal
-          <span class="material-symbols-outlined">
-            contract
-          </span>
-        </button>
-      </div>
-
-      <!-- Accept Proposal Section -->
-      <button id="accept-proposal-button" class="create full-width row" style="display: none;">
-        <span class="material-symbols-outlined">
-          check
-        </span>
-        Proposal Accepted
-        <span class="material-symbols-outlined">
-          check
-        </span>
-      </button>
-
-      <!-- Create Job Section -->
-      <button id="create-job-button" class="create full-width row" style="display: none;">
-        <span class="material-symbols-outlined">
-          post_add
-        </span>
-        New Reconciliation Sheet
-        <span class="material-symbols-outlined">
-          post_add
-        </span>
-      </button>
-
-      <!-- Create Proposal Section -->
-      <button id="create-proposal-button" class="create full-width row" style="display: none;">
-        <span class="material-symbols-outlined">
-          post_add
-        </span>
-        Generate New Proposal
-        <span class="material-symbols-outlined">
-          post_add
-        </span>
+        </div>
       </button>
     </div>
+    <br>
+    <hr>
+    <div class="title-section">
+      <h3 id="project-title">
+        No Project Selected
+      </h3>
+    </div> 
+  </div>
+</div>
 
-    <!-- Sidebar bottom-branding. -->
-    <div class="sidebar bottom width-100">
-      <hr>
-      <br>
-      <div class="navigation-buttons button-box">
-        <button id="jump-to-job-button" class="action half-width">
-          <span class="material-symbols-outlined">
-            text_select_jump_to_beginning
-          </span>
-          Projects
-        </button>
-        <button id="jump-to-proposals-button" class="action half-width">
-          Proposals
-          <span class="material-symbols-outlined">
-            text_select_jump_to_end
-          </span>
-        </button>
-      </div>
-      <br>
-      <img alt="Add-on logo" class="logo" width="100%"
-          src="https://outpostworldwide.com/wp-content/uploads/2023/12/Outpost-Black-Transparent.png">
-      <div class="credits"> 
-        <span class="gray branding-text">Add-on by Quinn Cecil</span>
-        <span id="versionChangelog" class="gray branding-text" title="Open Changelog">1.0.0</span>
-      </div>
-    </div>
+<!-- Dynamic Content -->
+<!-- Info Section -->
+<div class="dynamic-menu">
+  <div class="info-message row" style="display: none;">
+    <p id="info-text">
+      Fill out the sheet with information then hit load project to refresh.
+    </p>
+  </div>
 
-    
-    <!-- Use a templated HTML printing scriptlet to import JavaScript. -->
-    <?!= HtmlService.createHtmlOutputFromFile('src/opd/html/sidebarjs').getContent(); ?>
-  </body>
-</html>
+  
+  <!-- Open Folder Section -->
+  <button id="open-folder-button" class="folder-button full-width row" style="display: none;">
+    <span class="material-symbols-outlined">
+      folder
+    </span>
+    Open Folder
+    <span class="material-symbols-outlined">
+      folder
+    </span>
+  </button>
+
+  <!-- Reconciliation Section -->
+  <button id="open-reconciliation-button" class="share full-width row" style="display: none;">
+    <span class="material-symbols-outlined">
+      done_outline
+    </span>
+    Reconciliation Sheet
+    <span class="material-symbols-outlined">
+      done_outline
+    </span>
+  </button>
+
+  <!-- Proposal Section -->
+  <div id="proposal-section" class="proposal-section row" style="display: none;">
+    <button id="open-costing-button" class="action half-width" style="display: none;">
+      <span class="material-symbols-outlined">
+        request_page
+      </span>
+      Costing
+      <span class="material-symbols-outlined">
+        request_page
+      </span>
+    </button>
+    <button id="open-proposal-button" class="action half-width" style="display: none;">
+      <span class="material-symbols-outlined">
+        contract
+      </span>
+      Proposal
+      <span class="material-symbols-outlined">
+        contract
+      </span>
+    </button>
+  </div>
+
+  <!-- Accept Proposal Section -->
+  <button id="accept-proposal-button" class="create full-width row" style="display: none;">
+    <span class="material-symbols-outlined">
+      check
+    </span>
+    Proposal Accepted
+    <span class="material-symbols-outlined">
+      check
+    </span>
+  </button>
+
+  <!-- Create Job Section -->
+  <button id="create-job-button" class="create full-width row" style="display: none;">
+    <span class="material-symbols-outlined">
+      post_add
+    </span>
+    New Reconciliation Sheet
+    <span class="material-symbols-outlined">
+      post_add
+    </span>
+  </button>
+
+  <!-- Create Proposal Section -->
+  <button id="create-proposal-button" class="create full-width row" style="display: none;">
+    <span class="material-symbols-outlined">
+      post_add
+    </span>
+    Generate New Proposal
+    <span class="material-symbols-outlined">
+      post_add
+    </span>
+  </button>
+</div>

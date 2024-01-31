@@ -1,6 +1,7 @@
 import { Booking } from './classes/booking';
 import { InitEvent } from './interfaces';
 import { properties, version} from './constants';
+import { User } from './classes/user';
 
 // this next chunk deals with clasps inability to deal with imports properly.
 // it's a bit of a hack, but it works.
@@ -75,11 +76,21 @@ export function getSheetsHomepage(): GoogleAppsScript.Card_Service.Card {
 }
 
 export function openOPDSidebar(): void {
-  const ui = HtmlService.createTemplateFromFile('src/opd/html/sidebar')
-    .evaluate()
+  const output = HtmlService.createTemplateFromFile('src/html/baseStyle').evaluate();
+  output.append(HtmlService.createHtmlOutputFromFile('src/opd/html/sidebar').getContent());
+  if (User.isAdmin) output.append(HtmlService.createHtmlOutputFromFile('src/opd/html/adminSidebar').getContent());
+  output.append('<div class="sidebar bottom width-100">');
+  output.append(HtmlService.createHtmlOutputFromFile('src/opd/html/sidebarBottom').getContent());
+  if (User.isDeveloper) output.append(HtmlService.createHtmlOutputFromFile('src/opd/html/devSidebar').getContent());
+  output.append(HtmlService.createHtmlOutputFromFile('src/html/footer').getContent());
+  output.append('</div>');
+  output.append(HtmlService.createHtmlOutputFromFile('src/opd/html/sidebarjs').getContent());
+  output.append('</body></html>');
+  output
     .setTitle('Outpost Project Manager')
+    .setWidth(1000)
     .setSandboxMode(HtmlService.SandboxMode.IFRAME);
-  SpreadsheetApp.getUi().showSidebar(ui);
+  SpreadsheetApp.getUi().showSidebar(output);
 }
 
 /////////////////////////////////////////////

@@ -1,8 +1,8 @@
-
+/*
 
 import * as fs from 'fs'; 
 import readline from 'readline';
-import { BenchmarkJSON, unknownFunction } from '../src/interfaces';
+import { BenchmarkJSON, Method } from '../interfaces';
 import { validateHeaderName } from 'http';
 
 const rl = readline.createInterface({
@@ -20,7 +20,7 @@ async function getInput(prompt: string): Promise<string> {
 
 export class Benchmarks {
   // accepts key of string that returns a BenchmarkJSON or a method
-  [key: string]: BenchmarkJSON | unknownFunction;
+  [key: string]: BenchmarkJSON | { [key: unknown]: () => unknown};
 
   constructor() {
     const data = fs.readFileSync('benchmarking.json', 'utf-8');
@@ -34,12 +34,16 @@ export class Benchmarks {
       throw new Error('Invalid value in benchmarking.json');
     }
     for (const key in data) {
-      if (key === 'OPD Sheet' || key === 'Calendar') {
-
-        if (data[key]) {
-          this.validateA(data[key]);
+      if (key === 'OPDSheet') {
+        if ((data as { OPDSheet: unknown })[key]) {
+          this.validateA((data as { OPDSheet: unknown })[key]);
         }
-      } else {
+      } else if (key === 'Calendar') {
+        if ((data as { Calendar: unknown })[key]) {
+          this.validateA((data as { Calendar: unknown })[key]);
+        }
+      }
+      else {
         throw new Error('Invalid key in benchmarking.json');
       }
     }
@@ -50,11 +54,17 @@ export class Benchmarks {
       throw new Error('Invalid value in benchmarking.json');
     }
     for (const key in data) {
-      if (key === 'Frontend' || key === 'Backend') {
-        if (data[key]) {
-          this.validateB(data[key]);
+      if (key === 'Frontend') {
+        if ((data as { Frontend: unknown })[key]) {
+          this.validateB((data as { Frontend: unknown })[key]);
         }
-      } 
+      } else if (key === 'Backend') {
+        if ((data as { Backend: unknown })[key]) {
+          this.validateB((data as { Backend: unknown })[key]);
+        }
+      } else {
+        throw new Error('Invalid key in benchmarking.json');
+      }
     }
   }
 
@@ -63,8 +73,8 @@ export class Benchmarks {
       throw new Error('Invalid value in benchmarking.json');
     }
     for (const key in data) {
-      if (data[key]) {
-        this.validateC(data[key]);
+      if ((data as { [key: string]: unknown})[key]) {
+        this.validateC((data as { [key: string]: unknown})[key]);
       }
     }
   }
@@ -75,12 +85,12 @@ export class Benchmarks {
     }
     for (const key in data) {
       if (key === 'Raw') {
-        if (data[key]) {
-          this.validateD(data[key]);
+        if ((data as { Raw: unknown })[key]) {
+          this.validateD((data as { Raw: unknown })[key]);
         }
       } else if (key === 'Statistics') {
-        if (data[key]) {
-          this.validateE(data[key]);
+        if ((data as { Statistics: unknown })[key]) {
+          this.validateE((data as { Statistics: unknown })[key]);
         }
       } else {
         throw new Error('Invalid key in benchmarking.json');
@@ -110,17 +120,20 @@ export class Benchmarks {
     }
     for (const key in data) {
       if (key === 'Mean Total' || key === 'Range Total') {
-        if (typeof data[key] !== 'number') {
+        if (typeof data !== 'object') {
+          throw new Error('Invalid value in benchmarking.json');
+        }
+        if (typeof (data as { [key: string]: unknown })[key] !== 'number') {
           throw new Error('Invalid value in benchmarking.json');
         }
         continue;
       }
       if (key === 'Mean Per Process' || key === 'Range Per Process') {
-        if (typeof data[key] !== 'object') {
+        if (typeof (data as { [key: string]: unknown })[key] !== 'object') {
           throw new Error('Invalid value in benchmarking.json');
         }
-        for (const innerKey in data[key]) {
-          if (typeof data[key][innerKey] !== 'number') {
+        for (const innerKey in (data as { [key: string]: { [key: string]: unknown} })[key]) {
+          if (typeof (data as { [key: string]: { [key: string]: unknown} })[key][innerKey] !== 'number') {
             throw new Error('Invalid value in benchmarking.json');
           }
         }
@@ -153,7 +166,7 @@ async function record(iterations = 5): void {
   // ask for version number
   const version = await getInput('Enter the version number of the app: ');
   // if version already is recorded, as if you want to add or overwrite
-  let overwrite = undefined;
+  let overwrite: boolean | undefined = undefined;
   if (benchmark[version]) {
     const overwriteFunction = async () => {
       const overwritePropmt = await getInput('Version already exists. Overwrite? (y/n/exit): ');
@@ -179,9 +192,133 @@ async function record(iterations = 5): void {
     }
   }
   // start with opd sheet tests
-  cosnt opdSheet = 
+  let opdSheet = {};
+  if (overwrite === undefined || overwrite === true) {
+    opdSheet = {
+      Frontend: {
+        'jumpToProjects': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'jumpToProposals': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from empty project': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from empty proposal': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from proposal with all docs': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from project with all docs': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from proposal with no docs': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from project with no docs': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'generateProposal from existing client': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'generateProposal from new client': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'acceptProposal': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'generateProject from existing client': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'generateProject from new client': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'openChangelog': {
+          'Raw': [],
+          'Statistics': {}
+        }
+      },
+      Backend: {
+        'jumpToProjects': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'jumpToProposals': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from empty project': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from empty proposal': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from proposal with all docs': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from project with all docs': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from proposal with no docs': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'getInitiative from project with no docs': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'generateProposal from existing client': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'generateProposal from new client': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'acceptProposal': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'generateProject from existing client': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'generateProject from new client': {
+          'Raw': [],
+          'Statistics': {}
+        },
+        'openChangelog': {
+          'Raw': [],
+          'Statistics': {}
+        }
+      }
+    };
+  }
+  if (overwrite === false) {
+    opdSheet = (benchmark[version] as BenchmarkJSON).OPDSheet;
+  }
+  // tell user to start the tests
+  // TODO make button to start tests
   // jump to proposals, log data for frontend and then backend
-
   // jump to projects, log data for frontend and then backend
   // repeat the number of iterations given
   // getInitiative from empty project, log data for frontend and then backend
@@ -220,6 +357,7 @@ async function record(iterations = 5): void {
 
 function stats(): void {
   console.log('Stats...');
+  prettyPrint();
 }
 
 function prettyPrint(): void {
@@ -227,11 +365,15 @@ function prettyPrint(): void {
 }
 
 // This is the main entry point for the program.
-try {
-  main(...process.argv.slice(2));
-  rl.close();
-} catch (error: unknown) {
-  rl.close();
-  console.error(error);
-  process.exit(1);
+if (require.main === module) {
+  try {
+    main(...process.argv.slice(2));
+  } catch (error: unknown) {
+    console.error(error);
+  }
 }
+
+rl.close();
+process.exit(1);
+
+*/
