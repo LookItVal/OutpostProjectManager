@@ -7,6 +7,8 @@
     speed
   </span>
 </button>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
   $(function() {
     $('#benchmark-button').click(requestBenchmark);
@@ -15,6 +17,9 @@
   function requestBenchmark() {
     google.script.run
       .withSuccessHandler(function() {
+        alert('Benchmark starting, Please do not touch the computer until complete.');
+        toastr.success('Your message here');
+        //askForIterationCount();
         alert('Benchmark complete');
       })
       .withFailureHandler(function(error) {
@@ -22,5 +27,223 @@
         alert('Benchmark failed: ' + error.message);
       })
       .requestBenchmark();
+  }
+
+  function askForIterationCount() {
+    var iterationCount = prompt('How many iterations would you like to run?');
+    if (typeof iterationCount !== 'number') {
+      iterationCount = parseInt(iterationCount);
+      if (iterationCount == NaN) {
+        alert('Invalid input. Please enter a number.');
+        askForIterationCount();
+        return
+      }
+    }
+  }
+  if (iterationCount <= 0) {
+    alert('Invalid input. Please enter a positive number.');
+    askForIterationCount();
+    return
+  }
+  while (iterationCount > 0) {
+    console.log(runBenchmarkTests());
+    iterationCount--;
+  }
+
+  function runBenchmarkTests() {
+    const results = {};
+    let start = performance.now();
+    jumpToProposal();
+    let end = performance.now();
+    resuls['jumpToProjects'] = end - start;
+    console.debug('jumpToProjects', resuls['jumpToProjects']);
+    start = performance.now();
+    jumpToProjects();
+    end = performance.now();
+    resuls['jumpToProposals'] = end - start;
+    console.debug('jumpToProposals', resuls['jumpToProposals']);
+
+    try {
+      selectEmptyProject();
+      setTimeout(function() {
+        start = performance.now();
+        getInitiative();
+        end = performance.now();
+      }, 100);
+      resuls['getInitiativeEmptyProject'] = end - start;
+      console.debug('getInitiativeEmptyProject', resuls['getInitiativeEmptyProject']);
+    } catch (error) {
+      console.error('Error selecting empty project: ' + error.message);
+      alert('Error selecting empty project: ' + error.message);
+      return;
+    }
+    
+    try {
+      selectEmptyProposal();
+      setTimeout(function() {
+        start = performance.now();
+        getInitiative();
+        end = performance.now();
+      }, 100);
+      resuls['getInitiativeEmptyProposal'] = end - start;
+      console.debug('getInitiativeEmptyProposal', resuls['getInitiativeEmptyProposal']);
+    } catch (error) {
+      console.error('Error selecting empty proposal: ' + error.message);
+      alert('Error selecting empty proposal: ' + error.message);
+      return;
+    }
+
+    try {
+      selectFullProject();
+      setTimeout(function() {
+        start = performance.now();
+        getInitiative();
+        end = performance.now();
+      }, 100);
+      resuls['getInitiativeFullProject'] = end - start;
+      console.debug('getInitiativeFullProject', resuls['getInitiativeFullProject']);
+    } catch (error) {
+      console.error('Error selecting full project: ' + error.message);
+      alert('Error selecting full project: ' + error.message);
+      return;
+    }
+
+    try {
+      selectFullProposal();
+      setTimeout(function() {
+        start = performance.now();
+        getInitiative();
+        end = performance.now();
+      }, 100);  
+      resuls['getInitiativeFullProposal'] = end - start;
+      console.debug('getInitiativeFullProposal', resuls['getInitiativeFullProposal']);
+    } catch (error) {
+      console.error('Error selecting full proposal: ' + error.message);
+      alert('Error selecting full proposal: ' + error.message);
+      return;
+    }
+    
+    try {
+      selectNoDocsProject();
+      setTimeout(function() {
+        start = performance.now();
+        getInitiative();
+        end = performance.now();
+      }, 100);
+      resuls['getInitiativeNoDocsProject'] = end - start;
+      console.debug('getInitiativeNoDocsProject', resuls['getInitiativeNoDocsProject']);
+    } catch (error) {
+      console.error('Error selecting no docs project: ' + error.message);
+      alert('Error selecting no docs project: ' + error.message);
+      return;
+    }
+
+    try {
+      selectNoDocsProposal();
+      setTimeout(function() {
+        start = performance.now();
+        getInitiative();
+        end = performance.now();
+      }, 100);
+      resuls['getInitiativeNoDocsProposal'] = end - start;
+      console.debug('getInitiativeNoDocsProposal', resuls['getInitiativeNoDocsProposal']);
+    } catch (error) {
+      console.error('Error selecting no docs proposal: ' + error.message);
+      alert('Error selecting no docs proposal: ' + error.message);
+      return;
+    }
+
+    try {
+      selectNewProjectFromExistingClient();
+      setTimeout(function() {
+        start = performance.now();
+        generateJob();
+        end = performance.now();
+      }, 100);
+      resuls['generateProjectFromExistingClient'] = end - start;
+      console.debug('generateProjectFromExistingClient', resuls['generateProjectFromExistingClient']);
+    } catch (error) {
+      console.error('Error generating project from existing client: ' + error.message);
+      alert('Error generating project from existing client: ' + error.message);
+      return;
+    }
+
+    try {
+      deleteProject();
+      deleteClient();
+      setTimeout(function() {
+        start = performance.now();
+        generateJob();
+        end = performance.now();
+      }, 100);
+      resuls['generateProjectFromNewClient'] = end - start;
+      console.debug('generateProjectFromNewClient', resuls['generateProjectFromNewClient']);
+    } catch (error) {
+      console.error('Error generating project from new client: ' + error.message);
+      alert('Error generating project from new client: ' + error.message);
+      return;
+    }
+
+    try {
+      deleteProject();
+      selectNewProposal();
+      setTimeout(function() {
+        start = performance.now();
+        generateProposal();
+        end = performance.now();
+      }, 100);
+      resuls['generateProposalFromExistingClient'] = end - start;
+      console.debug('generateProposalFromExistingClient', resuls['generateProposalFromExistingClient']);
+    } catch (error) {
+      console.error('Error generating proposal from existing client: ' + error.message);
+      alert('Error generating proposal from existing client: ' + error.message);
+      return;
+    }
+
+    try {
+      deleteProposal();
+      deleteClient();
+      setTimeout(function() {
+        start = performance.now();
+        generateProposal();
+        end = performance.now();
+      }, 100);
+      resuls['generateProposalFromNewClient'] = end - start;
+      console.debug('generateProposalFromNewClient', resuls['generateProposalFromNewClient']);
+    } catch (error) {
+      console.error('Error generating proposal from new client: ' + error.message);
+      alert('Error generating proposal from new client: ' + error.message);
+      return;
+    }
+
+    try {
+      setTimeout(function() {
+        start = performance.now();
+        acceptProposal();
+        end = performance.now();
+      }, 100);
+      resuls['acceptProposal'] = end - start;
+      console.debug('acceptProposal', resuls['acceptProposal']);
+      deleteProject();
+    } catch (error) {
+      console.error('Error accepting proposal: ' + error.message);
+      alert('Error accepting proposal: ' + error.message);
+      return;
+    }
+
+    try {
+      setTimeout(function() {
+        start = performance.now();
+        openChangelog();
+        end = performance.now();
+      }, 100);
+      resuls['openChangelog'] = end - start;
+      console.debug('openChangelog', resuls['openChangelog']);
+    } catch (error) {
+      console.error('Error opening changelog: ' + error.message);
+      alert('Error opening changelog: ' + error.message);
+      return;
+    }
+    return results;
   }
 </script>

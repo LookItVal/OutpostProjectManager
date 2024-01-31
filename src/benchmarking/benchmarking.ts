@@ -1,9 +1,8 @@
-/*
+
 
 import * as fs from 'fs'; 
 import readline from 'readline';
-import { BenchmarkJSON, Method } from '../interfaces';
-import { validateHeaderName } from 'http';
+import { BenchmarkJSON, OPDSheetJSONTests } from '../interfaces';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -11,7 +10,7 @@ const rl = readline.createInterface({
 });
 
 async function getInput(prompt: string): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     rl.question(prompt, (answer) => {
       resolve(answer);
     });
@@ -20,7 +19,7 @@ async function getInput(prompt: string): Promise<string> {
 
 export class Benchmarks {
   // accepts key of string that returns a BenchmarkJSON or a method
-  [key: string]: BenchmarkJSON | { [key: unknown]: () => unknown};
+  [key: string]: BenchmarkJSON | ((...args: unknown[]) => unknown);
 
   constructor() {
     const data = fs.readFileSync('benchmarking.json', 'utf-8');
@@ -148,19 +147,22 @@ function main(...args: string[]): void {
   console.log('Hello, world!');
   if (args[0] === 'record') {
     if (args.length === 2 && !isNaN(parseInt(args[1]))) {
-      return record(parseInt(args[1]));
+      // record(parseInt(args[1]));
+      return;
     }
-    return record();
+    record();
+    return;
   }
   if (args.length > 1) {
     throw new Error('Too many arguments');
   }
   else {
-    return stats();
+    stats();
+    return;
   }
 }
 
-async function record(iterations = 5): void {
+async function record(/*iterations = 5*/): Promise<void> {
   console.log('Begging Benchmarking Log...');
   const benchmark = new Benchmarks();
   // ask for version number
@@ -192,132 +194,107 @@ async function record(iterations = 5): void {
     }
   }
   // start with opd sheet tests
-  let opdSheet = {};
-  if (overwrite === undefined || overwrite === true) {
-    opdSheet = {
-      Frontend: {
-        'jumpToProjects': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'jumpToProposals': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from empty project': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from empty proposal': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from proposal with all docs': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from project with all docs': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from proposal with no docs': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from project with no docs': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'generateProposal from existing client': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'generateProposal from new client': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'acceptProposal': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'generateProject from existing client': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'generateProject from new client': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'openChangelog': {
-          'Raw': [],
-          'Statistics': {}
-        }
+  let opdSheet: {'Frontend': OPDSheetJSONTests, 'Backend': OPDSheetJSONTests} = {
+    Frontend: {
+      'jumpToProjects': {
+        'Raw': [],
       },
-      Backend: {
-        'jumpToProjects': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'jumpToProposals': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from empty project': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from empty proposal': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from proposal with all docs': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from project with all docs': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from proposal with no docs': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'getInitiative from project with no docs': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'generateProposal from existing client': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'generateProposal from new client': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'acceptProposal': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'generateProject from existing client': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'generateProject from new client': {
-          'Raw': [],
-          'Statistics': {}
-        },
-        'openChangelog': {
-          'Raw': [],
-          'Statistics': {}
-        }
+      'jumpToProposals': {
+        'Raw': [],
+      },
+      'getInitiative from empty project': {
+        'Raw': [],
+      },
+      'getInitiative from empty proposal': {
+        'Raw': [],
+      },
+      'getInitiative from proposal with all docs': {
+        'Raw': [],
+      },
+      'getInitiative from project with all docs': {
+        'Raw': [],
+      },
+      'getInitiative from proposal with no docs': {
+        'Raw': [],
+      },
+      'getInitiative from project with no docs': {
+        'Raw': [],
+      },
+      'generateProposal from existing client': {
+        'Raw': [],
+      },
+      'generateProposal from new client': {
+        'Raw': [],
+      },
+      'acceptProposal': {
+        'Raw': [],
+      },
+      'generateProject from existing client': {
+        'Raw': [],
+      },
+      'generateProject from new client': {
+        'Raw': [],
+      },
+      'openChangelog': {
+        'Raw': [],
       }
-    };
-  }
+    } as OPDSheetJSONTests,
+    Backend: {
+      'jumpToProjects': {
+        'Raw': [],
+      },
+      'jumpToProposals': {
+        'Raw': [],
+      },
+      'getInitiative from empty project': {
+        'Raw': [],
+      },
+      'getInitiative from empty proposal': {
+        'Raw': [],
+      },
+      'getInitiative from proposal with all docs': {
+        'Raw': [],
+      },
+      'getInitiative from project with all docs': {
+        'Raw': [],
+      },
+      'getInitiative from proposal with no docs': {
+        'Raw': [],
+      },
+      'getInitiative from project with no docs': {
+        'Raw': [],
+      },
+      'generateProposal from existing client': {
+        'Raw': [],
+      },
+      'generateProposal from new client': {
+        'Raw': [],
+      },
+      'acceptProposal': {
+        'Raw': [],
+      },
+      'generateProject from existing client': {
+        'Raw': [],
+      },
+      'generateProject from new client': {
+        'Raw': [],
+      },
+      'openChangelog': {
+        'Raw': [],
+      }
+    }
+  };
   if (overwrite === false) {
-    opdSheet = (benchmark[version] as BenchmarkJSON).OPDSheet;
+    if (!(benchmark[version] as BenchmarkJSON).OPDSheet) {
+      throw new Error('Version already exists but does not have OPDSheet tests');
+    }
+    opdSheet = (benchmark[version] as BenchmarkJSON).OPDSheet as {'Frontend': OPDSheetJSONTests, 'Backend': OPDSheetJSONTests};
+    console.log('Overwriting OPDSheet tests...');
+    console.debug('opdSheet:', opdSheet);
   }
   // tell user to start the tests
-  // TODO make button to start tests
+  console.log('To continue, please start the tests in the app.');
+  await getInput('Press any key to continue...');
   // jump to proposals, log data for frontend and then backend
   // jump to projects, log data for frontend and then backend
   // repeat the number of iterations given
@@ -353,6 +330,7 @@ async function record(iterations = 5): void {
   // save the benchmarks
   // do stats on the data
   // pretty print the data
+
 }
 
 function stats(): void {
@@ -375,5 +353,3 @@ if (require.main === module) {
 
 rl.close();
 process.exit(1);
-
-*/

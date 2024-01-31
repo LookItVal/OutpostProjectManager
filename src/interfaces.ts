@@ -83,13 +83,13 @@ export interface ChangelogDict {
 
 export interface BasicTestJSON {
   'Raw': [
-    {[key: string]: number}
+    {[key: string]: number}?
   ],
   'Statistics'?: {
     'Mean Total': number,
-    'Mean Per Process': {[key: string]: number},
+    'Mean Per Process'?: {[key: string]: number},
     'Range Total': number,
-    'Range Per Process': {[key: string]: number}
+    'Range Per Process'?: {[key: string]: number}
   }
 }
 
