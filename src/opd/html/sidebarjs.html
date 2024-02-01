@@ -1,6 +1,9 @@
 <script>
   let globalInitiative = {};
   let loadingInterval;
+  let isLoading = false;
+  //we could buuld the next line with the actual versoion number
+  //then you can remove the init function and speed up load time
   let version;
 
   // Run initializations on sidebar load.
@@ -79,6 +82,27 @@
     // the dialog, if necessary.
   });
 
+  
+  function googleScript(successHandler, functionName, parameters, failureHandler = basicError) {
+    return new Promise((resolve, reject) => {
+      google.script.run
+        .withFailureHandler(async (msg, element) => {
+          await failureHandler(msg, element);
+          reject(msg);
+        })
+        .withSuccessHandler(async (result) => {
+          await successHandler(result);
+          resolve(result);
+        })
+        [functionName](...parameters);
+    });
+  }
+
+  function basicError(err) {
+    stopLoading();
+    console.error(err);
+  }
+
   function initConstants() {
     google.script.run.withSuccessHandler(function(constants) {
       console.log(constants);
@@ -94,6 +118,7 @@
 
   // Update the ui to show loading info and remove dynamic content.
   function startLoading(loadingText = "Loading") {
+    isLoading = true;
     let dots = '';
     fadeOutAll();
     if (loadingInterval) {
@@ -114,6 +139,7 @@
     }
     $('#project-refresh-button .material-symbols-outlined').addClass('icon-paused');
     $('#project-refresh-button').prop('disabled', false);
+    isLoading = false;
   }
 
   // Fade out all dynamic content.
@@ -200,20 +226,13 @@
   }
 
   // Get the current project info from the server and display the appropriate dynamic content.
-  function refreshSidebar() {
-    console.time("refreshSidebar benchmark");
+  async function refreshSidebar() {
     startLoading();
-    google.script.run.withSuccessHandler(function(initiative) {
+    await googleScript(function(initiative) {
       stopLoading();
       globalInitiative = initiative;
       refreshUI();
-      console.timeEnd("refreshSidebar benchmark");
-    }).withFailureHandler(function(msg, element) {
-      stopLoading();
-      console.log(msg, element);
-      $('#project-title').text("Error With Addon: Check Frontend Console For Details")
-      console.timeEnd("refreshSidebar benchmark");
-    }).getInitiative();
+    }, 'getInitiative', []);
   }
 
   // update the ui with whatever is liaded as the state
@@ -282,183 +301,100 @@
   }
     
   // Calls the server to change the active sheet to the most recent job.
-  function jumpToProject() {
-    console.time("jumpToProject benchmark");
+  async function jumpToProject() {
     startLoading(loadingText = 'Looking for Project');
-    google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        console.log(msg, element);
-        element.disabled = false;
-        console.timeEnd("jumpToProject benchmark");
-      })
-      .withSuccessHandler(function() {
-        refreshSidebar();
-        console.timeEnd("jumpToProject benchmark");
-      })
-      .jumpToProject();
+    await googleScript(async function() {
+      stopLoading();
+      await refreshSidebar();
+    }, 'jumpToProject', []);
   }
   
   // Calls The server to change the active sheet to the proposal sheet.
-  function jumpToProposal() {
-    console.time("jumpToProposal benchmark");
+  async function jumpToProposal() {
     startLoading(loadingText = 'Looking for Proposal');
-    google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        console.log(msg, element);
-        element.disabled = false;
-        console.timeEnd("jumpToProposal benchmark");
-      })
-      .withSuccessHandler(function() {
-        refreshSidebar();
-        console.timeEnd("jumpToProposal benchmark");
-      })
-      .jumpToProposal();
+    await googleScript(async function() {
+      stopLoading();
+      await refreshSidebar();
+    }, 'jumpToProposal', []);
   }
 
   // Calls the server to generate a new proposal.
-  function requestProposalGeneration() {
+  async function requestProposalGeneration() {
     startLoading(loadingText = 'Making A Proposal to Send');
-    google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        console.log(msg, element);
-        element.disabled = false;
-      })
-      .withSuccessHandler(function(result) {
-        stopLoading();
-        if (result) {
-          generateProposal();
-          return;
-        }
-        refreshUI();
-      })
-      .requestProposalGeneration();
+    let userResponse = comfirm(`Are you sure you want to make a new proposal for ${globalInitiative.title}?`);
+    if (!userResponse) {
+      stopLoading();
+      return;
+    }
+    await generateProposal();
   }
 
-  function generateProposal() {
-    console.time("generateProposal benchmark");
+  async function generateProposal() {
     startLoading(loadingText = 'Making New Proposal Documents');
-    google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
-        console.log(msg, element);
-        element.disabled = false;
-        console.timeEnd("generateProposal benchmark");
-      })
-      .withSuccessHandler(function() {
+    await googleScript(async function() {
         stopLoading();
         startLoading(loadingText = 'Loading New Proposal');
-        // wait one second for everything to fully register
-        setTimeout(function() {
-          stopLoading(); 
-          refreshSidebar();
-        }, 500);
-        console.timeEnd("generateProposal benchmark");
-      })
-      .generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
+        await refreshSidebar();
+      }, 'generateProposal', [
+        ["PROPOSAL:", 
+        globalInitiative.yrmo,
+        globalInitiative.clientName,
+        globalInitiative.projectName]]);
   }
 
-  function requestProposalAccept() {
+  async function requestProposalAccept() {
     startLoading(loadingText = 'Gathering Proposal Information');
-    google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        console.log(msg, element);
-        element.disabled = false;
-      })
-      .withSuccessHandler(function(result) {
-        stopLoading();
-        if (result) {
-          acceptProposal();
-          return;
-        }
-        refreshUI();
-      })
-      .requestProposalAccept();
+    let userResponse = confirm(`Are you sure you want to accept the proposal for ${globalInitiative.title}?`);
+    if (!userResponse) {
+      stopLoading();
+      return;
+    }
+    await acceptProposal();
   }
 
-  function acceptProposal() {
-    console.time("acceptProposal benchmark");
+  async function acceptProposal() {
     startLoading(loadingText = 'Converting Proposal to Project');
-    google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
-        console.log(msg, element);
-        element.disabled = false;
-        console.timeEnd("acceptProposal benchmark");
-      })
-      .withSuccessHandler(function() {
-        stopLoading();
-        startLoading(loadingText = 'Loading New Project');
-        // wait one second for everything to fully register
-        setTimeout(function() {
-          stopLoading(); 
-          refreshSidebar();
-        }, 500);
-        console.timeEnd("acceptProposal benchmark");
-      })
-      .acceptProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
+    await googleScript(async function() {
+      stopLoading();
+      startLoading(loadingText = 'Loading New Project');
+      await refreshSidebar();
+    }, 'acceptProposal', [
+      ["PROPOSAL:",
+      globalInitiative.yrmo,
+      globalInitiative.clientName,
+      globalInitiative.projectName]
+    ]);
   }
 
-  function requestJobGeneration() {
+  async function requestJobGeneration() {
     startLoading(loadingText = 'Making A Project to Send');
-    google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
-        console.log(msg, element);
-        element.disabled = false;
-      })
-      .withSuccessHandler(function(result) {
-        stopLoading();
-        if (result) {
-          generateJob();
-          return;
-        }
-        refreshUI();
-      })
-      .requestJobGeneration();
+    let userResponse = confirm(`Are you sure you want to make a new project for ${globalInitiative.title}?`);
+    if (!userResponse) {
+      stopLoading();
+      return;
+    }
+    await generateJob();
   }
 
-  function generateJob() {
-    console.time("generateJob benchmark");
+  async function generateJob() {
     startLoading(loadingText = 'Making New Reconciliation Sheet');
-    google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
-        console.log(msg, element);
-        element.disabled = false;
-        console.timeEnd("generateJob benchmark");
-      })
-      .withSuccessHandler(function() {
-        stopLoading();
-        refreshSidebar();
-        console.timeEnd("generateJob benchmark");
-      })
-      .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+    await googleScript(async function() {
+      stopLoading();
+      await refreshSidebar();
+    }, 'generateJob', [
+      [globalInitiative.yrmo,
+      globalInitiative.jobNumber,
+      globalInitiative.clientName,
+      globalInitiative.projectName,
+      "FALSE"]
+    ]);
   }
 
-  function openChangelog() {
-    console.time("openChangelog benchmark");
+  async function openChangelog() {
     startLoading(loadingText = 'Opening Changelog');
-    google.script.run
-      .withFailureHandler(function () {
-        stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
-        console.log(msg, element);
-        element.disabled = false;
-        console.timeEnd("openChangelog benchmark");
-      })
-      .withSuccessHandler(function () {
-        stopLoading();
-        refreshSidebar();
-        console.timeEnd("openChangelog benchmark");
-      })
-    .openSheetChangelog();
+    await googleScript(function() {
+      stopLoading();
+      refreshUI();
+    }, 'openSheetChangelog', []);
   }
 </script>

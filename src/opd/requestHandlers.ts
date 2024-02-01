@@ -151,14 +151,33 @@ export function initConstants(): SerializedData {
   return {version: exports.version};
 }
 
-export function requestBenchmark(): boolean | undefined {
+export function requestBenchmark(count = 1): boolean {
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
     'Benchmark',
-    'Would you like to run a benchmark?',
+    `Would you like to run ${count} benchmark tests?`,
     ui.ButtonSet.YES_NO);
   if (response === ui.Button.YES) {
     return true;
   }
-  return undefined;
+  return false;
+}
+
+//////////////////////////////////
+//     Dev Request Handlers     //
+//////////////////////////////////
+
+export function selectEmptyProposal(): void {
+  jumpToProposal();
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const row = sheet.getLastRow()+1;
+  sheet.getRange(`A${row}`).activate();
+}
+
+export function selectEmptyProject(): void {
+  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  const sheet = exports.Project.nextSheet;
+  spreadsheet.setActiveSheet(sheet);
+  const row = exports.Project.nextRow;
+  sheet.getRange(`A${row}`).activate();
 }
