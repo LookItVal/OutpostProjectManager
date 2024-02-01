@@ -389,6 +389,17 @@ export abstract class Initiative {
       return this._folder;
     }
 
+    public deleteFiles(): void {
+      if (this.folder) {
+        const files = this.folder.getFiles();
+        while (files.hasNext()) {
+          const file = files.next();
+          file.setTrashed(true);
+        }
+        this.folder.setTrashed(true);
+      }
+    }
+
     /////////////////////////////////////////////
     //             Private Methods             //
     /////////////////////////////////////////////
@@ -617,7 +628,7 @@ export class Project extends Initiative {
     return this._dataSheet;
   }
 
-  public get reconciliationSheet (): GoogleAppsScript.Drive.File | undefined {
+  public get reconciliationSheet(): GoogleAppsScript.Drive.File | undefined {
     if (this._reconciliationSheet) {
       return this._reconciliationSheet;
     }
@@ -710,6 +721,16 @@ export class Project extends Initiative {
     if (!this.producer) {
       this.producer = exports.User.fullName;
     }
+  }
+
+  public deleteFiles(): void {
+    if (!exports.User.isDeveloper) {
+      throw new exports.ValidationError('User is not a developer');
+    }
+    if (this.reconciliationSheet) {
+      this.reconciliationSheet.setTrashed(true);
+    }
+    super.deleteFiles();
   }
 
   public save(): void {

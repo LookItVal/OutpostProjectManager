@@ -2,6 +2,7 @@ import { ValidationError } from './errors';
 import { ClientParams, Initiative } from '../interfaces';
 import { properties, regexJobName, regexProposalName } from '../constants';
 import { Project, Proposal } from './initiatives';
+import { User } from './user';
 
 interface ClientExports {
     ValidationError: typeof ValidationError;
@@ -10,6 +11,7 @@ interface ClientExports {
     regexProposalName: typeof regexProposalName;
     Project: typeof Project;
     Proposal: typeof Proposal;
+    User: typeof User;
 }
 declare const exports: ClientExports;
 
@@ -44,6 +46,10 @@ export class Client {
     const folderId: string = exports.properties.getProperty('clientFolderId') ?? '';
     const folder: GoogleAppsScript.Drive.Folder = DriveApp.getFolderById(folderId);
     return folder;
+  }
+
+  public static get clientSheet(): GoogleAppsScript.Spreadsheet.Sheet {
+    return exports.Project.dataSpreadsheet.getSheetByName('Clients') as GoogleAppsScript.Spreadsheet.Sheet;
   }
 
   /////////////////////////////////////////////
@@ -133,10 +139,20 @@ export class Client {
       throw new exports.ValidationError('Client already has a folder');
     }
     this._folder = Client.clientFolder.createFolder(this.name);
-    const sheet = exports.Project.dataSpreadsheet.getSheetByName('Clients') as GoogleAppsScript.Spreadsheet.Sheet;
-    sheet.appendRow([this.name, this._folder?.getId() ?? '']);
+    Client.clientSheet.appendRow([this.name, this._folder?.getId() ?? '']);
     return this._folder;
   }
+
+  public deleteClientFiles(): void {
+    if (!exports.User.isDeveloper) {
+      throw new exports.ValidationError('User is not a developer');
+    }
+    if (this.folder) {
+      this.folder.setTrashed(true);
+    }
+    Client.clientSheet.deleteRow(Client.clientSheet.getRange('A:A').getValues().map(row => row[0]).indexOf(this.name) + 1);
+  }
+
 
   /////////////////////////////////////////////
   //             Static Methods              //

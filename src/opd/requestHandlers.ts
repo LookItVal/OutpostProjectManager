@@ -1,14 +1,16 @@
-import { Project, Proposal } from '../classes/initiatives';
+import { Initiative, Project, Proposal } from '../classes/initiatives';
 import { SerializedData, ProposalNameArray, InitiativeParams } from '../interfaces';
 import { ValidationError } from '../classes/errors';
 import { properties, spreadsheet, version } from '../constants';
 import { openChangelogAsModalDialogue } from '../changelog';
 import { benchmark, verboseLog } from '../utilities';
+import { User } from '../classes/user';
 
 interface RequestHandlersExports {
   Project: typeof Project;
   Proposal: typeof Proposal;
   ValidationError: typeof ValidationError;
+  User: typeof User;
   properties: typeof properties;
   spreadsheet: typeof spreadsheet;
   version: typeof version;
@@ -167,17 +169,67 @@ export function requestBenchmark(count = 1): boolean {
 //     Dev Request Handlers     //
 //////////////////////////////////
 
-export function selectEmptyProposal(): void {
-  jumpToProposal();
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const row = sheet.getLastRow()+1;
-  sheet.getRange(`A${row}`).activate();
-}
-
 export function selectEmptyProject(): void {
   const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
   const sheet = exports.Project.nextSheet;
   spreadsheet.setActiveSheet(sheet);
   const row = exports.Project.nextRow;
   sheet.getRange(`A${row}`).activate();
+}
+
+export function selectNoDocsProject(): void {
+  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  const sheet = spreadsheet.getActiveSheet();
+  const row = sheet.getActiveRange()?.getRow();
+  sheet.getRange(`A${row}`).setValue('2400');
+  sheet.getRange(`C${row}`).setValue('Test Client');
+  sheet.getRange(`D${row}`).setValue('Test Project');
+}
+
+export function deleteProjectFiles(): void {
+  if (!exports.User.isDeveloper) {
+    throw new Error('You are not authorized to perform this action.');
+  }
+  const project = Project.getProject();
+  if (project.clientName !== 'Test Client') {
+    throw new Error('You are not authorized to perform this action.');
+  }
+  project.deleteFiles();
+}
+
+export function deleteClientFiles(): void {
+  if (!exports.User.isDeveloper) {
+    throw new Error('You are not authorized to perform this action.');
+  }
+  const initiative = Initiative.getInitiative();
+  if (initiative.clientName !== 'Test Client') {
+    throw new Error('You are not authorized to perform this action.');
+  }
+  initiative.client.deleteClientFiles();
+}
+
+export function selectEmptyProposal(): void {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const row = sheet.getLastRow()+1;
+  sheet.getRange(`A${row}`).activate();
+}
+
+export function selectNoDocsProposal(): void {
+  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  const sheet = spreadsheet.getActiveSheet();
+  const row = sheet.getActiveRange()?.getRow();
+  sheet.getRange(`A${row}`).setValue('2400');
+  sheet.getRange(`B${row}`).setValue('Test Client');
+  sheet.getRange(`C${row}`).setValue('Test Proposal');
+}
+
+export function deleteProposalFiles(): void {
+  if (!exports.User.isDeveloper) {
+    throw new Error('You are not authorized to perform this action.');
+  }
+  const proposal = Proposal.getProposal();
+  if (proposal.clientName !== 'Test Client') {
+    throw new Error('You are not authorized to perform this action.');
+  }
+  proposal.deleteFiles();
 }

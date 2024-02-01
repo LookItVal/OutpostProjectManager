@@ -11,31 +11,28 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
   $(function() {
+    console.log('test');
     $('#benchmark-button').click(requestBenchmark);
   });
+
+  function throwError(error) {
+    throw new Error(error.message);
+  }
   
-  function requestBenchmark() {
+  async function requestBenchmark() {
     let iterationCount = askForIterationCount();
     console.log('iterationCount', iterationCount);
-    google.script.run
-      .withSuccessHandler(async function(result) {
-        if (result == false) {
-          console.log('Benchmark Stopped');
-          return;
-        }
-        console.log('Begining Benchmark');
-        while(iterationCount > 0) {
-          let results = await runBenchmarkTests();
-          console.debug('results', results);
-          iterationCount--;
-        }
-        toastr.success('Benchmark complete');
-      })
-      .withFailureHandler(function(error) {
-        console.error('Benchmark failed: ' + error.message);
-        toastr.alert('Benchmark failed: ' + error.message);
-      })
-      .requestBenchmark(iterationCount);
+    let result = confirm('Are you sure you want to run the benchmark ' + iterationCount + ' times?');
+    if (result == false) {
+      console.log('Benchmark Stopped');
+      return;
+    }
+    while(iterationCount > 0) {
+      let results = await runBenchmarkTests();
+      console.debug('results', results);
+      iterationCount--;
+    }
+    toastr.success('Benchmark complete');
   }
 
   function askForIterationCount() {
@@ -55,109 +52,41 @@
   }
 
   async function runBenchmarkTests() {
-    const results = {};
-    let start = performance.now();
     await jumpToProposal();
+    const results = {};
+
+    let start = performance.now();
+    await jumpToProject();
     let end = performance.now();
     results['jumpToProjects'] = end - start;
     console.debug('jumpToProjects', results['jumpToProjects']);
     toastr.success('jumpToProjects', results['jumpToProjects']);
-    start = performance.now();
-    await jumpToProject();
-    end = performance.now();
-    results['jumpToProposals'] = end - start;
-    console.debug('jumpToProposals', results['jumpToProposals']);
-    toastr.success('jumpToProposals', results['jumpToProposals']);
-
-    return results;
 
     try {
-      selectEmptyProject();
-      await new Promise(resolve => setTimeout(async function() {
+      await selectEmptyProject();
+      results['getInitiativeEmptyProject'] = await new Promise(resolve => setTimeout(async function() {
         start = performance.now();
-        getInitiative();
-        end = await new Promise(resolve => {
-          let intervalId = setInterval(function() {
-            if (!isLoading) {
-              let end = performance.now();
-              clearInterval(intervalId);
-              resolve(end);
-            }
-          }, 5);
-        });
-        results['getInitiativeEmptyProject'] = end - start;
-        toastr.success('getInitiativeEmptyProject', results['getInitiativeEmptyProject']);
-        console.debug('getInitiativeEmptyProject', results['getInitiativeEmptyProject']);
+        await refreshSidebar();
+        end = performance.now();
+        resolve(end - start);
       }, 100));
+      toastr.success('getInitiativeEmptyProject', results['getInitiativeEmptyProject']);
+      console.debug('getInitiativeEmptyProject', results['getInitiativeEmptyProject']);
     } catch (error) {
       console.error('Error selecting empty project: ' + error.message);
       alert('Error selecting empty project: ' + error.message);
       return;
     }
-    
-    try {
-      selectEmptyProposal();
-      await setTimeout(function() {
-        start = performance.now();
-        getInitiative();
-        end = performance.now();
-      }, 100);
-      results['getInitiativeEmptyProposal'] = end - start;
-      console.debug('getInitiativeEmptyProposal', results['getInitiativeEmptyProposal']);
-    } catch (error) {
-      console.error('Error selecting empty proposal: ' + error.message);
-      alert('Error selecting empty proposal: ' + error.message);
-      return;
-    }
-
-    return results;
-    
-    try {
-      selectFullProject();
-      setTimeout(async function() {
-        start = performance.now();
-        getInitiative();
-        end = await new Promise(resolve => {
-          let intervalId = setInterval(function() {
-            if (!isLoading) {
-              let end = performance.now();
-              clearInterval(intervalId);
-              resolve(end);
-            }
-          }, 5);
-        });
-      }, 100);
-      console.debug('getInitiativeFullProject', results['getInitiativeFullProject']);
-      toastr.success('getInitiativeFullProject', results['getInitiativeFullProject']);
-    } catch (error) {
-      console.error('Error selecting full project: ' + error.message);
-      alert('Error selecting full project: ' + error.message);
-      return;
-    }
 
     try {
-      selectFullProposal();
-      setTimeout(function() {
+      await selectNoDocsProject();
+      results['getInitiativeNoDocsProject'] = await new Promise(resolve => setTimeout(async function() {
         start = performance.now();
-        getInitiative();
+        await refreshSidebar();
         end = performance.now();
-      }, 100);  
-      results['getInitiativeFullProposal'] = end - start;
-      console.debug('getInitiativeFullProposal', results['getInitiativeFullProposal']);
-    } catch (error) {
-      console.error('Error selecting full proposal: ' + error.message);
-      alert('Error selecting full proposal: ' + error.message);
-      return;
-    }
-    
-    try {
-      selectNoDocsProject();
-      setTimeout(function() {
-        start = performance.now();
-        getInitiative();
-        end = performance.now();
-      }, 100);
-      results['getInitiativeNoDocsProject'] = end - start;
+        resolve(end - start);
+      }, 100));
+      toastr.success('getInitiativeNoDocsProject', results['getInitiativeNoDocsProject']);
       console.debug('getInitiativeNoDocsProject', results['getInitiativeNoDocsProject']);
     } catch (error) {
       console.error('Error selecting no docs project: ' + error.message);
@@ -165,14 +94,68 @@
       return;
     }
 
+    start = performance.now();
+    await generateJob();
+    end = performance.now();
+    results['generateJobExstingClient'] = end - start;
+    toastr.success('generateJobExstingClient', results['generateJobExstingClient']);
+    console.debug('generateJobExstingClient', results['generateJobExstingClient']);
+
     try {
-      selectNoDocsProposal();
-      setTimeout(function() {
+      await deleteProjectFiles();
+      await deleteClientFiles();
+      //TODO it crashed somewhere in here, fix it.
+      results['generateJobNewClient'] = await new Promise(resolve => setTimeout(async function() {
         start = performance.now();
-        getInitiative();
+        await generateJob();
         end = performance.now();
-      }, 100);
-      results['getInitiativeNoDocsProposal'] = end - start;
+        resolve(end - start);
+      }, 100));
+    } catch (error) {
+      console.error('Error generating job from new client: ' + error.message);
+      alert('Error generating job from new client: ' + error.message);
+      return;
+    }
+
+    try {
+      await deleteProjectFiles();
+      start = performance.now();
+      await jumpToProposal();
+      end = performance.now();
+      results['jumpToProposals'] = end - start;
+      console.debug('jumpToProposals', results['jumpToProposals']);
+      toastr.success('jumpToProposals', results['jumpToProposals']);
+    } catch (error) {
+      console.error('Error jumping to proposals: ' + error.message);
+      alert('Error jumping to proposals: ' + error.message);
+      return;
+    }
+
+    try {
+      await selectEmptyProposal();
+      results['getInitiativeNewProposal'] = await new Promise(resolve => setTimeout(async function() {
+        start = performance.now();
+        await refreshSidebar();
+        end = performance.now();
+        resolve(end - start);
+      }, 100));
+      toastr.success('getInitiativeNewProposal', results['getInitiativeNewProposal']);
+      console.debug('getInitiativeNewProposal', results['getInitiativeNewProposal']);
+    } catch (error) {
+      console.error('Error selecting new proposal: ' + error.message);
+      alert('Error selecting new proposal: ' + error.message);
+      return;
+    }
+
+    try {
+      await selectNoDocsProposal();
+      results['getInitiativeNoDocsProposal'] = await new Promise(resolve => setTimeout(async function() {
+        start = performance.now();
+        await refreshSidebar();
+        end = performance.now();
+        resolve(end - start);
+      }, 100));
+      toastr.success('getInitiativeNoDocsProposal', results['getInitiativeNoDocsProposal']);
       console.debug('getInitiativeNoDocsProposal', results['getInitiativeNoDocsProposal']);
     } catch (error) {
       console.error('Error selecting no docs proposal: ' + error.message);
@@ -180,188 +163,98 @@
       return;
     }
 
-    try {
-      selectNewProjectFromExistingClient();
-      setTimeout(function() {
-        start = performance.now();
-        generateJob();
-        end = performance.now();
-      }, 100);
-      results['generateProjectFromExistingClient'] = end - start;
-      console.debug('generateProjectFromExistingClient', results['generateProjectFromExistingClient']);
-    } catch (error) {
-      console.error('Error generating project from existing client: ' + error.message);
-      alert('Error generating project from existing client: ' + error.message);
-      return;
-    }
+    start = performance.now();
+    await generateProposal();
+    end = performance.now();
+    results['generateProposalExstingClient'] = end - start;
+    toastr.success('generateProposalExstingClient', results['generateProposalExstingClient']);
+    console.debug('generateProposalExstingClient', results['generateProposalExstingClient']);
 
     try {
-      deleteProject();
-      deleteClient();
-      setTimeout(function() {
+      await deleteProposalFiles();
+      await deleteClientFiles();
+      results['generateProposalNewClient'] = await new Promise(resolve => setTimeout(async function() {
         start = performance.now();
-        generateJob();
+        await generateProposal();
         end = performance.now();
-      }, 100);
-      results['generateProjectFromNewClient'] = end - start;
-      console.debug('generateProjectFromNewClient', results['generateProjectFromNewClient']);
-    } catch (error) {
-      console.error('Error generating project from new client: ' + error.message);
-      alert('Error generating project from new client: ' + error.message);
-      return;
-    }
-
-    try {
-      deleteProject();
-      selectNewProposal();
-      setTimeout(function() {
-        start = performance.now();
-        generateProposal();
-        end = performance.now();
-      }, 100);
-      results['generateProposalFromExistingClient'] = end - start;
-      console.debug('generateProposalFromExistingClient', results['generateProposalFromExistingClient']);
-    } catch (error) {
-      console.error('Error generating proposal from existing client: ' + error.message);
-      alert('Error generating proposal from existing client: ' + error.message);
-      return;
-    }
-
-    try {
-      deleteProposal();
-      deleteClient();
-      setTimeout(function() {
-        start = performance.now();
-        generateProposal();
-        end = performance.now();
-      }, 100);
-      results['generateProposalFromNewClient'] = end - start;
-      console.debug('generateProposalFromNewClient', results['generateProposalFromNewClient']);
+        resolve(end - start);
+      }, 100));
     } catch (error) {
       console.error('Error generating proposal from new client: ' + error.message);
       alert('Error generating proposal from new client: ' + error.message);
       return;
     }
 
+    start = performance.now();
+    await acceptProposal();
+    end = performance.now();
+    results['acceptProposal'] = end - start;
+    toastr.success('acceptProposal', results['acceptProposal']);
+    console.debug('acceptProposal', results['acceptProposal']);
+
     try {
-      setTimeout(function() {
-        start = performance.now();
-        acceptProposal();
-        end = performance.now();
-      }, 100);
-      results['acceptProposal'] = end - start;
-      console.debug('acceptProposal', results['acceptProposal']);
-      deleteProject();
-    } catch (error) {
-      console.error('Error accepting proposal: ' + error.message);
-      alert('Error accepting proposal: ' + error.message);
+      await deleteProjectFiles();
+    } catch {
+      console.error('Error deleting project files: ' + error.message);
+      alert('Error deleting project files: ' + error.message);
       return;
     }
 
-    try {
-      setTimeout(function() {
-        start = performance.now();
-        openChangelog();
-        end = performance.now();
-      }, 100);
-      results['openChangelog'] = end - start;
-      console.debug('openChangelog', results['openChangelog']);
-    } catch (error) {
-      console.error('Error opening changelog: ' + error.message);
-      alert('Error opening changelog: ' + error.message);
-      return;
-    }
+    start = performance.now();
+    await openChangelog();
+    end = performance.now();
+    results['openChangelog'] = end - start;
+    toastr.success('openChangelog', results['openChangelog']);
+    console.debug('openChangelog', results['openChangelog']);
+
     return results;
   }
 
-  function selectEmptyProject() {
-    googleScript(function() {
-
-    })
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .selectEmptyProject();
+  async function selectEmptyProject() {
+    await googleScript(()=>{}, 'selectEmptyProject', [], throwError);
   }
 
-  function selectEmptyProposal() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .selectEmptyProposal();
+  async function selectEmptyProposal() {
+    await googleScript(()=>{}, 'selectEmptyProposal', [], throwError);
   }
 
-  function selectFullProject() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .selectFullProject();
+  async function selectFullProject() {
+    await googleScript(()=>{}, 'selectFullProject', [], throwError);
   }
 
-  function selectFullProposal() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .selectFullProposal();
+  async function selectFullProposal() {
+    await googleScript(()=>{}, 'selectFullProposal', [], throwError);
+ }
+
+  async function selectNoDocsProject() {
+    await googleScript(()=>{}, 'selectNoDocsProject', [], throwError);
   }
 
-  function selectNoDocsProject() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .selectNoDocsProject();
+  async function selectNoDocsProposal() {
+    await googleScript(()=>{}, 'selectNoDocsProposal', [], throwError);
   }
 
-  function selectNoDocsProposal() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .selectNoDocsProposal();
+  async function selectNewProjectFromExistingClient() {
+    await googleScript(()=>{}, 'selectNewProjectFromExistingClient', [], throwError);
   }
 
-  function selectNewProjectFromExistingClient() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .selectNewProjectFromExistingClient();
+  async function deleteProject() {
+    await googleScript(()=>{}, 'deleteProject', [], throwError);
   }
 
-  function deleteProject() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .deleteProject();
+  async function deleteClientFiles() {
+    await googleScript(()=>{}, 'deleteClientFiles', [], throwError);
   }
 
-  function deleteClient() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .deleteClient();
+  async function selectNewProposal() {
+    await googleScript(()=>{}, 'selectNewProposal', [], throwError);
   }
 
-  function selectNewProposal() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .selectNewProposal();
+  async function deleteProposalFiles() {
+    await googleScript(()=>{}, 'deleteProposalFiles', [], throwError);
   }
 
-  function deleteProposal() {
-    google.script.run
-      .withFailureHandler(function(error) {
-        throw new Error(error.message);
-      })
-      .deleteProposal();
+  async function deleteProjectFiles() {
+    await googleScript(()=>{}, 'deleteProjectFiles', [], throwError);
   }
 </script>
