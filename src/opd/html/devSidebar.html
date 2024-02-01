@@ -105,6 +105,7 @@
       await deleteProjectFiles();
       await deleteClientFiles();
       //TODO it crashed somewhere in here, fix it.
+      //TODO link all git pushes to my email so they are recorded
       results['generateJobNewClient'] = await new Promise(resolve => setTimeout(async function() {
         start = performance.now();
         await generateJob();
