@@ -101,12 +101,16 @@
     toastr.success('generateJobExstingClient', results['generateJobExstingClient']);
     console.debug('generateJobExstingClient', results['generateJobExstingClient']);
 
+    console.log(globalInitiative);
+
     try {
       await deleteProjectFiles();
       await deleteClientFiles();
       //TODO it crashed somewhere in here, fix it.
       //TODO link all git pushes to my email so they are recorded
       results['generateJobNewClient'] = await new Promise(resolve => setTimeout(async function() {
+        await refreshSidebar();
+        console.log(globalInitiative);
         start = performance.now();
         await generateJob();
         end = performance.now();
@@ -175,6 +179,7 @@
       await deleteProposalFiles();
       await deleteClientFiles();
       results['generateProposalNewClient'] = await new Promise(resolve => setTimeout(async function() {
+        await refreshSidebar();
         start = performance.now();
         await generateProposal();
         end = performance.now();

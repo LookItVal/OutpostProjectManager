@@ -9,11 +9,11 @@ export function onOpen(e: object): void {
 
 export function onEdit(e: object): void {
   // yea idk what goin on here
-  console.log(e);
+  console.log('THE ON EDIT FUCTION HAS BEEN RUN', e);
 }
 
 export function onSelectionChange(e: object): void {
   // yea idk what goin on here
-  console.log(e);
+  console.log('THE ON SELECTION CHANGE FUNCTION HAS BEEN RUN', e);
 }
 

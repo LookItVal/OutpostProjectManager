@@ -25,6 +25,7 @@ export abstract class Initiative {
     public title: string;
     public abstract type: 'PROJECT' | 'PROPOSAL';
 
+    protected abstract _id?: string;
     protected _yrmo?: string;
     protected _clientName?: string;
     protected _client?: Client;
@@ -43,6 +44,9 @@ export abstract class Initiative {
     constructor ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams) {
       if (new.target === Initiative) {
         throw new TypeError('Cannot construct Abstract instances directly');
+      }
+      if (serializedData) {
+        throw new exports.ValidationError('Serialized Data is currently not supported');
       }
       if (serializedData) {
         // TODO perform validation at each step
@@ -291,6 +295,8 @@ export abstract class Initiative {
         }
       }
       if (serializedData) {
+        throw new exports.ValidationError('Serialized Data is currently not supported');
+        /*
         if (serializedData['type'] === 'PROJECT') {
           return new Project({serializedData});
         }
@@ -298,37 +304,38 @@ export abstract class Initiative {
           return new Proposal({serializedData});
         }
         throw new exports.ValidationError('Serialized Data must contain a type');
+        */
       }
       if (name) {
         if (exports.regexProposalName.test(name)) {
-          if (exports.properties.getProperty(name)) {
-            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(name) as string) });
-          }
+          //if (exports.properties.getProperty(name)) {
+          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(name) as string) });
+          //}
           return new Proposal({name});
         }
         if (exports.regexJobName.test(name)) {
-          const id = name.match(exports.regexGetIdFromProjectName)?.[0].split(' ').join('') as string;
-          if (exports.properties.getProperty(id)) {
-            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(id) as string) });
-          }
+          //const id = name.match(exports.regexGetIdFromProjectName)?.[0].split(' ').join('') as string;
+          //if (exports.properties.getProperty(id)) {
+          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(id) as string) });
+          //}
           return new Project({name});
         }
         throw new exports.ValidationError('Name does not match any known initiative types');
       }
       if (nameArray && nameArray.length > 1) {
-        let initiativeId = '';
+        //let initiativeId = '';
         if (exports.regexProposalOpen.test(nameArray[0] as string)) {
-          initiativeId = `${nameArray[0]} ${nameArray[1]} ${nameArray[2]} ${nameArray[3]}`;
-          if (exports.properties.getProperty(initiativeId)) {
-            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
-          }
+          //initiativeId = `${nameArray[0]} ${nameArray[1]} ${nameArray[2]} ${nameArray[3]}`;
+          //if (exports.properties.getProperty(initiativeId)) {
+          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
+          //}
           return new Proposal({nameArray});
         }
         if (exports.regex4Digits.test(nameArray[1] as string)) {
-          initiativeId = nameArray[0]+nameArray[1];
-          if (exports.properties.getProperty(initiativeId)) {
-            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
-          }
+          //initiativeId = nameArray[0]+nameArray[1];
+          //if (exports.properties.getProperty(initiativeId)) {
+          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
+          //}
           return new Project({nameArray});
         }
         throw new exports.ValidationError('Name Array does not match any known initiative types');
@@ -336,16 +343,16 @@ export abstract class Initiative {
       if (folder) {
         const folderName = folder.getName();
         if (exports.regexProposalName.test(folderName)) {
-          if (exports.properties.getProperty(folderName)) {
-            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(folderName) as string) });
-          }
+          //if (exports.properties.getProperty(folderName)) {
+          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(folderName) as string) });
+          //}
           return new Proposal({folder});
         }
         if (exports.regexJobName.test(folderName)) {
-          const id = folderName.match(exports.regexGetIdFromProjectName)?.[0].split(' ').join('') as string;
-          if (exports.properties.getProperty(id)) {
-            return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(id) as string) });
-          }
+          //const id = folderName.match(exports.regexGetIdFromProjectName)?.[0].split(' ').join('') as string;
+          //if (exports.properties.getProperty(id)) {
+          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(id) as string) });
+          //}
           return new Project({folder});
         }
         throw new exports.ValidationError('Folder does not match any known initiative types');
@@ -390,6 +397,9 @@ export abstract class Initiative {
     }
 
     public deleteFiles(): void {
+      if (!exports.User.isDeveloper) {
+        throw new exports.ValidationError('You do not have permission to delete files');
+      }
       if (this.folder) {
         const files = this.folder.getFiles();
         while (files.hasNext()) {
@@ -397,6 +407,25 @@ export abstract class Initiative {
           file.setTrashed(true);
         }
         this.folder.setTrashed(true);
+        this._folder = undefined;
+      }
+      if (this._folderId) {
+        this._folderId = undefined;
+      }
+      if (this.proposalDocument) {
+        this._proposalDocument?.setTrashed(true);
+      }
+      if (this._proposalDocumentId) {
+        this._proposalDocumentId = undefined;
+      }
+      if (this.costingSheet) {
+        this._costingSheet?.setTrashed(true);
+      }
+      if (this._costingSheetId) {
+        this._costingSheetId = undefined;
+      }
+      if (this._id) {
+        exports.properties.deleteProperty(this._id);
       }
     }
 
@@ -485,6 +514,7 @@ export abstract class Initiative {
 
 export class Project extends Initiative {
   public type: 'PROJECT' | 'PROPOSAL' = 'PROJECT';
+  protected _id?: string;
   private _jobNumber?: string;
   private _closed?: string;
   private _reconciliationSheetId?: string;
@@ -608,6 +638,17 @@ export class Project extends Initiative {
   //          Immutable Properties           //
   /////////////////////////////////////////////
 
+  public get id(): string | undefined {
+    if (this._id) {
+      return this._id;
+    }
+    if (this.jobNumber && this.yrmo) {
+      this._id = this.yrmo + this.jobNumber;
+      return this._id;
+    }
+    return undefined;
+  }
+
   public get dataSheet (): GoogleAppsScript.Spreadsheet.Sheet {
     if (this._dataSheet) {
       return this._dataSheet;
@@ -638,6 +679,10 @@ export class Project extends Initiative {
     }
     const files = Project.reconciliationFolder.getFilesByName(this.title);
     if (!files.hasNext()) {
+      return undefined;
+    }
+    // if file is in the trash dont use it
+    if (files.next().isTrashed()) {
       return undefined;
     }
     this._reconciliationSheet = files.next();
@@ -723,12 +768,17 @@ export class Project extends Initiative {
     }
   }
 
+  // THIS IS A DESTRUCTIVE FUNCTION
   public deleteFiles(): void {
     if (!exports.User.isDeveloper) {
       throw new exports.ValidationError('User is not a developer');
     }
     if (this.reconciliationSheet) {
       this.reconciliationSheet.setTrashed(true);
+      this._reconciliationSheet = undefined;
+    }
+    if (this._reconciliationSheetId) {
+      this._reconciliationSheetId = undefined;
     }
     super.deleteFiles();
   }
@@ -803,7 +853,7 @@ export class Project extends Initiative {
 
 export class Proposal extends Initiative {
   public type: 'PROJECT' | 'PROPOSAL' = 'PROPOSAL';
-
+  protected _id?: string;
   private _status?: string;
 
   constructor ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined}: InitiativeParams) {
@@ -849,6 +899,17 @@ export class Proposal extends Initiative {
   /////////////////////////////////////////////
   //          Immutable Properties           //
   /////////////////////////////////////////////
+
+  public get id(): string | undefined {
+    if (this._id) {
+      return this._id;
+    }
+    if (this.title) {
+      this._id = this.title;
+      return this._id;
+    }
+    return undefined;
+  }
 
   public get dataSheet (): GoogleAppsScript.Spreadsheet.Sheet {
     if (this._dataSheet) {

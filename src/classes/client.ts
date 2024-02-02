@@ -18,7 +18,8 @@ declare const exports: ClientExports;
 export class Client {
     
   protected _name?: string;
-  protected _folder?: GoogleAppsScript.Drive.Folder | undefined;
+  protected _folder?: GoogleAppsScript.Drive.Folder;
+  protected _folderId?: string;
   protected _initiatives?: Initiative[];
   protected _projects?: Project[];
   protected _proposals?: Proposal[];
@@ -71,12 +72,27 @@ export class Client {
     if (this._folder) {
       return this._folder;
     }
+    if (this._folderId) {
+      this._folder = DriveApp.getFolderById(this._folderId);
+      return this._folder;
+    }
     if (this._name) {
       const folders = Client.clientFolder.getFoldersByName(this._name);
       if (folders.hasNext()) {
         this._folder = folders.next();
         return this._folder;
       }
+    }
+    return undefined;
+  }
+
+  public get folderId(): string | undefined {
+    if (this._folderId) {
+      return this._folderId;
+    }
+    if (this._folder) {
+      this._folderId = this._folder.getId();
+      return this._folderId;
     }
     return undefined;
   }
@@ -143,12 +159,17 @@ export class Client {
     return this._folder;
   }
 
+  // THIS IS A DESTRUCTIVE FUNCTION
   public deleteClientFiles(): void {
     if (!exports.User.isDeveloper) {
       throw new exports.ValidationError('User is not a developer');
     }
     if (this.folder) {
       this.folder.setTrashed(true);
+      this._folder = undefined;
+    }
+    if (this.folderId) {
+      this._folderId = undefined;
     }
     Client.clientSheet.deleteRow(Client.clientSheet.getRange('A:A').getValues().map(row => row[0]).indexOf(this.name) + 1);
   }
