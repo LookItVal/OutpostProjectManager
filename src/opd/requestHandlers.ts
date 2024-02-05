@@ -52,6 +52,7 @@ export function getInitiative(): SerializedData {
   const benchmarked = exports.benchmark( function getInitiative(): SerializedData {
     try {
       const lucky_charms = Project.getInitiative().serialize();
+      console.log('THIS IS THE LAST PART OF THE BACKEND FUNCTION', lucky_charms);
       return lucky_charms;
     } catch (e: unknown) {
       if (e instanceof ValidationError) {

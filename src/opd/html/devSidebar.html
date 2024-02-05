@@ -52,9 +52,7 @@
   }
 
   async function runBenchmarkTests() {
-    await jumpToProposal();
-    const results = {};
-
+    let results = {};
     let start = performance.now();
     await jumpToProject();
     let end = performance.now();
@@ -63,32 +61,44 @@
     toastr.success('jumpToProjects', results['jumpToProjects']);
 
     try {
+      startLoading('Selecting Empty Project');
       await selectEmptyProject();
       results['getInitiativeEmptyProject'] = await new Promise(resolve => setTimeout(async function() {
+        stopLoading();
         start = performance.now();
         await refreshSidebar();
         end = performance.now();
         resolve(end - start);
-      }, 100));
+      }, 5000));
+      if (globalInitiative.title == "A fatal error has occured") {
+        throw new Error('A fatal error has occured');
+      }
       toastr.success('getInitiativeEmptyProject', results['getInitiativeEmptyProject']);
       console.debug('getInitiativeEmptyProject', results['getInitiativeEmptyProject']);
     } catch (error) {
+      stopLoading();
       console.error('Error selecting empty project: ' + error.message);
       alert('Error selecting empty project: ' + error.message);
       return;
     }
 
     try {
+      startLoading('Filling in Blank Information');
       await selectNoDocsProject();
       results['getInitiativeNoDocsProject'] = await new Promise(resolve => setTimeout(async function() {
+        stopLoading();
         start = performance.now();
         await refreshSidebar();
         end = performance.now();
         resolve(end - start);
-      }, 100));
+      }, 5000));
+      if (globalInitiative.title == "A fatal error has occured") {
+        throw new Error('A fatal error has occured');
+      }
       toastr.success('getInitiativeNoDocsProject', results['getInitiativeNoDocsProject']);
       console.debug('getInitiativeNoDocsProject', results['getInitiativeNoDocsProject']);
     } catch (error) {
+      stopLoading();
       console.error('Error selecting no docs project: ' + error.message);
       alert('Error selecting no docs project: ' + error.message);
       return;
@@ -98,32 +108,42 @@
     await generateJob();
     end = performance.now();
     results['generateJobExstingClient'] = end - start;
+    if (globalInitiative.title == "A fatal error has occured") {
+      error = new Error('A fatal error has occured');
+      console.error('Error generating job from existing client: ' + error.message);
+      alert('Error generating job from existing client: ' + error.message);
+      return;
+    }
     toastr.success('generateJobExstingClient', results['generateJobExstingClient']);
     console.debug('generateJobExstingClient', results['generateJobExstingClient']);
 
-    console.log(globalInitiative);
-
     try {
+      startLoading('Deleting Project and Client Files');
       await deleteProjectFiles();
       await deleteClientFiles();
       //TODO it crashed somewhere in here, fix it.
-      //TODO link all git pushes to my email so they are recorded
       results['generateJobNewClient'] = await new Promise(resolve => setTimeout(async function() {
+        stopLoading();
         await refreshSidebar();
-        console.log(globalInitiative);
         start = performance.now();
         await generateJob();
         end = performance.now();
         resolve(end - start);
-      }, 100));
+      }, 5000));
+      if (globalInitiative.title == "A fatal error has occured") {
+        throw new Error('A fatal error has occured');
+      }
     } catch (error) {
+      stopLoading();
       console.error('Error generating job from new client: ' + error.message);
       alert('Error generating job from new client: ' + error.message);
       return;
     }
 
     try {
+      startLoading('Deleting Project Files');
       await deleteProjectFiles();
+      stopLoading();
       start = performance.now();
       await jumpToProposal();
       end = performance.now();
@@ -131,38 +151,51 @@
       console.debug('jumpToProposals', results['jumpToProposals']);
       toastr.success('jumpToProposals', results['jumpToProposals']);
     } catch (error) {
+      stopLoading();
       console.error('Error jumping to proposals: ' + error.message);
       alert('Error jumping to proposals: ' + error.message);
       return;
     }
 
     try {
+      startLoading('Selecting Empty Proposal');
       await selectEmptyProposal();
       results['getInitiativeNewProposal'] = await new Promise(resolve => setTimeout(async function() {
+        stopLoading();
         start = performance.now();
         await refreshSidebar();
         end = performance.now();
         resolve(end - start);
-      }, 100));
+      }, 5000));
+      if (globalInitiative.title == "A fatal error has occured") {
+        throw new Error('A fatal error has occured');
+      }
       toastr.success('getInitiativeNewProposal', results['getInitiativeNewProposal']);
       console.debug('getInitiativeNewProposal', results['getInitiativeNewProposal']);
     } catch (error) {
+      stopLoading();
       console.error('Error selecting new proposal: ' + error.message);
       alert('Error selecting new proposal: ' + error.message);
       return;
     }
 
     try {
+      startLoading('Filling in Blank Information');
       await selectNoDocsProposal();
       results['getInitiativeNoDocsProposal'] = await new Promise(resolve => setTimeout(async function() {
+        stopLoading();
         start = performance.now();
         await refreshSidebar();
         end = performance.now();
         resolve(end - start);
-      }, 100));
+      }, 5000));
+      if (globalInitiative.title == "A fatal error has occured") {
+        throw new Error('A fatal error has occured');
+      }
       toastr.success('getInitiativeNoDocsProposal', results['getInitiativeNoDocsProposal']);
       console.debug('getInitiativeNoDocsProposal', results['getInitiativeNoDocsProposal']);
     } catch (error) {
+      stopLoading();
       console.error('Error selecting no docs proposal: ' + error.message);
       alert('Error selecting no docs proposal: ' + error.message);
       return;
@@ -171,21 +204,33 @@
     start = performance.now();
     await generateProposal();
     end = performance.now();
+    if (globalInitiative.title == "A fatal error has occured") {
+      error = new Error('A fatal error has occured');
+      console.error('Error generating proposal from existing client: ' + error.message);
+      alert('Error generating proposal from existing client: ' + error.message);
+      return;
+    }
     results['generateProposalExstingClient'] = end - start;
     toastr.success('generateProposalExstingClient', results['generateProposalExstingClient']);
     console.debug('generateProposalExstingClient', results['generateProposalExstingClient']);
 
     try {
+      startLoading('Deleting Proposal and Client Files');
       await deleteProposalFiles();
       await deleteClientFiles();
       results['generateProposalNewClient'] = await new Promise(resolve => setTimeout(async function() {
+        stopLoading();
         await refreshSidebar();
         start = performance.now();
         await generateProposal();
         end = performance.now();
         resolve(end - start);
-      }, 100));
+      }, 5000));
+      if (globalInitiative.title == "A fatal error has occured") {
+        throw new Error('A fatal error has occured');
+      }
     } catch (error) {
+      stopLoading();
       console.error('Error generating proposal from new client: ' + error.message);
       alert('Error generating proposal from new client: ' + error.message);
       return;
@@ -194,13 +239,22 @@
     start = performance.now();
     await acceptProposal();
     end = performance.now();
+    if (globalInitiative.title == "A fatal error has occured") {
+      error = new Error('A fatal error has occured');
+      console.error('Error accepting proposal: ' + error.message);
+      alert('Error accepting proposal: ' + error.message);
+      return;
+    }
     results['acceptProposal'] = end - start;
     toastr.success('acceptProposal', results['acceptProposal']);
     console.debug('acceptProposal', results['acceptProposal']);
 
     try {
+      startLoading('Deleting Project Files');
       await deleteProjectFiles();
+      stopLoading();
     } catch {
+      stopLoading();
       console.error('Error deleting project files: ' + error.message);
       alert('Error deleting project files: ' + error.message);
       return;

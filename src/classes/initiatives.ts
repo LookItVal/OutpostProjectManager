@@ -323,6 +323,7 @@ export abstract class Initiative {
         throw new exports.ValidationError('Name does not match any known initiative types');
       }
       if (nameArray && nameArray.length > 1) {
+        console.log('nameArray', nameArray);
         //let initiativeId = '';
         if (exports.regexProposalOpen.test(nameArray[0] as string)) {
           //initiativeId = `${nameArray[0]} ${nameArray[1]} ${nameArray[2]} ${nameArray[3]}`;
@@ -332,6 +333,7 @@ export abstract class Initiative {
           return new Proposal({nameArray});
         }
         if (exports.regex4Digits.test(nameArray[1] as string)) {
+          console.log('returning project with nameArray:', nameArray);
           //initiativeId = nameArray[0]+nameArray[1];
           //if (exports.properties.getProperty(initiativeId)) {
           //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
@@ -366,6 +368,7 @@ export abstract class Initiative {
 
     public serialize (): SerializedData {
       const initiative: SerializedData = {};
+      console.log('Serializing Initiative:', this);
       !this.costingSheetId && console.warn('Trying to find the costing sheet:', this.costingSheetId);
       !this.proposalDocumentId && console.warn('Trying to find the proposal document:', this.proposalDocumentId);
       for (const key of Object.keys(this)) {
@@ -380,6 +383,7 @@ export abstract class Initiative {
           initiative[key] = String(this[key]) as string;
         }
       }
+      console.log('Serialized Initiative:', initiative);
       return initiative;
     }
 
@@ -427,6 +431,7 @@ export abstract class Initiative {
       if (this._id) {
         exports.properties.deleteProperty(this._id);
       }
+      console.log('Deleted Initiative:', this);
     }
 
     /////////////////////////////////////////////
@@ -542,12 +547,14 @@ export class Project extends Initiative {
         this._reconciliationSheetId = serializedData['reconciliationSheetId'] as string;
       }
     }
+    console.log('PROJECT CONSTRUCTOR: ', nameArray);
     if (nameArray) {
       this._yrmo = nameArray[0];
       this._jobNumber = nameArray[1];
       this._closed = nameArray[4];
     }
-    this.save();
+    console.log('Final Project Object: ', this);
+    //this.save();
   }
     
   /////////////////////////////////////////////
@@ -681,11 +688,11 @@ export class Project extends Initiative {
     if (!files.hasNext()) {
       return undefined;
     }
-    // if file is in the trash dont use it
-    if (files.next().isTrashed()) {
-      return undefined;
-    }
     this._reconciliationSheet = files.next();
+    // if file is in the trash dont use it
+    if (this._reconciliationSheet.isTrashed()) {
+      this._reconciliationSheet= undefined;
+    }
     return this._reconciliationSheet;
   }
 
@@ -875,7 +882,8 @@ export class Proposal extends Initiative {
     if (nameArray) {
       this._yrmo = nameArray[1];
     }
-    this.save();
+    console.log(this);
+    //this.save();
   }
 
   /////////////////////////////////////////////
@@ -964,6 +972,7 @@ export class Proposal extends Initiative {
   /////////////////////////////////////////////
 
   public serialize(): SerializedData {
+    console.log('Serializing Proposal:', this);
     this.status;
     return super.serialize();
   }

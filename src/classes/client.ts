@@ -69,6 +69,7 @@ export class Client {
   }
 
   public get folder(): GoogleAppsScript.Drive.Folder | undefined {
+    console.log('GETTING FOLDER', this);
     if (this._folder) {
       return this._folder;
     }

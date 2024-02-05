@@ -321,7 +321,7 @@
   // Calls the server to generate a new proposal.
   async function requestProposalGeneration() {
     startLoading(loadingText = 'Making A Proposal to Send');
-    let userResponse = comfirm(`Are you sure you want to make a new proposal for ${globalInitiative.title}?`);
+    let userResponse = confirm(`Are you sure you want to make a new proposal for ${globalInitiative.title}?`);
     if (!userResponse) {
       stopLoading();
       return;
