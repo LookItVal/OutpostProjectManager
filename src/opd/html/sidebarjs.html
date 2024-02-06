@@ -2,6 +2,7 @@
   let globalInitiative = {};
   let loadingInterval;
   let isLoading = false;
+  let benchmarkNextFunction = false;
   //we could buuld the next line with the actual versoion number
   //then you can remove the init function and speed up load time
   let version;
@@ -84,6 +85,11 @@
 
   
   function googleScript(successHandler, functionName, parameters, failureHandler = basicError) {
+    if (benchmarkNextFunction) {
+      parameters = [functionName, ...parameters];
+      functionName = "benchmark";
+      benchmarkNextFunction = false;
+    } 
     return new Promise((resolve, reject) => {
       google.script.run
         .withFailureHandler(async (msg, element) => {

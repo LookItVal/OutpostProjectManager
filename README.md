@@ -118,3 +118,7 @@
   - By 2.0
 - [ ] Add Admin console
   - By 2.0
+- [ ] Launch as android and IOS application.
+  - By 2.0
+- [ ] Integrate Making new Bookings and requesting time off to web-app.
+  - By 2.0

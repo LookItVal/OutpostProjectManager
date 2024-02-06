@@ -1,5 +1,5 @@
 import { Initiative, Project, Proposal } from '../classes/initiatives';
-import { SerializedData, ProposalNameArray, InitiativeParams, unknownFunction } from '../interfaces';
+import { SerializedData, ProposalNameArray, InitiativeParams, unknownFunction, OPDSheetJSONTests } from '../interfaces';
 import { ValidationError } from '../classes/errors';
 import { properties, spreadsheet, version } from '../constants';
 import { openChangelogAsModalDialogue } from '../changelog';
@@ -17,7 +17,7 @@ interface RequestHandlersExports {
   openChangelogAsModalDialogue: typeof openChangelogAsModalDialogue;
 }
 declare const exports: RequestHandlersExports;
-let current_benchmark: {[key: string]: number} = {};
+let currentBenchmark: {[key: string]: number[]} = {};
 
 export function jumpToProposal(): void {
   const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
@@ -150,24 +150,80 @@ export function deleteProposalFiles(): void {
 }
 
 // will only run a function that has been exported.
-export function benchmark(function_name: string, ...args: unknown[]): unknown {
-  if (function_name === 'clear') {
-    current_benchmark = {};
+export function benchmark(functionName: string, ...args: unknown[]): unknown {
+  if (functionName === 'clear') {
+    currentBenchmark = {};
     return;
   }
-  if (function_name === 'get') {
-    return current_benchmark;
+  if (functionName === 'get') {
+    const realBenchmark: { [key: string]: number } = {};
+    for (const key of Object.keys(currentBenchmark)) {
+      if (key === 'jumpToProjects' || key === 'jumpToProposals') {
+        // if length of currentBenchmark[key] is 1, then it is a valid benchmark
+        // otherwise throw an error
+        if (currentBenchmark[key].length === 1) {
+          realBenchmark[key] = currentBenchmark[key][0];
+          continue;
+        }
+        throw new Error('Extra Jump Benchmark found');
+      }
+      if (key === 'refreshSidebar') {
+        if (currentBenchmark[key][0]) {
+          realBenchmark['getInitiative from empty project'] = currentBenchmark[key][0];
+          continue;
+        }
+        if (currentBenchmark[key][1]) {
+          realBenchmark['getInitiative from project with no docs'] = currentBenchmark[key][1];
+          continue;
+        }
+        throw new Error('Extra Refresh Sidebar Benchmark found');
+      }
+      if (key === 'generateJob') {
+        if (currentBenchmark[key][0]) {
+          realBenchmark['generateProject from existing client'] = currentBenchmark[key][0];
+          continue;
+        }
+        if (currentBenchmark[key][1]) {
+          realBenchmark['generateProject from new client'] = currentBenchmark[key][1];
+          continue;
+        }
+        throw new Error('Extra Generate Job Benchmark found');
+      }
+      throw new Error('Function not found');
+    }
+    return realBenchmark;
   }
   //if function_name is not in exports, throw an error
-  if (!(function_name in exports)) {
+  if (!(functionName in exports)) {
     throw new Error('Function not found');
   }
-  if (typeof exports[function_name] !== 'function') {
+  if (typeof exports[functionName] !== 'function') {
     throw new Error('Function not found');
   }
   const start = performance.now();
-  const result = (exports[function_name] as unknownFunction)(...args);
+  const result = (exports[functionName] as unknownFunction)(...args);
   const end = performance.now();
-  current_benchmark[function_name] = end - start;
+  const time = end - start;
+  if (!(functionName in currentBenchmark)) {
+    currentBenchmark[functionName] = [];
+  }
+  (currentBenchmark[functionName]).push(time);
   return result;
+}
+
+export function showBenchmark(frontendBenchmark: OPDSheetJSONTests): void {
+  const fullBenchmark = {OPDSheet: {
+    'Frontend': frontendBenchmark,
+    'Backend': currentBenchmark
+  }};
+  // convert fullBenchmark into json string
+  const fullBenchmarkString = JSON.stringify(fullBenchmark);
+  console.log(fullBenchmarkString);
+  const output = HtmlService.createTemplateFromFile('src/html/baseStyle').evaluate();
+  output.append('<H2> Full Benchmark JSON </H2>');
+  output.append(`<p>${fullBenchmarkString}</p>`);
+  output.append('</body>');
+  output.append('</html>');
+  const ui = SpreadsheetApp.getUi();
+  ui.showModalDialog(output, 'Full Benchmark Results');
 }
