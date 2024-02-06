@@ -53,11 +53,13 @@
   - 1.2.1
 - [x] ~~Add hover animation for Projects and Proposals Buttons~~
  -  1.2.2
-- [x] Add Changelog in app
-  - by 1.3
-- [x] Have initiatives and other object be able to be initiated by serialized data.
-  - BEFORE 1.3
-- [ ] Add Benchmarking
+- [x] ~~Add Changelog in app~~
+  - 1.2.2
+- [x] ~~Have initiatives and other object be able to be initiated by serialized data.~~
+  - 1.3.0
+- [x] ~~The Changelog html is really just the base for any html file, change its name accordingly~~
+  - 1.3.0
+- [ ] ~~Add Benchmarking~~
   - By 1.3
 - [ ] Have every initiative initialize from serialized data and back them up to properties
   - The key of each property is the YR/MO + job number
@@ -65,6 +67,8 @@
   - BY 1.3
 - [ ] Add requirement so you can do red button actions
   - BY 1.3
+- [ ] Add Caching not just properties. Cache should mirror the properties however
+  - By 1.3
 - [ ] Change text to say generating and not making
   -BY 1.3
 - [ ] Make frontend sends always come with a version number, to check to see if you need to update
@@ -77,8 +81,6 @@
   - BY 1.3
 - [ ] Link up items in the costing sheet with the proposal document.
   - By 1.4
-- [ ] The Changelog html is really just the base for any html file, change its name accordingly
-  -BY 1.4
 - [ ] Build this readme out.
   -BY 1.4
 - [ ] Add some kind of bug reporter
@@ -89,6 +91,10 @@
   -BY 1.4
 - [ ] Add function to add new page in the OPD
   - By 1.5
+- [ ] Split app into multiple sub bound apps so they can make use of onSelectionChange(e)
+  - By 1.5
+- [ ] Turn the rest of the app into a web app and send http requests to each other to run functions.
+  - By 1.5
 - [ ] Link calendar bookings and specific lines of the reconciliation sheet.
   - BY 1.6
 - [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
@@ -97,3 +103,18 @@
   - BY 1.6
 - [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
   - BY 1.6
+
+- [ ] Add Chat App
+  - By 2.0
+- [ ] Reskin Web-App with Kyle?
+  - By 2.0
+- [ ] New Space for each active project
+  - By 2.0
+- [ ] Mark who is involved in the project based on calendar bookings and the listed producer
+  - By 2.0
+- [ ] Add Chat to each section of the app (where possible, bound apps may be harder)
+  - By 2.0
+- [ ] Integrate Zoho Database, and database search method
+  - By 2.0
+- [ ] Add Admin console
+  - By 2.0
