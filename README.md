@@ -9,14 +9,15 @@
 - [Contributing](#contributing)
 - [License](#license)
 
-## Installation
+## Installation [![clasp](https://img.shields.io/badge/built%20with-clasp-4285f4.svg)](https://github.com/google/clasp)
+
 [Provide instructions on how to install and set up your project. Include any dependencies or prerequisites.]
 
 ## Usage
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
 ## Changelog
-#### [1.2.2]
+### [1.2.2]
   - Cleaned up log statements
   - Managed Git Repo
   - Added Auto-filling for Client Names in the Outpost Project Database
@@ -25,7 +26,7 @@
   - Added Cursor Pointing to buttons in the HTML stylesheet
   - 
 
-#### [1.2.1]
+### [1.2.1]
   - Stopped text from flashing on project generation
   - Disabled Load Button when loading new content
   - Reorganized folder structure
@@ -36,7 +37,6 @@
 - Began Readme and some documentation.
 - Added Better organization to frontend, with bigger text and icons with subtle animations.
 - Prepared the code base for more rapid changes.
-
 
 ## Todo
 - [x] ~~Show folders in the OPD sidebar.~~
@@ -52,14 +52,14 @@
 - [x] ~~Make client fields in OPD autofill based on the list of clients.~~
   - 1.2.1
 - [x] ~~Add hover animation for Projects and Proposals Buttons~~
- -  1.2.2
+  -  1.2.2
 - [x] ~~Add Changelog in app~~
   - 1.2.2
 - [x] ~~Have initiatives and other object be able to be initiated by serialized data.~~
   - 1.3.0
 - [x] ~~The Changelog html is really just the base for any html file, change its name accordingly~~
   - 1.3.0
-- [ ] ~~Add Benchmarking~~
+- [ ] Add Benchmarking
   - By 1.3
 - [ ] Have every initiative initialize from serialized data and back them up to properties
   - The key of each property is the YR/MO + job number

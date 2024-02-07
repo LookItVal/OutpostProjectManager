@@ -1,5 +1,6 @@
 import { unknownFunction } from './interfaces';
 
+/*
 export function benchmark(targetFunction: unknownFunction): unknownFunction {
   return function(...args: unknown[]): unknown {
     console.time(`${targetFunction.name} benchmark`);
@@ -13,6 +14,7 @@ export function benchmark(targetFunction: unknownFunction): unknownFunction {
     }
   };
 }
+*/
 
 export function verboseLog(
   target: object,

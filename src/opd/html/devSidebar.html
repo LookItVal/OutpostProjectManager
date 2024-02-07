@@ -11,7 +11,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
   $(function() {
-    console.log('test');
     $('#benchmark-button').click(requestBenchmark);
   });
 
@@ -21,18 +20,25 @@
   
   async function requestBenchmark() {
     let iterationCount = askForIterationCount();
-    console.log('iterationCount', iterationCount);
     let result = confirm('Are you sure you want to run the benchmark ' + iterationCount + ' times?');
     if (result == false) {
-      console.log('Benchmark Stopped');
+      console.warn('Benchmark Haulted');
       return;
+    }
+    let fullBenchmark = {
+      'OPDSheet': {
+        'Frontend': {}
+      }
     }
     while(iterationCount > 0) {
       let results = await runBenchmarkTests();
-      console.debug('results', results);
+      console.debug('Benchmark results:', results);
+      mergeBenchmarkResults(fullBenchmark, results);
       iterationCount--;
+      await jumpToProposal();
     }
-    toastr.success('Benchmark complete');
+    toastr.success('Benchmark complete:', fullBenchmark);
+    console.debug('Benchmark complete:', fullBenchmark);
   }
 
   function askForIterationCount() {
@@ -51,238 +57,148 @@
     return iterationCount;
   }
 
-  async function runBenchmarkTests() {
-    let results = {};
+  function mergeBenchmarkResults(fullBenchmark, results) {
+    for (const key of Object.keys(results)) {
+      if (fullBenchmark['OPDSheet']['Frontend'][key]) {
+        fullBenchmark['OPDSheet']['Frontend'][key]['Raw'].push(results[key]);
+      } else {
+        fullBenchmark['OPDSheet']['Frontend'][key] = {
+          'Raw': [results[key]]
+        }
+      }
+    }
+    return fullBenchmark; 
+  }
+
+  async function benchmarkFunction(func) {
     benchmarkNextFunction = true;
     let start = performance.now();
-    await jumpToProject();
+    await func();
     let end = performance.now();
-    results['jumpToProjects'] = end - start;
-    console.debug('jumpToProjects', results['jumpToProjects']);
-    toastr.success('jumpToProjects', results['jumpToProjects']);
+    return end - start;
+  }
 
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function runBenchmarkTests() {
     try {
+      let results = {};
+      results['jumpToProjects'] = await benchmarkFunction(jumpToProject);
+      console.debug('jumpToProjects', results['jumpToProjects']);
+      toastr.success('jumpToProjects', results['jumpToProjects']);
+
       startLoading('Selecting Empty Project');
       await selectEmptyProject();
-      results['getInitiative from empty project'] = await new Promise(resolve => setTimeout(async function() {
-        stopLoading();
-        benchmarkNextFunction = true;
-        start = performance.now();
-        await refreshSidebar();
-        end = performance.now();
-        resolve(end - start);
-      }, 5000));
-      if (globalInitiative.title == "A fatal error has occured") {
-        throw new Error('A fatal error has occured');
-      }
-      toastr.success('getInitiative from empty project', results['getInitiative from empty project']);
+      await sleep(5000);
+      stopLoading();
+      results['getInitiative from empty project'] = await benchmarkFunction(refreshSidebar);
       console.debug('getInitiative from empty project', results['getInitiative from empty project']);
-    } catch (error) {
+      toastr.success('getInitiative from empty project', results['getInitiative from empty project']);
+
+      startLoading('Filling in Blank Information');
+      await selectNoDocsProject();
+      await sleep(5000);
+      stopLoading();
+      results['getInitiative from project with no docs'] = await benchmarkFunction(refreshSidebar);
+      console.debug('getInitiative from project with no docs', results['getInitiative from project with no docs']);
+      toastr.success('getInitiative from project with no docs', results['getInitiative from project with no docs']);
+
+      startLoading('Prepare to Generate Project');
+      await sleep(1000);
+      stopLoading();
+      results['generateProject from existing client'] = await benchmarkFunction(generateJob);
+      console.debug('generateProject from existing client', results['generateProject from existing client']);
+      toastr.success('generateProject from existing client', results['generateProject from existing client']);
+
+      startLoading('Preparing to Reload Project');
+      await sleep(1000);
+      stopLoading();
+      results['getInitiative from project with all docs'] = await benchmarkFunction(refreshSidebar);
+      console.debug('getInitiative from project with all docs', results['getInitiative from project with all docs']);
+      toastr.success('getInitiative from project with all docs', results['getInitiative from project with all docs']);
+      
+      startLoading('Deleting Project and Client Files');
+      await deleteProjectFiles();
+      await deleteClientFiles();
+      await selectNoDocsProject();
+      await sleep(5000);
+      stopLoading();
+      results['generateProject from new client'] = await benchmarkFunction(generateJob);
+      console.debug('generateProject from new client', results['generateProject from new client']);
+      toastr.success('generateProject from new client', results['generateProject from new client']);
+
+      startLoading('Deleting Project Files');
+      await deleteProjectFiles();
+      // delete the text here too in another function, or maybe just the one function
+      stopLoading();
+      results['jumpToProposals'] = await benchmarkFunction(jumpToProposal);
+      console.debug('jumpToProposals', results['jumpToProposals']);
+      toastr.success('jumpToProposals', results['jumpToProposals']);
+
+      startLoading('Selecting Empty Proposal');
+      await selectEmptyProposal();
+      await sleep(5000);
+      stopLoading();
+      results['getInitiative from empty proposal'] = await benchmarkFunction(refreshSidebar);
+      console.debug('getInitiative from empty proposal', results['getInitiative from empty proposal']);
+      toastr.success('getInitiative from empty proposal', results['getInitiative from empty proposal']);
+
+      startLoading('Filling in Blank Information');
+      await selectNoDocsProposal();
+      await sleep(5000);
+      stopLoading();
+      results['getInitiative from proposal with no docs'] = await benchmarkFunction(refreshSidebar);
+      console.debug('getInitiative from proposal with no docs', results['getInitiative from proposal with no docs']);
+      toastr.success('getInitiative from proposal with no docs', results['getInitiative from proposal with no docs']);
+
+      startLoading('Prepare to Generate Proposal');
+      await sleep(1000);
+      stopLoading();
+      results['generateProposal from existing client'] = await benchmarkFunction(generateProposal);
+      console.debug('generateProposal from existing client', results['generateProposal from existing client']);
+      toastr.success('generateProposal from existing client', results['generateProposal from existing client']);
+
+      startLoading('Preparing to Reload Proposal');
+      await sleep(1000);
+      stopLoading();
+      results['getInitiative from proposal with all docs'] = await benchmarkFunction(refreshSidebar);
+      console.debug('getInitiative from proposal with all docs', results['getInitiative from proposal with all docs']);
+      toastr.success('getInitiative from proposal with all docs', results['getInitiative from proposal with all docs']);
+
+      startLoading('Deleting Proposal and Client Files');
+      await deleteProposalFiles();
+      await deleteClientFiles();
+      await selectNoDocsProposal();
+      await sleep(5000);
+      stopLoading();
+      results['generateProposal from new client'] = await benchmarkFunction(generateProposal);
+      console.debug('generateProposal from new client', results['generateProposal from new client']);
+      toastr.success('generateProposal from new client', results['generateProposal from new client']);
+
+      startLoading('Prepare to Accept Proposal');
+      await sleep(1000);
+      stopLoading();
+      results['acceptProposal'] = await benchmarkFunction(acceptProposal);
+      console.debug('acceptProposal', results['acceptProposal']);
+      toastr.success('acceptProposal', results['acceptProposal']);
+
+      startLoading('Deleting Project Files');
+      await deleteProjectFiles();
+      stopLoading();
+
+      results['openChangelog'] = await benchmarkFunction(openChangelog);
+      console.debug('openChangelog', results['openChangelog']);
+      toastr.success('openChangelog', results['openChangelog']);
+
+      return results;
+    }  catch (error) {
       stopLoading();
       console.error('Error selecting empty project: ' + error.message);
       alert('Error selecting empty project: ' + error.message);
       return;
     }
-
-    try {
-      startLoading('Filling in Blank Information');
-      await selectNoDocsProject();
-      results['getInitiative from project with no docs'] = await new Promise(resolve => setTimeout(async function() {
-        stopLoading();
-        benchmarkNextFunction = true;
-        start = performance.now();
-        await refreshSidebar();
-        end = performance.now();
-        resolve(end - start);
-      }, 5000));
-      if (globalInitiative.title == "A fatal error has occured") {
-        throw new Error('A fatal error has occured');
-      }
-      toastr.success('getInitiative from project with no docs', results['getInitiative from project with no docs']);
-      console.debug('getInitiative from project with no docs', results['getInitiative from project with no docs']);
-    } catch (error) {
-      stopLoading();
-      console.error('Error selecting no docs project: ' + error.message);
-      alert('Error selecting no docs project: ' + error.message);
-      return;
-    }
-    
-    benchmarkNextFunction = true;
-    start = performance.now();
-    await generateJob();
-    end = performance.now();
-    results['generateProject from existing client'] = end - start;
-    if (globalInitiative.title == "A fatal error has occured") {
-      error = new Error('A fatal error has occured');
-      console.error('Error generating job from existing client: ' + error.message);
-      alert('Error generating job from existing client: ' + error.message);
-      return;
-    }
-    toastr.success('generateProject from existing client', results['generateProject from existing client']);
-    console.debug('generateProject from existing client', results['generateProject from existing client']);
-
-    try {
-      startLoading('Deleting Project and Client Files');
-      await deleteProjectFiles();
-      await deleteClientFiles();
-      results['generateProject from new client'] = await new Promise(resolve => setTimeout(async function() {
-        stopLoading();
-        await refreshSidebar();
-        benchmarkNextFunction = true;
-        start = performance.now();
-        await generateJob();
-        end = performance.now();
-        resolve(end - start);
-      }, 5000));
-      if (globalInitiative.title == "A fatal error has occured") {
-        throw new Error('A fatal error has occured');
-      }
-      console.debug('generateProject from new client', results['generateProject from new client']);
-      toastr.success('generateProject from new client', results['generateProject from new client']);
-    } catch (error) {
-      stopLoading();
-      console.error('Error generating job from new client: ' + error.message);
-      alert('Error generating job from new client: ' + error.message);
-      return;
-    }
-
-    try {
-      startLoading('Deleting Project Files');
-      await deleteProjectFiles();
-      stopLoading();
-      benchmarkNextFunction = true;
-      start = performance.now();
-      await jumpToProposal();
-      end = performance.now();
-      results['jumpToProposals'] = end - start;
-      console.debug('jumpToProposals', results['jumpToProposals']);
-      toastr.success('jumpToProposals', results['jumpToProposals']);
-    } catch (error) {
-      stopLoading();
-      console.error('Error jumping to proposals: ' + error.message);
-      alert('Error jumping to proposals: ' + error.message);
-      return;
-    }
-
-    try {
-      startLoading('Selecting Empty Proposal');
-      await selectEmptyProposal();
-      results['getInitiative from empty proposal'] = await new Promise(resolve => setTimeout(async function() {
-        stopLoading();
-        benchmarkNextFunction = true;
-        start = performance.now();
-        await refreshSidebar();
-        end = performance.now();
-        resolve(end - start);
-      }, 5000));
-      if (globalInitiative.title == "A fatal error has occured") {
-        throw new Error('A fatal error has occured');
-      }
-      toastr.success('getInitiative from empty proposal', results['getInitiative from empty proposal']);
-      console.debug('getInitiative from empty proposal', results['getInitiative from empty proposal']);
-    } catch (error) {
-      stopLoading();
-      console.error('Error selecting new proposal: ' + error.message);
-      alert('Error selecting new proposal: ' + error.message);
-      return;
-    }
-
-    try {
-      startLoading('Filling in Blank Information');
-      await selectNoDocsProposal();
-      results['getInitiative from proposal with no docs'] = await new Promise(resolve => setTimeout(async function() {
-        stopLoading();
-        benchmarkNextFunction = true;
-        start = performance.now();
-        await refreshSidebar();
-        end = performance.now();
-        resolve(end - start);
-      }, 5000));
-      if (globalInitiative.title == "A fatal error has occured") {
-        throw new Error('A fatal error has occured');
-      }
-      toastr.success('getInitiative from proposal with no docs', results['getInitiative from proposal with no docs']);
-      console.debug('getInitiative from proposal with no docs', results['getInitiative from proposal with no docs']);
-    } catch (error) {
-      stopLoading();
-      console.error('Error selecting no docs proposal: ' + error.message);
-      alert('Error selecting no docs proposal: ' + error.message);
-      return;
-    }
-
-    benchmarkNextFunction = true;
-    start = performance.now();
-    await generateProposal();
-    end = performance.now();
-    if (globalInitiative.title == "A fatal error has occured") {
-      error = new Error('A fatal error has occured');
-      console.error('Error generating proposal from existing client: ' + error.message);
-      alert('Error generating proposal from existing client: ' + error.message);
-      return;
-    }
-    results['generateProposal from existing client'] = end - start;
-    toastr.success('generateProposal from existing client', results['generateProposal from existing client']);
-    console.debug('generateProposal from existing client', results['generateProposal from existing client']);
-
-    try {
-      startLoading('Deleting Proposal and Client Files');
-      await deleteProposalFiles();
-      await deleteClientFiles();
-      results['generateProposal from new client'] = await new Promise(resolve => setTimeout(async function() {
-        stopLoading();
-        await refreshSidebar();
-        benchmarkNextFunction = true;
-        start = performance.now();
-        await generateProposal();
-        end = performance.now();
-        resolve(end - start);
-      }, 5000));
-      if (globalInitiative.title == "A fatal error has occured") {
-        throw new Error('A fatal error has occured');
-      }
-      console.debug('generateProposal from new client', results['generateProposal from new client']);
-      toastr.success('generateProposal from new client', results['generateProposal from new client']);
-    } catch (error) {
-      stopLoading();
-      console.error('Error generating proposal from new client: ' + error.message);
-      alert('Error generating proposal from new client: ' + error.message);
-      return;
-    }
-
-    benchmarkNextFunction = true;
-    start = performance.now();
-    await acceptProposal();
-    end = performance.now();
-    if (globalInitiative.title == "A fatal error has occured") {
-      error = new Error('A fatal error has occured');
-      console.error('Error accepting proposal: ' + error.message);
-      alert('Error accepting proposal: ' + error.message);
-      return;
-    }
-    results['acceptProposal'] = end - start;
-    toastr.success('acceptProposal', results['acceptProposal']);
-    console.debug('acceptProposal', results['acceptProposal']);
-
-    try {
-      startLoading('Deleting Project Files');
-      await deleteProjectFiles();
-      stopLoading();
-    } catch {
-      stopLoading();
-      console.error('Error deleting project files: ' + error.message);
-      alert('Error deleting project files: ' + error.message);
-      return;
-    }
-
-    benchmarkNextFunction = true;
-    start = performance.now();
-    await openChangelog();
-    end = performance.now();
-    results['openChangelog'] = end - start;
-    toastr.success('openChangelog', results['openChangelog']);
-    console.debug('openChangelog', results['openChangelog']);
-
-    return results;
   }
 
   async function selectEmptyProject() {

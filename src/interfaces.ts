@@ -82,9 +82,7 @@ export interface ChangelogDict {
 }
 
 export interface BasicTestJSON {
-  'Raw': [
-    {[key: string]: number}?
-  ],
+  'Raw': number[],
   'Statistics'?: {
     'Mean Total': number,
     'Mean Per Process'?: {[key: string]: number},

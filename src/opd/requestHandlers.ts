@@ -1,17 +1,18 @@
-import { Initiative, Project, Proposal } from '../classes/initiatives';
+import { Project, Proposal } from '../classes/initiatives';
 import { SerializedData, ProposalNameArray, InitiativeParams, unknownFunction, OPDSheetJSONTests } from '../interfaces';
 import { ValidationError } from '../classes/errors';
-import { properties, spreadsheet, version } from '../constants';
+import { spreadsheet, version } from '../constants';
 import { openChangelogAsModalDialogue } from '../changelog';
 import { User } from '../classes/user';
+import { Client } from '../classes/client';
 
 interface RequestHandlersExports {
   [key: string]: unknownFunction | unknown;
   Project: typeof Project;
   Proposal: typeof Proposal;
+  Client: typeof Client;
   ValidationError: typeof ValidationError;
   User: typeof User;
-  properties: typeof properties;
   spreadsheet: typeof spreadsheet;
   version: typeof version;
   openChangelogAsModalDialogue: typeof openChangelogAsModalDialogue;
@@ -43,11 +44,11 @@ export function jumpToProject(): void {
 
 export function getInitiative(): SerializedData {
   try {
-    const lucky_charms = Project.getInitiative().serialize();
+    const lucky_charms = exports.Project.getInitiative().serialize();
     console.log('THIS IS THE LAST PART OF THE BACKEND FUNCTION', lucky_charms);
     return lucky_charms;
   } catch (e: unknown) {
-    if (e instanceof ValidationError) {
+    if (e instanceof exports.ValidationError) {
       console.error(e.message);
       return {'title': e.message.split(':')[0]} as SerializedData;
     }
@@ -57,16 +58,16 @@ export function getInitiative(): SerializedData {
 }
 
 export function generateProposal(nameArray: ProposalNameArray): void {
-  Proposal.getProposal({nameArray} as InitiativeParams).generateProposal();
+  exports.Proposal.getProposal({nameArray} as InitiativeParams).generateProposal();
 }
 
 export function acceptProposal(nameArray: ProposalNameArray): void {
-  Proposal.getProposal({nameArray} as InitiativeParams).acceptProposal();
+  exports.Proposal.getProposal({nameArray} as InitiativeParams).acceptProposal();
   jumpToProject();
 }
 
 export function generateJob(nameArray: ProposalNameArray): void {
-  Project.getProject({nameArray} as InitiativeParams).generateProject();
+  exports.Project.getProject({nameArray} as InitiativeParams).generateProject();
 }
 
 export function openSheetChangelog(): void {
@@ -91,6 +92,7 @@ export function selectEmptyProject(): void {
 }
 
 export function selectNoDocsProject(): void {
+  selectEmptyProject();
   const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
   const sheet = spreadsheet.getActiveSheet();
   const row = sheet.getActiveRange()?.getRow();
@@ -103,10 +105,18 @@ export function deleteProjectFiles(): void {
   if (!exports.User.isDeveloper) {
     throw new Error('You are not authorized to perform this action.');
   }
-  const project = Project.getProject();
+  const project = exports.Project.getProject();
   if (project.clientName !== 'Test Client') {
     throw new Error('You are not authorized to perform this action.');
   }
+  const row = project.rowNumber;
+  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  const sheet = spreadsheet.getActiveSheet();
+  sheet.getRange(`A${row}`).setValue('');
+  sheet.getRange(`C${row}`).setValue('');
+  sheet.getRange(`D${row}`).setValue('');
+  sheet.getRange(`E${row}`).setValue('');
+  sheet.getRange(`F${row}`).setValue('');
   project.deleteFiles();
 }
 
@@ -114,11 +124,11 @@ export function deleteClientFiles(): void {
   if (!exports.User.isDeveloper) {
     throw new Error('You are not authorized to perform this action.');
   }
-  const initiative = Initiative.getInitiative();
-  if (initiative.clientName !== 'Test Client') {
+  const client = new exports.Client({name: 'Test Client'});
+  if (client.name !== 'Test Client') {
     throw new Error('You are not authorized to perform this action.');
   }
-  initiative.client.deleteClientFiles();
+  client.deleteClientFiles();
 }
 
 // add function to delete the text in the spreadsheet but make sure it only does if its thee test client weve been playing with.
@@ -130,6 +140,7 @@ export function selectEmptyProposal(): void {
 }
 
 export function selectNoDocsProposal(): void {
+  selectEmptyProposal();
   const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
   const sheet = spreadsheet.getActiveSheet();
   const row = sheet.getActiveRange()?.getRow();
@@ -142,10 +153,18 @@ export function deleteProposalFiles(): void {
   if (!exports.User.isDeveloper) {
     throw new Error('You are not authorized to perform this action.');
   }
-  const proposal = Proposal.getProposal();
+  const proposal = exports.Proposal.getProposal();
   if (proposal.clientName !== 'Test Client') {
     throw new Error('You are not authorized to perform this action.');
   }
+  const row = proposal.rowNumber;
+  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  const sheet = spreadsheet.getActiveSheet();
+  sheet.getRange(`A${row}`).setValue('');
+  sheet.getRange(`B${row}`).setValue('');
+  sheet.getRange(`C${row}`).setValue('');
+  sheet.getRange(`D${row}`).setValue('');
+  sheet.getRange(`E${row}`).setValue('');
   proposal.deleteFiles();
 }
 
@@ -200,9 +219,9 @@ export function benchmark(functionName: string, ...args: unknown[]): unknown {
   if (typeof exports[functionName] !== 'function') {
     throw new Error('Function not found');
   }
-  const start = performance.now();
+  const start = Date.now();
   const result = (exports[functionName] as unknownFunction)(...args);
-  const end = performance.now();
+  const end = Date.now();
   const time = end - start;
   if (!(functionName in currentBenchmark)) {
     currentBenchmark[functionName] = [];

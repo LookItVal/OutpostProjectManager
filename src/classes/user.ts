@@ -1,3 +1,10 @@
+import { properties } from '../constants';
+
+
+declare const exports: {
+  properties: typeof properties;
+};
+
 export class User {
   constructor() {
 
@@ -34,7 +41,7 @@ export class User {
   static get isAdmin(): boolean {
     const email = User.email;
     let isAdmin = false;
-    exports.properties.getProperty('administrators').split(',').forEach((adminEmail: string) => {
+    exports.properties.getProperty('administrators')?.split(',').forEach((adminEmail: string) => {
       if (email == adminEmail) {
         isAdmin = true;
       }
@@ -45,7 +52,7 @@ export class User {
   static get isDeveloper(): boolean {
     const email = User.email;
     let isDeveloper = false;
-    exports.properties.getProperty('developers').split(',').forEach((developerEmail: string) => {
+    exports.properties.getProperty('developers')?.split(',').forEach((developerEmail: string) => {
       if (email === developerEmail) {
         isDeveloper = true;
       }
@@ -53,11 +60,4 @@ export class User {
     return isDeveloper;
   }
     
-}
-
-export function test() {
-  console.log('User.email:', User.email);
-  console.log('User.fullName:', User.fullName);
-  console.log('User.isAdmin:', User.isAdmin);
-  console.log('User.isDeveloper:', User.isDeveloper);
 }
