@@ -1,6 +1,7 @@
 // State
 export const spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet | null  = SpreadsheetApp.getActiveSpreadsheet();
 
+export const cache = CacheService.getScriptCache();
 export const properties = PropertiesService.getScriptProperties();
 //Regex queries
 export const regexJobName: RegExp = /^\d{4}\s\d{4}\s.*/;

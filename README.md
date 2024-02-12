@@ -60,6 +60,8 @@
   - 1.3.0
 - [ ] The Changelog html is really just the base for any html file, change its name accordingly
   - 1.3.0
+- [ ] OPD should jump to projects on open
+  - 1.3
 - [ ] Add Benchmarking
   - By 1.3
 - [ ] Have every initiative initialize from serialized data and back them up to properties

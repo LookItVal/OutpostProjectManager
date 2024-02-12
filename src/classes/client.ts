@@ -3,6 +3,7 @@ import { ClientParams, Initiative } from '../interfaces';
 import { properties, regexJobName, regexProposalName } from '../constants';
 import { Project, Proposal } from './initiatives';
 import { User } from './user';
+import { awaitFolderCreation, awaitFolderDeletion } from '../utilities';
 
 interface ClientExports {
     ValidationError: typeof ValidationError;
@@ -12,6 +13,8 @@ interface ClientExports {
     Project: typeof Project;
     Proposal: typeof Proposal;
     User: typeof User;
+    awaitFolderCreation: typeof awaitFolderCreation;
+    awaitFolderDeletion: typeof awaitFolderDeletion;
 }
 declare const exports: ClientExports;
 
@@ -156,6 +159,7 @@ export class Client {
       throw new exports.ValidationError('Client already has a folder');
     }
     this._folder = Client.clientFolder.createFolder(this.name);
+    exports.awaitFolderCreation(this.name, Client.clientFolder);
     Client.clientSheet.appendRow([this.name, this._folder?.getId() ?? '']);
     return this._folder;
   }
@@ -167,6 +171,7 @@ export class Client {
     }
     if (this.folder) {
       this.folder.setTrashed(true);
+      exports.awaitFolderDeletion(this.name, Client.clientFolder);
       this._folder = undefined;
     }
     if (this.folderId) {

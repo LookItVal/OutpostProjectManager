@@ -30,6 +30,7 @@
         'Frontend': {}
       }
     }
+    googleScript(()=>{}, 'benchmark', ['clear'], throwError);
     while(iterationCount > 0) {
       let results = await runBenchmarkTests();
       console.debug('Benchmark results:', results);
@@ -39,6 +40,7 @@
     }
     toastr.success('Benchmark complete:', fullBenchmark);
     console.debug('Benchmark complete:', fullBenchmark);
+    googleScript(()=>{}, 'showBenchmark', [fullBenchmark], throwError);
   }
 
   function askForIterationCount() {
@@ -91,7 +93,7 @@
 
       startLoading('Selecting Empty Project');
       await selectEmptyProject();
-      await sleep(5000);
+      await sleep(1000);
       stopLoading();
       results['getInitiative from empty project'] = await benchmarkFunction(refreshSidebar);
       console.debug('getInitiative from empty project', results['getInitiative from empty project']);
@@ -99,7 +101,7 @@
 
       startLoading('Filling in Blank Information');
       await selectNoDocsProject();
-      await sleep(5000);
+      await sleep(1000);
       stopLoading();
       results['getInitiative from project with no docs'] = await benchmarkFunction(refreshSidebar);
       console.debug('getInitiative from project with no docs', results['getInitiative from project with no docs']);
@@ -120,18 +122,21 @@
       toastr.success('getInitiative from project with all docs', results['getInitiative from project with all docs']);
       
       startLoading('Deleting Project and Client Files');
+      await sleep(1000);
       await deleteProjectFiles();
       await deleteClientFiles();
       await selectNoDocsProject();
-      await sleep(5000);
+      await refreshSidebar();
+      await sleep(1000);
       stopLoading();
       results['generateProject from new client'] = await benchmarkFunction(generateJob);
       console.debug('generateProject from new client', results['generateProject from new client']);
       toastr.success('generateProject from new client', results['generateProject from new client']);
 
       startLoading('Deleting Project Files');
+      await sleep(1000);
       await deleteProjectFiles();
-      // delete the text here too in another function, or maybe just the one function
+      await sleep(1000);
       stopLoading();
       results['jumpToProposals'] = await benchmarkFunction(jumpToProposal);
       console.debug('jumpToProposals', results['jumpToProposals']);
@@ -139,7 +144,7 @@
 
       startLoading('Selecting Empty Proposal');
       await selectEmptyProposal();
-      await sleep(5000);
+      await sleep(1000);
       stopLoading();
       results['getInitiative from empty proposal'] = await benchmarkFunction(refreshSidebar);
       console.debug('getInitiative from empty proposal', results['getInitiative from empty proposal']);
@@ -147,7 +152,7 @@
 
       startLoading('Filling in Blank Information');
       await selectNoDocsProposal();
-      await sleep(5000);
+      await sleep(1000);
       stopLoading();
       results['getInitiative from proposal with no docs'] = await benchmarkFunction(refreshSidebar);
       console.debug('getInitiative from proposal with no docs', results['getInitiative from proposal with no docs']);
@@ -168,14 +173,17 @@
       toastr.success('getInitiative from proposal with all docs', results['getInitiative from proposal with all docs']);
 
       startLoading('Deleting Proposal and Client Files');
+      await sleep(1000);
       await deleteProposalFiles();
       await deleteClientFiles();
       await selectNoDocsProposal();
-      await sleep(5000);
+      await refreshSidebar();
+      await sleep(1000);
       stopLoading();
       results['generateProposal from new client'] = await benchmarkFunction(generateProposal);
       console.debug('generateProposal from new client', results['generateProposal from new client']);
       toastr.success('generateProposal from new client', results['generateProposal from new client']);
+      await refreshSidebar();
 
       startLoading('Prepare to Accept Proposal');
       await sleep(1000);
@@ -185,7 +193,9 @@
       toastr.success('acceptProposal', results['acceptProposal']);
 
       startLoading('Deleting Project Files');
+      await sleep(1000);
       await deleteProjectFiles();
+      await sleep(1000);
       stopLoading();
 
       results['openChangelog'] = await benchmarkFunction(openChangelog);
@@ -207,10 +217,6 @@
 
   async function selectEmptyProposal() {
     await googleScript(()=>{}, 'selectEmptyProposal', [], throwError);
-  }
-
-  async function selectFullProject() {
-    await googleScript(()=>{}, 'selectFullProject', [], throwError);
   }
 
   async function selectFullProposal() {

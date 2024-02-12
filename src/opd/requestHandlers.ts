@@ -1,7 +1,7 @@
 import { Project, Proposal } from '../classes/initiatives';
-import { SerializedData, ProposalNameArray, InitiativeParams, unknownFunction, OPDSheetJSONTests } from '../interfaces';
+import { SerializedData, ProposalNameArray, InitiativeParams, unknownFunction, OPDSheetJSONTests, BasicTestJSON } from '../interfaces';
 import { ValidationError } from '../classes/errors';
-import { spreadsheet, version } from '../constants';
+import { spreadsheet, version, cache } from '../constants';
 import { openChangelogAsModalDialogue } from '../changelog';
 import { User } from '../classes/user';
 import { Client } from '../classes/client';
@@ -16,9 +16,9 @@ interface RequestHandlersExports {
   spreadsheet: typeof spreadsheet;
   version: typeof version;
   openChangelogAsModalDialogue: typeof openChangelogAsModalDialogue;
+  cache: typeof cache;
 }
 declare const exports: RequestHandlersExports;
-let currentBenchmark: {[key: string]: number[]} = {};
 
 export function jumpToProposal(): void {
   const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
@@ -110,6 +110,7 @@ export function deleteProjectFiles(): void {
     throw new Error('You are not authorized to perform this action.');
   }
   const row = project.rowNumber;
+  project.deleteFiles();
   const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
   const sheet = spreadsheet.getActiveSheet();
   sheet.getRange(`A${row}`).setValue('');
@@ -117,7 +118,6 @@ export function deleteProjectFiles(): void {
   sheet.getRange(`D${row}`).setValue('');
   sheet.getRange(`E${row}`).setValue('');
   sheet.getRange(`F${row}`).setValue('');
-  project.deleteFiles();
 }
 
 export function deleteClientFiles(): void {
@@ -158,6 +158,7 @@ export function deleteProposalFiles(): void {
     throw new Error('You are not authorized to perform this action.');
   }
   const row = proposal.rowNumber;
+  proposal.deleteFiles();
   const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
   const sheet = spreadsheet.getActiveSheet();
   sheet.getRange(`A${row}`).setValue('');
@@ -165,52 +166,13 @@ export function deleteProposalFiles(): void {
   sheet.getRange(`C${row}`).setValue('');
   sheet.getRange(`D${row}`).setValue('');
   sheet.getRange(`E${row}`).setValue('');
-  proposal.deleteFiles();
 }
 
 // will only run a function that has been exported.
 export function benchmark(functionName: string, ...args: unknown[]): unknown {
   if (functionName === 'clear') {
-    currentBenchmark = {};
+    exports.cache.remove('currentBenchmark');
     return;
-  }
-  if (functionName === 'get') {
-    const realBenchmark: { [key: string]: number } = {};
-    for (const key of Object.keys(currentBenchmark)) {
-      if (key === 'jumpToProjects' || key === 'jumpToProposals') {
-        // if length of currentBenchmark[key] is 1, then it is a valid benchmark
-        // otherwise throw an error
-        if (currentBenchmark[key].length === 1) {
-          realBenchmark[key] = currentBenchmark[key][0];
-          continue;
-        }
-        throw new Error('Extra Jump Benchmark found');
-      }
-      if (key === 'refreshSidebar') {
-        if (currentBenchmark[key][0]) {
-          realBenchmark['getInitiative from empty project'] = currentBenchmark[key][0];
-          continue;
-        }
-        if (currentBenchmark[key][1]) {
-          realBenchmark['getInitiative from project with no docs'] = currentBenchmark[key][1];
-          continue;
-        }
-        throw new Error('Extra Refresh Sidebar Benchmark found');
-      }
-      if (key === 'generateJob') {
-        if (currentBenchmark[key][0]) {
-          realBenchmark['generateProject from existing client'] = currentBenchmark[key][0];
-          continue;
-        }
-        if (currentBenchmark[key][1]) {
-          realBenchmark['generateProject from new client'] = currentBenchmark[key][1];
-          continue;
-        }
-        throw new Error('Extra Generate Job Benchmark found');
-      }
-      throw new Error('Function not found');
-    }
-    return realBenchmark;
   }
   //if function_name is not in exports, throw an error
   if (!(functionName in exports)) {
@@ -223,18 +185,54 @@ export function benchmark(functionName: string, ...args: unknown[]): unknown {
   const result = (exports[functionName] as unknownFunction)(...args);
   const end = Date.now();
   const time = end - start;
+  let currentBenchmark: { [key:string]: number[] } = {};
+  if (exports.cache.get('currentBenchmark')) {
+    currentBenchmark = JSON.parse(exports.cache.get('currentBenchmark') as string);
+  }
+  // get curremt benchmark from cache
   if (!(functionName in currentBenchmark)) {
     currentBenchmark[functionName] = [];
   }
   (currentBenchmark[functionName]).push(time);
+  exports.cache.put('currentBenchmark', JSON.stringify(currentBenchmark));
+  // this will actually store everything as a string but its easier on the compiler if i just let that happen and let it be a number here.
   return result;
 }
+export function showBenchmark(frontendBenchmark: {'OPDSheet': {'Frontend': OPDSheetJSONTests, 'Backend'?: OPDSheetJSONTests}}): void {
+  const fullBenchmark = frontendBenchmark;
 
-export function showBenchmark(frontendBenchmark: OPDSheetJSONTests): void {
-  const fullBenchmark = {OPDSheet: {
-    'Frontend': frontendBenchmark,
-    'Backend': currentBenchmark
-  }};
+  fullBenchmark.OPDSheet.Backend = {} as OPDSheetJSONTests;
+  const currentBenchmark: { [key: string]: string[] } = JSON.parse(exports.cache.get('currentBenchmark') as string) as { [key: string]: string[] };
+  // merge the frontendBenchmark with the currentBenchmark
+  const backend: {[key:string]: OPDSheetJSONTests} = {};
+  for (const key of Object.keys(currentBenchmark)) {
+    if (key === 'jumpToProjects') {
+      if (!('jumpToProjects' in backend)) {
+        backend['jumpToProjects'] = {'Raw': []} as OPDSheetJSONTests;
+      }
+      (backend['jumpToProjects'] as BasicTestJSON)['Raw'] = currentBenchmark[key].map((value: string) => parseInt(value));
+    }
+    if (key === 'jumpToProposals') {
+      if (!('jumpToProposals' in backend)) {
+        backend['jumpToProposals'] = {'Raw': []} as OPDSheetJSONTests;
+      }
+      (backend['jumpToProposals'] as BasicTestJSON)['Raw'] = currentBenchmark[key].map((value: string) => parseInt(value));
+    }
+    // TODO add the rest of the benchmarks
+    /*
+    if (key === 'getInitiative') {
+    }
+    if (key === 'generateJob') {
+    }
+    if (key === 'generateProposal') {
+    }
+    if (key === 'acceptProposal') {
+    }
+    if (key === 'openSheetChangelog') {
+    }
+    */
+    (fullBenchmark.OPDSheet.Backend as { [key: string]: BasicTestJSON })[key]['Raw'] = currentBenchmark[key].map((value: string) => parseInt(value));
+  }
   // convert fullBenchmark into json string
   const fullBenchmarkString = JSON.stringify(fullBenchmark);
   console.log(fullBenchmarkString);
@@ -245,4 +243,22 @@ export function showBenchmark(frontendBenchmark: OPDSheetJSONTests): void {
   output.append('</html>');
   const ui = SpreadsheetApp.getUi();
   ui.showModalDialog(output, 'Full Benchmark Results');
+}
+
+
+export function testCreateAndDelete(): void {
+  const folder = exports.Project.reconciliationFolder;
+  const file = exports.Project.reconciliationSheetTemplate.makeCopy('TEST FILE', folder);
+  console.log('Make File');
+  while (!(folder.getFilesByName('TEST FILE').hasNext())) {
+    console.log('Waiting for file to be created');
+    Utilities.sleep(100);
+  }
+  console.log('File Created');
+  file.setTrashed(true);
+  while (folder.getFilesByName('TEST FILE').hasNext()) {
+    console.log('Waiting for file to be trashed');
+    Utilities.sleep(100);
+  }
+  console.log('Trashed File');
 }

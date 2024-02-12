@@ -3,6 +3,7 @@ import { spreadsheet, properties, regex4Digits, regexJobName, regexProposalName,
 import { Client } from './client';
 import { InitiativeParams, ProjectNameArray, ProposalNameArray, SerializedData } from '../interfaces';
 import { User } from './user';
+import { awaitFileCreation, awaitFileDeletion, awaitFolderCreation, awaitFolderDeletion } from '../utilities';
 
 interface InitiativesExport {
     ValidationError: typeof ValidationError;
@@ -16,6 +17,10 @@ interface InitiativesExport {
     regexGetIdFromProjectName: typeof regexGetIdFromProjectName;
     Client: typeof Client;
     User: typeof User;
+    awaitFileCreation: typeof awaitFileCreation;
+    awaitFileDeletion: typeof awaitFileDeletion;
+    awaitFolderCreation: typeof awaitFolderCreation;
+    awaitFolderDeletion: typeof awaitFolderDeletion;
 }
 declare const exports: InitiativesExport;
 
@@ -397,33 +402,43 @@ export abstract class Initiative {
       } else {
         this._folder = this.client.folder?.createFolder(this.title) as GoogleAppsScript.Drive.Folder;
       }
+      exports.awaitFolderCreation(this.title, this.client.folder as GoogleAppsScript.Drive.Folder);
       return this._folder;
     }
 
+    //THIS IS A DESTRUCTIVE FUNCTION
     public deleteFiles(): void {
       if (!exports.User.isDeveloper) {
         throw new exports.ValidationError('You do not have permission to delete files');
+      }
+      if (this.projectName !== 'Test Project' && this.projectName !== 'Test Proposal') {
+        throw new exports.ValidationError('You cannot delete files from a non-test project');
       }
       if (this.folder) {
         const files = this.folder.getFiles();
         while (files.hasNext()) {
           const file = files.next();
           file.setTrashed(true);
+          exports.awaitFileDeletion(file.getName(), this.folder);
         }
         this.folder.setTrashed(true);
+        exports.awaitFolderDeletion(this.title, this.client.folder as GoogleAppsScript.Drive.Folder);
         this._folder = undefined;
       }
       if (this._folderId) {
         this._folderId = undefined;
       }
       if (this.proposalDocument) {
+
         this._proposalDocument?.setTrashed(true);
+        exports.awaitFileDeletion(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`, this.client.folder as GoogleAppsScript.Drive.Folder);
       }
       if (this._proposalDocumentId) {
         this._proposalDocumentId = undefined;
       }
       if (this.costingSheet) {
         this._costingSheet?.setTrashed(true);
+        exports.awaitFileDeletion(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.client.folder as GoogleAppsScript.Drive.Folder);
       }
       if (this._costingSheetId) {
         this._costingSheetId = undefined;
@@ -769,6 +784,7 @@ export class Project extends Initiative {
       throw new exports.ValidationError('Reconciliation Sheet already exists');
     }
     Project.reconciliationSheetTemplate.makeCopy(this.title, Project.reconciliationFolder);
+    exports.awaitFileCreation(this.title, Project.reconciliationFolder);
     this.creationDate = new Date();
     if (!this.producer) {
       this.producer = exports.User.fullName;
@@ -780,13 +796,10 @@ export class Project extends Initiative {
     if (!exports.User.isDeveloper) {
       throw new exports.ValidationError('User is not a developer');
     }
-    if (this.reconciliationSheet) {
-      this.reconciliationSheet.setTrashed(true);
-      this._reconciliationSheet = undefined;
-    }
-    if (this._reconciliationSheetId) {
-      this._reconciliationSheetId = undefined;
-    }
+    this.reconciliationSheet?.setTrashed(true);
+    exports.awaitFileDeletion(this.title, Project.reconciliationFolder);
+    this._reconciliationSheet = undefined;
+    this._reconciliationSheetId = undefined;
     super.deleteFiles();
   }
 
@@ -984,6 +997,8 @@ export class Proposal extends Initiative {
     const folder = this.makeFolder();
     Proposal.proposalTemplate.makeCopy(`${this.shortTitle} Proposal`, folder);
     Proposal.costingSheetTemplate.makeCopy(`${this.shortTitle} Costing Sheet`, folder);
+    exports.awaitFileCreation(`${this.shortTitle} Proposal`, folder);
+    exports.awaitFileCreation(`${this.shortTitle} Costing Sheet`, folder);
     this.creationDate = new Date();
     this.producer = exports.User.fullName;
   }

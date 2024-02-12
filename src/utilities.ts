@@ -37,3 +37,31 @@ export function verboseLog(
   };
   return undefined;
 }
+
+export function awaitFileCreation(name: string, parentFolder: GoogleAppsScript.Drive.Folder): void {
+  while (!(parentFolder.getFilesByName(name).hasNext())) {
+    Utilities.sleep(100);
+  }
+  console.info('File Created: ', name);
+}
+
+export function awaitFolderCreation(name: string, parentFolder: GoogleAppsScript.Drive.Folder): void {
+  while (!(parentFolder.getFoldersByName(name).hasNext())) {
+    Utilities.sleep(100);
+  }
+  console.info('Folder Created: ', name);
+}
+
+export function awaitFileDeletion(name: string, parentFolder: GoogleAppsScript.Drive.Folder): void {
+  while (parentFolder.getFilesByName(name).hasNext()) {
+    Utilities.sleep(100);
+  }
+  console.info('File Deleted: ', name);
+}
+
+export function awaitFolderDeletion(name: string, parentFolder: GoogleAppsScript.Drive.Folder): void {
+  while (parentFolder.getFoldersByName(name).hasNext()) {
+    Utilities.sleep(100);
+  }
+  console.info('Folder Deleted: ', name);
+}
