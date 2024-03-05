@@ -78,8 +78,6 @@
   - BY 1.3
 - [ ] Make generative functions do things based on what has been selected previously, not what is currently selected if they have changed. This fixes the problem where if someone clicks away while files are being generated it may cause errors.
   - BY 1.3
-- [ ] If admin, be able to close reconciliation sheets. This function will just move the reconciliation sheet into the project folder, and lock the sheet. It could also mark the projects as closed in the Outpost Project Database.
-  - BY 1.3
 ## 1.4 The Utilities Update
 - [ ] Add requirement so you can do red button actions
   - BY 1.4
@@ -95,6 +93,8 @@
   -BY 1.4
 - [ ] Add function to add new page in the OPD. This function should be run automatically as the sheet runs out of room.
   - By 1.4
+- [ ] If admin, be able to close reconciliation sheets. This function will just move the reconciliation sheet into the project folder, and lock the sheet. It could also mark the projects as closed in the Outpost Project Database.
+  - BY 1.4
 ## 1.5 The UX Update
 - [ ] Split app into multiple sub bound apps so they can make use of onSelectionChange(e). This will allow the app to update faster and without the user having to click a button first, but it will require splitting up the codebase and accessing data via HTTP requests.
   - By 1.5
