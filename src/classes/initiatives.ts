@@ -1,9 +1,8 @@
 import { ValidationError } from './errors';
-import { spreadsheet, properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits, regexGetIdFromProjectName } from '../constants';
+import { spreadsheet, properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits } from '../constants';
 import { Client } from './client';
 import { InitiativeParams, ProjectNameArray, ProposalNameArray, SerializedData } from '../interfaces';
 import { User } from './user';
-import { awaitFileCreation, awaitFileDeletion, awaitFolderCreation, awaitFolderDeletion } from '../utilities';
 
 interface InitiativesExport {
     ValidationError: typeof ValidationError;
@@ -14,13 +13,8 @@ interface InitiativesExport {
     regexProposalName: typeof regexProposalName;
     regexProposalOpen: typeof regexProposalOpen;
     regexPullDigits: typeof regexPullDigits;
-    regexGetIdFromProjectName: typeof regexGetIdFromProjectName;
     Client: typeof Client;
     User: typeof User;
-    awaitFileCreation: typeof awaitFileCreation;
-    awaitFileDeletion: typeof awaitFileDeletion;
-    awaitFolderCreation: typeof awaitFolderCreation;
-    awaitFolderDeletion: typeof awaitFolderDeletion;
 }
 declare const exports: InitiativesExport;
 
@@ -30,7 +24,6 @@ export abstract class Initiative {
     public title: string;
     public abstract type: 'PROJECT' | 'PROPOSAL';
 
-    protected abstract _id?: string;
     protected _yrmo?: string;
     protected _clientName?: string;
     protected _client?: Client;
@@ -49,9 +42,6 @@ export abstract class Initiative {
     constructor ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams) {
       if (new.target === Initiative) {
         throw new TypeError('Cannot construct Abstract instances directly');
-      }
-      if (serializedData) {
-        throw new exports.ValidationError('Serialized Data is currently not supported');
       }
       if (serializedData) {
         // TODO perform validation at each step
@@ -87,7 +77,6 @@ export abstract class Initiative {
         if (serializedData['rowNumber']) {
           this._rowNumber = Number(serializedData['rowNumber']) as number;
         }
-        return;
       }
       if (name) {
         this.title = name;
@@ -105,7 +94,7 @@ export abstract class Initiative {
         this.title = folder.getName();
         return;
       }
-      throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, folder, or serializedData');
+      throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
     }
 
     /////////////////////////////////////////////
@@ -269,8 +258,8 @@ export abstract class Initiative {
     //              Static Methods             //
     /////////////////////////////////////////////
 
-    public static getInitiative({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams = {}): Project | Proposal {
-      if (!name && !nameArray && !folder && !serializedData) {
+    public static getInitiative({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams = {}): Project | Proposal {
+      if (!name && !nameArray && !folder) {
         if (exports.spreadsheet?.getId() === exports.properties.getProperty('projectDataSpreadsheetId')) {
           const sheet = exports.spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
           const row = sheet.getActiveCell().getRow(); 
@@ -299,72 +288,23 @@ export abstract class Initiative {
           nameArray = dataArray as ProjectNameArray | ProposalNameArray;
         }
       }
-      if (serializedData) {
-        throw new exports.ValidationError('Serialized Data is currently not supported');
-        /*
-        if (serializedData['type'] === 'PROJECT') {
-          return new Project({serializedData});
-        }
-        if (serializedData['type'] === 'PROPOSAL') {
-          return new Proposal({serializedData});
-        }
-        throw new exports.ValidationError('Serialized Data must contain a type');
-        */
-      }
       if (name) {
-        if (exports.regexProposalName.test(name)) {
-          //if (exports.properties.getProperty(name)) {
-          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(name) as string) });
-          //}
-          return new Proposal({name});
-        }
-        if (exports.regexJobName.test(name)) {
-          //const id = name.match(exports.regexGetIdFromProjectName)?.[0].split(' ').join('') as string;
-          //if (exports.properties.getProperty(id)) {
-          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(id) as string) });
-          //}
-          return new Project({name});
-        }
+        if (exports.regexProposalName.test(name)) return new Proposal({name});
+        if (exports.regexJobName.test(name)) return new Project({name});
         throw new exports.ValidationError('Name does not match any known initiative types');
       }
       if (nameArray && nameArray.length > 1) {
-        console.log('nameArray', nameArray);
-        //let initiativeId = '';
-        if (exports.regexProposalOpen.test(nameArray[0] as string)) {
-          //initiativeId = `${nameArray[0]} ${nameArray[1]} ${nameArray[2]} ${nameArray[3]}`;
-          //if (exports.properties.getProperty(initiativeId)) {
-          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
-          //}
-          return new Proposal({nameArray});
-        }
-        if (exports.regex4Digits.test(nameArray[1] as string)) {
-          console.log('returning project with nameArray:', nameArray);
-          //initiativeId = nameArray[0]+nameArray[1];
-          //if (exports.properties.getProperty(initiativeId)) {
-          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(initiativeId) as string) });
-          //}
-          return new Project({nameArray});
-        }
+        if (exports.regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
+        if (exports.regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
         throw new exports.ValidationError('Name Array does not match any known initiative types');
       }
       if (folder) {
         const folderName = folder.getName();
-        if (exports.regexProposalName.test(folderName)) {
-          //if (exports.properties.getProperty(folderName)) {
-          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(folderName) as string) });
-          //}
-          return new Proposal({folder});
-        }
-        if (exports.regexJobName.test(folderName)) {
-          //const id = folderName.match(exports.regexGetIdFromProjectName)?.[0].split(' ').join('') as string;
-          //if (exports.properties.getProperty(id)) {
-          //return Initiative.getInitiative({ serializedData: JSON.parse(exports.properties.getProperty(id) as string) });
-          //}
-          return new Project({folder});
-        }
+        if (exports.regexProposalName.test(folderName)) return new Proposal({folder});
+        if (exports.regexJobName.test(folderName)) return new Project({folder});
         throw new exports.ValidationError('Folder does not match any known initiative types');
       }
-      throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, folder, or serializedData');
+      throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
     }
 
     /////////////////////////////////////////////
@@ -373,7 +313,6 @@ export abstract class Initiative {
 
     public serialize (): SerializedData {
       const initiative: SerializedData = {};
-      console.log('Serializing Initiative:', this);
       !this.costingSheetId && console.warn('Trying to find the costing sheet:', this.costingSheetId);
       !this.proposalDocumentId && console.warn('Trying to find the proposal document:', this.proposalDocumentId);
       for (const key of Object.keys(this)) {
@@ -388,7 +327,6 @@ export abstract class Initiative {
           initiative[key] = String(this[key]) as string;
         }
       }
-      console.log('Serialized Initiative:', initiative);
       return initiative;
     }
 
@@ -402,51 +340,7 @@ export abstract class Initiative {
       } else {
         this._folder = this.client.folder?.createFolder(this.title) as GoogleAppsScript.Drive.Folder;
       }
-      exports.awaitFolderCreation(this.title, this.client.folder as GoogleAppsScript.Drive.Folder);
       return this._folder;
-    }
-
-    //THIS IS A DESTRUCTIVE FUNCTION
-    public deleteFiles(): void {
-      if (!exports.User.isDeveloper) {
-        throw new exports.ValidationError('You do not have permission to delete files');
-      }
-      if (this.projectName !== 'Test Project' && this.projectName !== 'Test Proposal') {
-        throw new exports.ValidationError('You cannot delete files from a non-test project');
-      }
-      if (this.folder) {
-        const files = this.folder.getFiles();
-        while (files.hasNext()) {
-          const file = files.next();
-          file.setTrashed(true);
-          exports.awaitFileDeletion(file.getName(), this.folder);
-        }
-        this.folder.setTrashed(true);
-        exports.awaitFolderDeletion(this.title, this.client.folder as GoogleAppsScript.Drive.Folder);
-        this._folder = undefined;
-      }
-      if (this._folderId) {
-        this._folderId = undefined;
-      }
-      if (this.proposalDocument) {
-
-        this._proposalDocument?.setTrashed(true);
-        exports.awaitFileDeletion(`${this.yrmo} ${this.clientName} ${this.projectName} Proposal`, this.client.folder as GoogleAppsScript.Drive.Folder);
-      }
-      if (this._proposalDocumentId) {
-        this._proposalDocumentId = undefined;
-      }
-      if (this.costingSheet) {
-        this._costingSheet?.setTrashed(true);
-        exports.awaitFileDeletion(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.client.folder as GoogleAppsScript.Drive.Folder);
-      }
-      if (this._costingSheetId) {
-        this._costingSheetId = undefined;
-      }
-      if (this._id) {
-        exports.properties.deleteProperty(this._id);
-      }
-      console.log('Deleted Initiative:', this);
     }
 
     /////////////////////////////////////////////
@@ -456,7 +350,7 @@ export abstract class Initiative {
     // Validation for the constructor
     protected static validateParams ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined }: InitiativeParams): SerializedData | void {
       if (!name && !nameArray && !folder && !serializedData) {
-        throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, folder, or serializedData');
+        throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
       }
       // make sure only one of the three is not null
       const countNonNull: number = [name, nameArray, folder, serializedData].filter(value => !!value).length;
@@ -534,7 +428,6 @@ export abstract class Initiative {
 
 export class Project extends Initiative {
   public type: 'PROJECT' | 'PROPOSAL' = 'PROJECT';
-  protected _id?: string;
   private _jobNumber?: string;
   private _closed?: string;
   private _reconciliationSheetId?: string;
@@ -562,14 +455,11 @@ export class Project extends Initiative {
         this._reconciliationSheetId = serializedData['reconciliationSheetId'] as string;
       }
     }
-    console.log('PROJECT CONSTRUCTOR: ', nameArray);
     if (nameArray) {
       this._yrmo = nameArray[0];
       this._jobNumber = nameArray[1];
       this._closed = nameArray[4];
     }
-    console.log('Final Project Object: ', this);
-    //this.save();
   }
     
   /////////////////////////////////////////////
@@ -660,17 +550,6 @@ export class Project extends Initiative {
   //          Immutable Properties           //
   /////////////////////////////////////////////
 
-  public get id(): string | undefined {
-    if (this._id) {
-      return this._id;
-    }
-    if (this.jobNumber && this.yrmo) {
-      this._id = this.yrmo + this.jobNumber;
-      return this._id;
-    }
-    return undefined;
-  }
-
   public get dataSheet (): GoogleAppsScript.Spreadsheet.Sheet {
     if (this._dataSheet) {
       return this._dataSheet;
@@ -691,7 +570,7 @@ export class Project extends Initiative {
     return this._dataSheet;
   }
 
-  public get reconciliationSheet(): GoogleAppsScript.Drive.File | undefined {
+  public get reconciliationSheet (): GoogleAppsScript.Drive.File | undefined {
     if (this._reconciliationSheet) {
       return this._reconciliationSheet;
     }
@@ -704,10 +583,6 @@ export class Project extends Initiative {
       return undefined;
     }
     this._reconciliationSheet = files.next();
-    // if file is in the trash dont use it
-    if (this._reconciliationSheet.isTrashed()) {
-      this._reconciliationSheet= undefined;
-    }
     return this._reconciliationSheet;
   }
 
@@ -784,27 +659,10 @@ export class Project extends Initiative {
       throw new exports.ValidationError('Reconciliation Sheet already exists');
     }
     Project.reconciliationSheetTemplate.makeCopy(this.title, Project.reconciliationFolder);
-    exports.awaitFileCreation(this.title, Project.reconciliationFolder);
     this.creationDate = new Date();
     if (!this.producer) {
       this.producer = exports.User.fullName;
     }
-  }
-
-  // THIS IS A DESTRUCTIVE FUNCTION
-  public deleteFiles(): void {
-    if (!exports.User.isDeveloper) {
-      throw new exports.ValidationError('User is not a developer');
-    }
-    this.reconciliationSheet?.setTrashed(true);
-    exports.awaitFileDeletion(this.title, Project.reconciliationFolder);
-    this._reconciliationSheet = undefined;
-    this._reconciliationSheetId = undefined;
-    super.deleteFiles();
-  }
-
-  public save(): void {
-    exports.properties.setProperty(this.yrmo+this.jobNumber, JSON.stringify(this.serialize()));
   }
 
   /////////////////////////////////////////////
@@ -873,7 +731,7 @@ export class Project extends Initiative {
 
 export class Proposal extends Initiative {
   public type: 'PROJECT' | 'PROPOSAL' = 'PROPOSAL';
-  protected _id?: string;
+
   private _status?: string;
 
   constructor ({ name = '', nameArray = undefined, folder = undefined, serializedData = undefined}: InitiativeParams) {
@@ -895,8 +753,6 @@ export class Proposal extends Initiative {
     if (nameArray) {
       this._yrmo = nameArray[1];
     }
-    console.log(this);
-    //this.save();
   }
 
   /////////////////////////////////////////////
@@ -920,17 +776,6 @@ export class Proposal extends Initiative {
   /////////////////////////////////////////////
   //          Immutable Properties           //
   /////////////////////////////////////////////
-
-  public get id(): string | undefined {
-    if (this._id) {
-      return this._id;
-    }
-    if (this.title) {
-      this._id = this.title;
-      return this._id;
-    }
-    return undefined;
-  }
 
   public get dataSheet (): GoogleAppsScript.Spreadsheet.Sheet {
     if (this._dataSheet) {
@@ -985,7 +830,6 @@ export class Proposal extends Initiative {
   /////////////////////////////////////////////
 
   public serialize(): SerializedData {
-    console.log('Serializing Proposal:', this);
     this.status;
     return super.serialize();
   }
@@ -997,8 +841,6 @@ export class Proposal extends Initiative {
     const folder = this.makeFolder();
     Proposal.proposalTemplate.makeCopy(`${this.shortTitle} Proposal`, folder);
     Proposal.costingSheetTemplate.makeCopy(`${this.shortTitle} Costing Sheet`, folder);
-    exports.awaitFileCreation(`${this.shortTitle} Proposal`, folder);
-    exports.awaitFileCreation(`${this.shortTitle} Costing Sheet`, folder);
     this.creationDate = new Date();
     this.producer = exports.User.fullName;
   }
@@ -1021,10 +863,6 @@ export class Proposal extends Initiative {
     this.folder.setName(`${this.yrmo} ${jobNumber} ${this.clientName} ${this.projectName}`);
     new Project({ nameArray: [this.yrmo, jobNumber, this.clientName, this.projectName, 'FALSE']}).generateProject();
     this.dataSheet.deleteRow(this.rowNumber);
-  }
-
-  public save(): void {
-    exports.properties.setProperty(this.title, JSON.stringify(this.serialize()));
   }
 
   /////////////////////////////////////////////

@@ -2,8 +2,6 @@ import { ValidationError } from './errors';
 import { ClientParams, Initiative } from '../interfaces';
 import { properties, regexJobName, regexProposalName } from '../constants';
 import { Project, Proposal } from './initiatives';
-import { User } from './user';
-import { awaitFolderCreation, awaitFolderDeletion } from '../utilities';
 
 interface ClientExports {
     ValidationError: typeof ValidationError;
@@ -12,17 +10,13 @@ interface ClientExports {
     regexProposalName: typeof regexProposalName;
     Project: typeof Project;
     Proposal: typeof Proposal;
-    User: typeof User;
-    awaitFolderCreation: typeof awaitFolderCreation;
-    awaitFolderDeletion: typeof awaitFolderDeletion;
 }
 declare const exports: ClientExports;
 
 export class Client {
     
   protected _name?: string;
-  protected _folder?: GoogleAppsScript.Drive.Folder;
-  protected _folderId?: string;
+  protected _folder?: GoogleAppsScript.Drive.Folder | undefined;
   protected _initiatives?: Initiative[];
   protected _projects?: Project[];
   protected _proposals?: Proposal[];
@@ -52,10 +46,6 @@ export class Client {
     return folder;
   }
 
-  public static get clientSheet(): GoogleAppsScript.Spreadsheet.Sheet {
-    return exports.Project.dataSpreadsheet.getSheetByName('Clients') as GoogleAppsScript.Spreadsheet.Sheet;
-  }
-
   /////////////////////////////////////////////
   //          Immutable Properties           //
   /////////////////////////////////////////////
@@ -72,12 +62,7 @@ export class Client {
   }
 
   public get folder(): GoogleAppsScript.Drive.Folder | undefined {
-    console.log('GETTING FOLDER', this);
     if (this._folder) {
-      return this._folder;
-    }
-    if (this._folderId) {
-      this._folder = DriveApp.getFolderById(this._folderId);
       return this._folder;
     }
     if (this._name) {
@@ -86,17 +71,6 @@ export class Client {
         this._folder = folders.next();
         return this._folder;
       }
-    }
-    return undefined;
-  }
-
-  public get folderId(): string | undefined {
-    if (this._folderId) {
-      return this._folderId;
-    }
-    if (this._folder) {
-      this._folderId = this._folder.getId();
-      return this._folderId;
     }
     return undefined;
   }
@@ -159,27 +133,10 @@ export class Client {
       throw new exports.ValidationError('Client already has a folder');
     }
     this._folder = Client.clientFolder.createFolder(this.name);
-    exports.awaitFolderCreation(this.name, Client.clientFolder);
-    Client.clientSheet.appendRow([this.name, this._folder?.getId() ?? '']);
+    const sheet = exports.Project.dataSpreadsheet.getSheetByName('Clients') as GoogleAppsScript.Spreadsheet.Sheet;
+    sheet.appendRow([this.name, this._folder?.getId() ?? '']);
     return this._folder;
   }
-
-  // THIS IS A DESTRUCTIVE FUNCTION
-  public deleteClientFiles(): void {
-    if (!exports.User.isDeveloper) {
-      throw new exports.ValidationError('User is not a developer');
-    }
-    if (this.folder) {
-      this.folder.setTrashed(true);
-      exports.awaitFolderDeletion(this.name, Client.clientFolder);
-      this._folder = undefined;
-    }
-    if (this.folderId) {
-      this._folderId = undefined;
-    }
-    Client.clientSheet.deleteRow(Client.clientSheet.getRange('A:A').getValues().map(row => row[0]).indexOf(this.name) + 1);
-  }
-
 
   /////////////////////////////////////////////
   //             Static Methods              //
