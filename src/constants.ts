@@ -20,7 +20,8 @@ export const changelog = {
           ['Added Folder button to calendar sidebar', 'New Feature'],
           ['Added Proposal and Costing sheet buttons to sidebar', 'New Feature'],
           ['Made buttons only show up if their information was found', 'Bug Fix'],
-          ['Changed wording on some buttons', 'UI Change']
+          ['Changed wording on some buttons', 'UI Change'],
+          ['Added buttons to proposal document to autofill title and terms', 'New Feature']
         ],
         2: [
           ['Cleaned up log statements', 'Maintaniance'],
