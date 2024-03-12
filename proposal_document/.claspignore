@@ -1,0 +1,8 @@
+node_modules/**
+.vscode/**
+
+case_studies/**
+src/**
+stylesheet.html
+package.json
+package-lock.json

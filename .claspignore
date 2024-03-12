@@ -1,3 +1,6 @@
-
-src/benchmarking/*
 node_modules/**
+.vscode/**
+
+case_studies/**
+src/benchmarking/**
+proposal_document/**
