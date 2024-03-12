@@ -210,7 +210,7 @@
     }).withFailureHandler(function(msg, element) {
       stopLoading();
       console.log(msg, element);
-      $('#project-title').text("Error With Addon: Check Frontend Console For Details")
+      $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
     }).getInitiative();
   }
 
@@ -237,7 +237,7 @@
     //if initiative is not set
     console.log("initiative not set");
     console.log(globalInitiative);
-    $('#project-title').text("Error With Addon: Check Frontend Console For Details");
+    $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
   }
 
   function openProposal() {
@@ -250,7 +250,7 @@
     //if initiative is not set
     console.log("initiative not set");
     console.log(globalInitiative);
-    $('#project-title').text("Error With Addon: Check Frontend Console For Details");
+    $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
   }
 
   function openReconciliationSheet() {
@@ -263,7 +263,7 @@
     //if reconciliationSheetId is not set
     console.log("initiative not set");
     console.log(globalInitiative);
-    $('#project-title').text("Error With Addon: Check Frontend Console For Details");
+    $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
   }
 
   function openFolder() {
@@ -276,12 +276,12 @@
     //if folderId is not set
     console.log("initiative not set");
     console.log(globalInitiative);
-    $('.info-message').text("Error With Addon: Check Frontend Console For Details");
+    $('.info-message').text("Error With Addon: Refresh Webpage and Try Again");
   }
     
   // Calls the server to change the active sheet to the most recent job.
   function jumpToProject() {
-    startLoading(loadingText = 'Looking for Project');
+    startLoading(loadingText = 'Searching for Project');
       google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
@@ -296,7 +296,7 @@
   
   // Calls The server to change the active sheet to the proposal sheet.
   function jumpToProposal() {
-    startLoading(loadingText = 'Looking for Proposal');
+    startLoading(loadingText = 'Searching for Proposal');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
@@ -311,7 +311,7 @@
 
   // Calls the server to generate a new proposal.
   function requestProposalGeneration() {
-    startLoading(loadingText = 'Making A Proposal to Send');
+    startLoading(loadingText = 'Generating Metadata');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
@@ -330,7 +330,7 @@
   }
 
   function generateProposal() {
-    startLoading(loadingText = 'Making New Proposal Documents');
+    startLoading(loadingText = 'Generating New Proposal Documents');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
@@ -351,7 +351,7 @@
   }
 
   function requestProposalAccept() {
-    startLoading(loadingText = 'Gathering Proposal Information');
+    startLoading(loadingText = 'Retrieving Proposal Information');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
@@ -374,7 +374,7 @@
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
+        $('#info-text').text('An error occured. Please refresh the page and try again.');
         console.log(msg, element);
         element.disabled = false;
       })
@@ -391,11 +391,11 @@
   }
 
   function requestJobGeneration() {
-    startLoading(loadingText = 'Making A Project to Send');
+    startLoading(loadingText = 'Generating Metadata');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
+        $('#info-text').text('An error occured. Please refresh the page and try again.');
         console.log(msg, element);
         element.disabled = false;
       })
@@ -411,7 +411,7 @@
   }
 
   function generateJob() {
-    startLoading(loadingText = 'Making New Reconciliation Sheet');
+    startLoading(loadingText = 'Generating New Reconciliation Sheet');
     google.script.run
       .withFailureHandler(function(msg, element) {
         stopLoading();
