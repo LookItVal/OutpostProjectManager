@@ -34,19 +34,49 @@ export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
 export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card {
   try {
     const booking = new exports.Booking({event: e}) as Booking;
-    return CardService.newCardBuilder()
+    const sidebar = CardService.newCardBuilder()
       .setName('Select Event')
-      .setHeader(CardService.newCardHeader().setTitle('Project Details'))
-      .addSection(CardService.newCardSection()
-        .setHeader(booking.calendarEvent?.getTitle() ?? 'Booking Error')
-        .addWidget(CardService.newTextButton()
-          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-          .setBackgroundColor('#3d9400')
-          .setText('✓ Open Reconciliation ✓')
-          .setOpenLink(CardService.newOpenLink()
-            .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0`))))
-      .setFixedFooter(mainFooter())
-      .build();
+      .setHeader(CardService.newCardHeader().setTitle('Project Details'));
+    const section = CardService.newCardSection();
+    section.addWidget(CardService.newTextParagraph()
+      .setText(booking.project?.title ?? 'Booking Error'));
+    if (booking.project?.folder) {
+      section.addWidget(CardService.newTextButton()
+        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+        .setText('     🖿 Open Folder 🖿     ')
+        .setOpenLink(CardService.newOpenLink()
+          .setUrl(`https://drive.google.com/drive/folders/${booking.project?.folder?.getId()}`)));
+    }
+    if (booking.sheetId) {
+      section.addWidget(CardService.newTextButton()
+        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+        .setBackgroundColor('#3d9400')
+        .setText('✓ Open Reconciliation ✓')
+        .setOpenLink(CardService.newOpenLink()
+          .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0`)));
+    }
+    if (booking.project?.costingSheetId) {
+      section.addWidget(CardService.newTextButton()
+        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+        .setText('$ Open Costing Sheet $')
+        .setOpenLink(CardService.newOpenLink()
+          .setUrl(`https://docs.google.com/spreadsheets/d/${booking.project?.costingSheetId}/edit#gid=0`)));
+    }
+    if (booking.project?.proposalDocumentId) {
+      section.addWidget(CardService.newTextButton()
+        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+        .setText('🗋 Open Proposal 🗋')
+        .setOpenLink(CardService.newOpenLink()
+          .setUrl(`https://docs.google.com/document/d/${booking.project?.proposalDocumentId}/edit`)));
+    }
+    // if none found then add a message
+    if (!booking.project?.folder && !booking.sheetId && !booking.project?.costingSheetId && !booking.project?.proposalDocumentId) {
+      section.addWidget(CardService.newTextParagraph()
+        .setText('\n - No associated files found.'));
+    }
+    sidebar.addSection(section)
+      .setFixedFooter(mainFooter());
+    return sidebar.build();
   } catch (e: unknown) {
     console.error(e);
     return calendarHomepageUI();
