@@ -17,6 +17,12 @@
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
 ## Changelog
+### [1.2.3]
+  - Added folder button to the calendar sidebar
+  - Added proposal and costing sheet buttons to the sidebar
+  - Made buttons in the calendar only show up if their data is found
+  - Changed wording on some buttons
+
 ### [1.2.2]
   - Cleaned up log statements
   - Managed Git Repo
