@@ -83,6 +83,8 @@
   - BY 1.4
 - [ ] Link up items in the costing sheet with the proposal document.
   - By 1.4
+- [ ] Update basic project name variables in documents that get generated
+  - By 1.4
 - [ ] Build this readme out to make sure anyone else who needs to edit this codebase can easily understand how this app works.
   -BY 1.4
 - [ ] Add some kind of bug reporter for the client.
