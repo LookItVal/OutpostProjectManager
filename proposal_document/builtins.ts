@@ -16,12 +16,8 @@ export function onOpen(e: GoogleAppsScript.Events.DocsOnOpen): void {
   if (e.source.getName() === 'Proposal Template') {
     return;
   }
-  let result = ui.alert('Autofill', 'Permission to autofill content?', ui.ButtonSet.YES_NO);
-  if (result !== ui.Button.YES) {
-    return;
-  }
   Autofill.onOpen(e);
-  result = ui.alert('Terms 50/50%', 'Would you like to autofill the terms based on the following:\nDates are firm with 50% payment due at the time of booking, 50% due at the time of final delivery.', ui.ButtonSet.YES_NO);
+  let result = ui.alert('Terms 50/50%', 'Would you like to autofill the terms based on the following:\nDates are firm with 50% payment due at the time of booking, 50% due at the time of final delivery.', ui.ButtonSet.YES_NO);
   if (result === ui.Button.YES) {
     Autofill.setTerms50(e);
     return;

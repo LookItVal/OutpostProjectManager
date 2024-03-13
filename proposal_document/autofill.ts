@@ -17,33 +17,44 @@ namespace Autofill {
     const header = doc.getNamedRanges('projectNameHeader')[0]?.getRange();
     const name = doc.getName();
     if (name === 'Proposal Template') {
-      //return;
+      return;
     }
     header.getRangeElements()[0].getElement().asText().setText(name);
     header.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
     doc.getNamedRanges('projectNameHeader')[0].remove();
   }
 
-  export function setTerms(newTerms: string): void {
-    const termsRange = DocumentApp.getActiveDocument().getNamedRanges('terms')[0]?.getRange();
-    let elements = termsRange.getRangeElements();
-    elements[0].getElement().asText().setText(newTerms);
-    elements[0].getElement().asText().setForegroundColor('#000000');
-    while (elements.length > 1) {
-      elements[1].getElement().removeFromParent();
-      elements = termsRange.getRangeElements();
+  export function setTerms(newTerms: string, e?: GoogleAppsScript.Events.DocsOnOpen): void {
+    const doc = e?.source ?? DocumentApp.getActiveDocument();
+    const termsRange = doc.getNamedRanges('terms')[0]?.getRange();
+    const textRange = termsRange.getRangeElements()[0].getElement();
+    textRange.asText().setText(newTerms);
+    textRange.asText().setForegroundColor('#000000');
+    while (termsRange.getRangeElements().length > 1) {
+      const t = termsRange.getRangeElements()[1];
+      // if element is incomplete
+      if (t.isPartial()) {
+        t.getElement().removeFromParent();
+        termsRange.getRangeElements()[1].getElement().removeFromParent();
+        break;
+      }
+      t.getElement().removeFromParent();
     }
+    doc.getNamedRanges('terms')[0].remove();
+    const newRange = doc.newRange();
+    newRange.addElement(textRange);
+    doc.addNamedRange('terms', newRange.build());
   }
 
-  export function setTerms100(): void {
-    setTerms(Constants.TERMS_100);
+  export function setTerms100(e?: GoogleAppsScript.Events.DocsOnOpen): void {
+    setTerms(Constants.TERMS_100, e);
   }
 
-  export function setTerms50(): void {
-    setTerms(Constants.TERMS_50);
+  export function setTerms50(e?: GoogleAppsScript.Events.DocsOnOpen): void {
+    setTerms(Constants.TERMS_50, e);
   }
 
-  export function setTerms35(): void {
-    setTerms(Constants.TERMS_35);
+  export function setTerms35(e?: GoogleAppsScript.Events.DocsOnOpen): void {
+    setTerms(Constants.TERMS_35, e);
   }
 }
