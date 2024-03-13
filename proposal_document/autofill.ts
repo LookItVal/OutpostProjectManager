@@ -1,26 +1,27 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 namespace Autofill {
-  export function onOpen(e: object): void {
+  export function onOpen(e: GoogleAppsScript.Events.DocsOnOpen): void {
     console.log(e);
-    const doc = DocumentApp.getActiveDocument();
+    const doc = e.source as GoogleAppsScript.Document.Document;
     if (doc.getNamedRanges('projectNameHeader').length !== 0) {
-      initializeDocument();
+      initializeDocument(e);
     }
   }
 
-  export function initializeDocument(): void {
-    setHeaderTitle();
+  export function initializeDocument(e: GoogleAppsScript.Events.DocsOnOpen): void {
+    setHeaderTitle(e);
   }
 
-  export function setHeaderTitle(): void {
-    const doc = DocumentApp.getActiveDocument();
+  export function setHeaderTitle(e?: GoogleAppsScript.Events.DocsOnOpen): void {
+    const doc = e?.source ?? DocumentApp.getActiveDocument();
     const header = doc.getNamedRanges('projectNameHeader')[0]?.getRange();
     const name = doc.getName();
     if (name === 'Proposal Template') {
-      return;
+      //return;
     }
     header.getRangeElements()[0].getElement().asText().setText(name);
     header.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
+    doc.getNamedRanges('projectNameHeader')[0].remove();
   }
 
   export function setTerms(newTerms: string): void {
