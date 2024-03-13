@@ -1,4 +1,4 @@
-export function onOpen(e: object): void {
+export function onOpen(e: GoogleAppsScript.Events.DocsOnOpen): void {
   console.log(e);
   // Maybe you can get the ui from e, check the logs.
   const ui = DocumentApp.getUi();
