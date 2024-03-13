@@ -19,7 +19,7 @@ namespace Autofill {
     const header = doc.getNamedRanges('projectNameHeader')[0]?.getRange();
     const name = doc.getName();
     if (name === 'Proposal Template') {
-      //return;
+      return;
     }
     header.getRangeElements()[0].getElement().asText().setText(name);
     header.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
