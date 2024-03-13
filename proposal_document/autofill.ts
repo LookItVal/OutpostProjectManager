@@ -10,6 +10,8 @@ namespace Autofill {
 
   export function initializeDocument(e: GoogleAppsScript.Events.DocsOnOpen): void {
     setHeaderTitle(e);
+    fillEmail(e);
+    fillName(e);
   }
 
   export function setHeaderTitle(e?: GoogleAppsScript.Events.DocsOnOpen): void {
@@ -56,5 +58,31 @@ namespace Autofill {
 
   export function setTerms35(e?: GoogleAppsScript.Events.DocsOnOpen): void {
     setTerms(Constants.TERMS_35, e);
+  }
+
+  interface DocEvent {
+    source: GoogleAppsScript.Document.Document;
+    user?: {
+      email: string;
+      nickname: string;
+    };
+  }
+
+
+  export function fillName(e: DocEvent): void {
+    const doc = e.source ?? DocumentApp.getActiveDocument();
+    const name = e.user?.nickname as string;
+    const nameRange = doc.getNamedRanges('fullName')[0]?.getRange();
+    nameRange.getRangeElements()[0].getElement().asText().setText(`Prepared by: ${name.charAt(0).toUpperCase()}${name.slice(1)} - Outpost Worldwide, Inc.`);
+    nameRange.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
+  }
+
+
+  export function fillEmail(e: DocEvent): void {
+    const doc = e.source;
+    const email = e.user?.email;
+    const emailRange = doc.getNamedRanges('email')[0]?.getRange();
+    emailRange.getRangeElements()[0].getElement().asText().setText(`Prepared by: ${email} - Outpost Worldwide, Inc.`);
+    emailRange.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
   }
 }
