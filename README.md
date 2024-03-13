@@ -17,6 +17,11 @@
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
 ## Changelog
+### [1.2.4]
+  - Added buttons to proposal that autofill
+  - Added autofill prompts to opening of new proposal
+  - Added new build system for bound scripts
+  - Added new initialization script for bound scripts
 ### [1.2.3]
   - Added folder button to the calendar sidebar
   - Added proposal and costing sheet buttons to the sidebar
