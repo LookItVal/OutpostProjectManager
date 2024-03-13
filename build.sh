@@ -38,9 +38,15 @@ else
   exit 1
 fi
 
+# move the package.json file to the directory
+mv package.json $directory
+
 cd $directory
 clasp push
 cd ..
+
+# move the package.json file back to the root
+mv $directory/package.json .
 
 # Remove the symlink and rename the appsscript.json.bak file back to appsscript.json
 rm appsscript.json
