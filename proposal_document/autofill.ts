@@ -7,7 +7,7 @@ interface DocEvent {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-namespace Autofill {
+export namespace Autofill {
   export function onOpen(e: DocEvent): void {
     console.log(e);
     const doc = e.source as GoogleAppsScript.Document.Document;
