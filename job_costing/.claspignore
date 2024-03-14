@@ -1,6 +1,13 @@
+# JOB_COSTING
+# global
 node_modules/**
 .vscode/**
-
 case_studies/**
-src/benchmarking/**
-proposal_document/**src/**
+
+# src
+src/**
+!src/constants.ts
+
+# subscripts
+proposal_document/**
+reconciliation/**
