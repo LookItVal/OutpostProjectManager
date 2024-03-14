@@ -16,6 +16,16 @@ export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   }
 }
 
+export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
+  const range = e.range;
+  if (range.getValue() === true) {
+    range.expandGroups();
+  }
+  if (range.getValue() === false) {
+    range.collapseGroups();
+  }
+}
+
 export function isFirstOpen(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {
   return !exports.regexProposalName.test(e.source.getName());
 }

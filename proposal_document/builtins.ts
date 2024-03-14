@@ -1,4 +1,7 @@
-export function onOpen(e: GoogleAppsScript.Events.DocsOnOpen): void {
+import { Autofill } from './autofill';
+import { DocEvent } from '../src/interfaces';
+
+export function onOpen(e: DocEvent): void {
   const ui = DocumentApp.getUi();
   ui.createMenu('Outpost Project Manager')
     .addItem('Set Header Title', 'Autofill.setHeaderTitle')
