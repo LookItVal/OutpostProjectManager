@@ -22,6 +22,7 @@
   - Added autofill prompts to opening of new proposal
   - Added new build system for bound scripts
   - Added new initialization script for bound scripts
+
 ### [1.2.3]
   - Added folder button to the calendar sidebar
   - Added proposal and costing sheet buttons to the sidebar
@@ -35,7 +36,6 @@
   - Added Animation to Projects and Proposals Buttons
   - Cleaned Up Client Folder Structure
   - Added Cursor Pointing to buttons in the HTML stylesheet
-  - 
 
 ### [1.2.1]
   - Stopped text from flashing on project generation
