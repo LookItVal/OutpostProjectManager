@@ -7,37 +7,69 @@ if [ -d $directory ]; then
   echo "The directory $directory already exists."
   exit 1
 fi
-# create new directory
-mkdir $directory
-
 echo "Please enter the script id:"
 read script
 
-# rename root appsscript.json file to appsscript.json.bak
+mkdir $directory
 mv appsscript.json appsscript.json.bak
 
 # make .clasp.json file with script id inside in the new directory
 echo "{\"scriptId\":\"$script\",\"rootDir\":\"/home/quinn/projects/OutpostProjectManager\"}" > $directory/.clasp.json
+# make .claspignore file and update the others
+state=0
+while IFS= read -r line
+do
+  if [ $state -eq 0 ]; then
+    echo "# $(echo $directory | tr '[:lower:]' '[:upper:]')" > $directory/.claspignore
+    state=1
+    continue
+  fi
+  if [  $state -eq 1 ]; then
+    if [ "$line" = "# local" ]; then
+      echo "# src" >> $directory/.claspignore
+      echo "src/**" >> $directory/.claspignore
+      state=2
+      continue
+    fi 
+    echo $line >> $directory/.claspignore
+    continue
+  fi
+  if [ $state -eq 2 ]; then
+    if [ "$line" = "# subscripts" ]; then
+      echo "" >> $directory/.claspignore
+      echo "# subscripts" >> $directory/.claspignore
+      state=3
+      continue
+    fi
+    continue
+  fi
+  if [ $state -eq 3 ]; then
+      if [ $line = "" ]; then
+        continue
+      fi
+      ignore_directory=${line%%/**}
+      echo $line >> $directory/.claspignore
+      echo "$directory/**" >> $ignore_directory/.claspignore
+      continue
+  fi
+done < .claspignore
+echo "$directory/**" >> .claspignore
+unset state
 
-# copy the .claspignore file to the new directory
-cp .claspignore $directory
-
-# add the src directory to the .claspignore file
-echo "src/**" >> $directory/.claspignore
-
-# move the package.json file to the directory
+# move the package.json file to the directory and pull
 mv package.json $directory
-
 cd $directory
 clasp pull
 cd ..
 
-# move the package.json file back to the root
+# move everything back
 mv $directory/package.json .
-
-# move the .appsscript.json file to the directory
 mv appsscript.json $directory
-
-# rename the appsscript.json.bak file back to appsscript.json
 mv appsscript.json.bak appsscript.json
+
+# check if code.js exists in the root and if it does, delete it
+if [ -f Code.js ]; then
+  rm Code.js
+fi
+
 exit 0
