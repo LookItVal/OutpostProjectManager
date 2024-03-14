@@ -1,0 +1,12 @@
+# RECONCILIATION
+# global
+node_modules/**
+.vscode/**
+case_studies/**
+
+# src
+src/**
+
+# subscripts
+proposal_document/**
+job_costing/**
