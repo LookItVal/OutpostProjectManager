@@ -1,8 +1,13 @@
+# PROPOSAL_DOCUMENT
+# global
 node_modules/**
 .vscode/**
-
 case_studies/**
+
+# src
 src/**
-stylesheet.html
-package.json
-package-lock.json
+!src/interfaces.ts
+
+# subscripts
+job_costing/**
+reconciliation/**
