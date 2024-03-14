@@ -1,6 +1,13 @@
+# ROOT
+# global
 node_modules/**
 .vscode/**
-
 case_studies/**
+
+# local
 src/benchmarking/**
+
+# subscripts
 proposal_document/**
+job_costing/**
+reconciliation/**
