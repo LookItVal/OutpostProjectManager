@@ -82,3 +82,12 @@ export interface ChangelogDict {
 }
 
 export type Initiative = Project | Proposal;
+
+// fixes the issue with the GoogleAppsScript.Events.DocsOnOpen interface
+export interface DocEvent {
+  source: GoogleAppsScript.Document.Document;
+  user?: {
+    email: string;
+    nickname: string;
+  };
+}
