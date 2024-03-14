@@ -10,12 +10,18 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.2.4';
+export const version = '1.2.5';
 export const changelog = {
   1: {
     2: [
       'Shiny Things Update',
       {
+        5: [
+          ['Added autofill for project title in Reconciliation Sheet', 'New Feature'],
+          ['Added autofill for project title in Costing Sheet', 'New Feature'],
+          ['Fixed bug on copying and pasting in Costing Sheet', 'Bug Fix'],
+          ['Changed initialization script to track subscript directories', 'Maintaniance']
+        ],
         4: [
           ['Added autofill function for project title and user info', 'New Feature'],
           ['Added autofill prompts to the openening of the proposal document for the first time', 'New Feature'],

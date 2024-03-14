@@ -17,11 +17,18 @@
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
 ## Changelog
+### [1.2.5]
+  - Added autofill to reconciliations
+  - Fixed bug with copying elements in job costing sheet
+  - Added autofill to job costing
+  - Changed initialization script to track subscript directories
+
 ### [1.2.4]
   - Added buttons to proposal that autofill
   - Added autofill prompts to opening of new proposal
   - Added new build system for bound scripts
   - Added new initialization script for bound scripts
+
 ### [1.2.3]
   - Added folder button to the calendar sidebar
   - Added proposal and costing sheet buttons to the sidebar
@@ -35,7 +42,6 @@
   - Added Animation to Projects and Proposals Buttons
   - Cleaned Up Client Folder Structure
   - Added Cursor Pointing to buttons in the HTML stylesheet
-  - 
 
 ### [1.2.1]
   - Stopped text from flashing on project generation
@@ -50,22 +56,6 @@
 - Prepared the code base for more rapid changes.
 
 ## Todo
-- [x] ~~Show folders in the OPD sidebar.~~
-- [x] ~~Fix formatting on some buttons.~~
-- [x] ~~Add Icons to items in the OPD sidebar.~~
-- [x] ~~Make Icons Move on hover~~
-- [x] ~~Change text that only appears for a second on generation.~~
-  - 1.2.1
-- [x] ~~Make sure load button is disabled when loading projects, and that the right info message is up when loading complex functions~~
-  - 1.2.1
-- [x] ~~Run the client folder cleanup function.~~
-  - 1.2.1
-- [x] ~~Make client fields in OPD autofill based on the list of clients.~~
-  - 1.2.1
-- [x] ~~Add hover animation for Projects and Proposals Buttons~~
-  -  1.2.2
-- [x] ~~Add Changelog in app~~
-  - 1.2.2
 ## 1.3 The Optimization Update
 - [ ] Have initiatives and other object be able to be initiated by serialized data.
   - 1.3.0
