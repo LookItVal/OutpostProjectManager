@@ -20,6 +20,9 @@ export function onOpen(e: DocEvent): void {
     return;
   }
   Autofill.onOpen(e);
+  if (e.source.getNamedRanges('terms')[0].getRange().getRangeElements()[0].getElement().asText().getForegroundColor() !== '#ff0000') {
+    return;
+  }
   let result = ui.alert('Terms 50/50%', 'Would you like to autofill the terms based on the following:\nDates are firm with 50% payment due at the time of booking, 50% due at the time of final delivery.', ui.ButtonSet.YES_NO);
   if (result === ui.Button.YES) {
     Autofill.setTerms50(e);

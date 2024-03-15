@@ -2,8 +2,9 @@ export function onInstall(e: object): void {
   onOpen(e);
 }
 
+// This function runs no matter what app is open.
+// For script specific needs, use bound scripts not this.
 export function onOpen(e: object): void {
-  // yea idk what goin on here
   console.log(e);
 }
 
