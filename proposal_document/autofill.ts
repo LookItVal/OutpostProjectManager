@@ -25,13 +25,17 @@ export namespace Autofill {
   export function setHeaderTitle(e?: DocEvent): void {
     const doc = e?.source ?? DocumentApp.getActiveDocument();
     const header = doc.getNamedRanges('projectNameHeader')[0]?.getRange();
+    const frontPageHeader = doc.getNamedRanges('frontPageProjectName')[0]?.getRange();
     const name = doc.getName();
     if (name === 'Proposal Template') {
       return;
     }
     header.getRangeElements()[0].getElement().asText().setText(name);
+    frontPageHeader.getRangeElements()[0].getElement().asText().setText(name);
     header.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
+    frontPageHeader.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
     doc.getNamedRanges('projectNameHeader')[0].remove();
+    doc.getNamedRanges('frontPageProjectName')[0].remove();
   }
 
   export function setTerms(newTerms: string, e?: DocEvent): void {
