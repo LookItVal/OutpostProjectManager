@@ -61,3 +61,20 @@ export const changelog = {
     ]
   }
 };
+
+//Colors
+export namespace Colors {
+  export function newColor(color: string): GoogleAppsScript.Spreadsheet.Color {
+    return SpreadsheetApp.newColor().setRgbColor(color).build();
+  }
+  export const textColor: string = '#000000';
+  export const backgroundColor: string = '#ffffff';
+  export const hyperlinkColor: string = '#9edaff';
+  export const fontFamily: string = 'Avenir';
+  export const accent1: string = '#1b8acf';
+  export const accent2: string = '#80bbff';
+  export const accent3: string = '#9fa6b3';
+  export const accent4: string = '#bdc6d4';
+  export const accent5: string = '#dbe5f6';
+  export const accent6: string = '#e3edff';
+}  
