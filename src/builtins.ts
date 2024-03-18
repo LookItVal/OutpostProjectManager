@@ -1,4 +1,6 @@
-export function onInstall(e: object): void {
+import { Colors } from './constants';
+
+export function onInstall(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   onOpen(e);
 }
 
