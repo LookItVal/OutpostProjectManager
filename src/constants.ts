@@ -68,9 +68,9 @@ export namespace Colors {
     return SpreadsheetApp.newColor().setRgbColor(color).build();
   }
   export const textColor: string = '#000000';
-  export const backgroundColor: string = '#ffffff';
-  export const hyperlinkColor: string = '#9edaff';
-  export const fontFamily: string = 'Avenir';
+  export const backgroundColor: string = '#F4FAFF';
+  export const hyperlinkColor: string = '#3F72A0';
+  export const fontFamily: string = 'Arial';
   export const accent1: string = '#1b8acf';
   export const accent2: string = '#80bbff';
   export const accent3: string = '#9fa6b3';
