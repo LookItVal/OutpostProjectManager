@@ -1,10 +1,13 @@
+import { Theme } from './theme';
+
 export function onInstall(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   onOpen(e);
 }
 
 // This function runs no matter what app is open.
 // For script specific needs, use bound scripts not this.
-export function onOpen(e: object): void {
+export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
+  Theme.setTheme(e);
   console.log(e);
 }
 
