@@ -7,6 +7,7 @@ case_studies/**
 # src
 src/**
 !src/constants.ts
+!src/theme.ts
 
 # subscripts
 proposal_document/**

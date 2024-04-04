@@ -1,4 +1,5 @@
 import { regexProposalName } from '../src/constants';
+import { Theme } from '../src/theme';
 
 interface JobCostingExport {
   regexProposalName: typeof regexProposalName;
@@ -7,6 +8,7 @@ interface JobCostingExport {
 declare const exports: JobCostingExport;
 
 export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
+  Theme.setTheme(e);
   if (isTemplate(e)) {
     return;
   }

@@ -56,6 +56,43 @@
 - Prepared the code base for more rapid changes.
 
 ## Todo
+## 1.3 The Utilities Update
+- [ ] Link up items in the costing sheet with the proposal document.
+  - Add OPM to the proper sheet and make new UI to pull information from the two.
+  - By 1.3
+- [ ] Make frontend sends always come with a version number, to check to see if you need to update. This prevents the problem of the app breaking when updates are pushed until everyone refreshes their client.
+  - BY 1.3
+- [ ] Make sure calendar only adds a reconciliation sheet button if it actually found a real sheet
+  - BY 1.3
+- [ ] Make generative functions do things based on what has been selected previously, not what is currently selected if they have changed. This fixes the problem where if someone clicks away while files are being generated it may cause errors.
+  - BY 1.3
+- [ ] Add function to add new page in the OPD. This function should be run automatically as the sheet runs out of room.
+  - By 1.4
+- [ ] Add function to add new page in the OPD. This function should be run automatically as the sheet runs out of room.
+  - By 1.4
+
+
+
+
+## 1.4
+ - [ ] Split app into multiple sub bound apps so they can make use of onSelectionChange(e). This will allow the app to update faster and without the user having to click a button first, but it will require splitting up the codebase and accessing data via HTTP requests.
+  - By 1.5
+- [ ] Turn the rest of the app into a web app and send http requests to each other to run functions. This speeds up updating on editors with advanced functions, and also will allow a hub for users to see everything in once place.
+  - By 1.5
+
+## 1.4 
+- [ ] Link calendar bookings and specific lines of the reconciliation sheet.
+  - BY 1.6
+- [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
+  - BY 1.6
+- [ ] Add something to the reconciliation sheet to show when something has been confirmed.
+  - BY 1.6
+- [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
+  - BY 1.6
+
+  
+
+
 ## 1.3 The Optimization Update
 - [ ] Have initiatives and other object be able to be initiated by serialized data.
   - 1.3.0
