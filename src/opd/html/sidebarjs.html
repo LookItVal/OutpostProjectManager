@@ -18,6 +18,7 @@
     $('#accept-proposal-button').click(requestProposalAccept);
     $('#create-job-button').click(requestJobGeneration);
     $('#versionChangelog').click(openChangelog);
+    $('#create-costing-button').click(requestCostingGeneration);
 
     $('#open-folder-button').hover(
       function() {
@@ -132,6 +133,7 @@
     $('#accept-proposal-button').fadeOut();
     $('#create-job-button').fadeOut();
     $('#create-proposal-button').fadeOut();
+    $('#create-costing-button').fadeOut();
   }
 
   function fadeInAnyInfo() {
@@ -150,9 +152,13 @@
           $('.info-message').text("Project Closed. No Project Folder or Reconciliation Sheet Found.");
           $('.info-message').fadeIn();
         }
-      } else if(!globalInitiative.reconciliationSheetId) {
-        $('#create-job-button').fadeIn();
-      } 
+      } else {
+        if(!globalInitiative.reconciliationSheetId) {
+          $('#create-job-button').fadeIn();
+        } else if(!globalInitiative.costingSheetId) {
+          $('#create-costing-button').fadeIn();
+        } 
+      }
     }
     if (globalInitiative.type === "PROPOSAL") {
       if (globalInitiative.status === "ACTIVE") {
@@ -276,18 +282,14 @@
     //if folderId is not set
     console.log("initiative not set");
     console.log(globalInitiative);
-    $('.info-message').text("Error With Addon: Refresh Webpage and Try Again");
+    $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
   }
     
   // Calls the server to change the active sheet to the most recent job.
   function jumpToProject() {
     startLoading(loadingText = 'Searching for Project');
       google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function() {
         refreshSidebar();
       })
@@ -298,11 +300,7 @@
   function jumpToProposal() {
     startLoading(loadingText = 'Searching for Proposal');
     google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function() {
         refreshSidebar();
       })
@@ -313,11 +311,7 @@
   function requestProposalGeneration() {
     startLoading(loadingText = 'Generating Metadata');
     google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function(result) {
         stopLoading();
         if (result) {
@@ -332,12 +326,7 @@
   function generateProposal() {
     startLoading(loadingText = 'Generating New Proposal Documents');
     google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function() {
         stopLoading();
         startLoading(loadingText = 'Loading New Proposal');
@@ -353,11 +342,7 @@
   function requestProposalAccept() {
     startLoading(loadingText = 'Retrieving Proposal Information');
     google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function(result) {
         stopLoading();
         if (result) {
@@ -372,12 +357,7 @@
   function acceptProposal() {
     startLoading(loadingText = 'Converting Proposal to Project');
     google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        $('#info-text').text('An error occured. Please refresh the page and try again.');
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function() {
         stopLoading();
         startLoading(loadingText = 'Loading New Project');
@@ -393,12 +373,7 @@
   function requestJobGeneration() {
     startLoading(loadingText = 'Generating Metadata');
     google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        $('#info-text').text('An error occured. Please refresh the page and try again.');
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function(result) {
         stopLoading();
         if (result) {
@@ -413,12 +388,7 @@
   function generateJob() {
     startLoading(loadingText = 'Generating New Reconciliation Sheet');
     google.script.run
-      .withFailureHandler(function(msg, element) {
-        stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function() {
         stopLoading();
         refreshSidebar();
@@ -426,19 +396,46 @@
       .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
   }
 
+  function requestCostingGeneration() {
+    startLoading(loadingText = 'Generating Metadata');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function(result) {
+        stopLoading();
+        if (result) {
+          generateCosting();
+          return;
+        }
+        refreshUI();
+      })
+      .requestCostingGeneration();
+  }
+
+  function generateCosting() {
+    startLoading(loadingText = 'Generating New Costing Sheet');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function() {
+        stopLoading();
+        refreshSidebar();
+      })
+      .generateCosting([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+  }
+
   function openChangelog() {
     startLoading(loadingText = 'Opening Changelog');
     google.script.run
-      .withFailureHandler(function () {
-        stopLoading();
-        $('#info-text').text('An error occured. Please check the console for details.');
-        console.log(msg, element);
-        element.disabled = false;
-      })
+      .withFailureHandler(errorHandler)
       .withSuccessHandler(function () {
         stopLoading();
         refreshSidebar();
       })
     .openSheetChangelog();
+  }
+
+  function errorHandler(msg, element) {
+    stopLoading();
+    $('#project-title').text('An error occured. Please check the console for details.');
+    console.log(msg, element);
   }
 </script>

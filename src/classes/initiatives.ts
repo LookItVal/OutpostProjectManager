@@ -102,12 +102,16 @@ export abstract class Initiative {
     /////////////////////////////////////////////
 
     public static get dataSpreadsheet (): GoogleAppsScript.Spreadsheet.Spreadsheet {
-      const dataSpreadsheetId = exports.properties.getProperty('projectDataSpreadsheetId') as string;
+      const dataSpreadsheetId = Initiative.dataSpreadsheetId;
       if (exports.spreadsheet?.getId() === dataSpreadsheetId) {
         return exports.spreadsheet;
       }
       const projectDataSheetId = dataSpreadsheetId;
       return SpreadsheetApp.openById(projectDataSheetId);
+    }
+
+    public static get dataSpreadsheetId (): string {
+      return exports.properties.getProperty('projectDataSpreadsheetId') as string;
     }
 
     /////////////////////////////////////////////
@@ -311,7 +315,7 @@ export abstract class Initiative {
     //              Public Methods             //
     /////////////////////////////////////////////
 
-    public serialize (): SerializedData {
+    public serialize(): SerializedData {
       const initiative: SerializedData = {};
       !this.costingSheetId && console.warn('Trying to find the costing sheet:', this.costingSheetId);
       !this.proposalDocumentId && console.warn('Trying to find the proposal document:', this.proposalDocumentId);
@@ -331,7 +335,7 @@ export abstract class Initiative {
     }
 
     // this should fix itself when there is a client class
-    public makeFolder (): GoogleAppsScript.Drive.Folder {
+    public makeFolder(): GoogleAppsScript.Drive.Folder {
       if (this.folder) {
         throw new exports.ValidationError('Folder already exists');
       }
@@ -342,6 +346,19 @@ export abstract class Initiative {
       }
       return this._folder;
     }
+
+    public createCostingSheet(): GoogleAppsScript.Drive.File {
+      if (this.costingSheetId) {
+        throw new exports.ValidationError('Costing Sheet already exists');
+      }
+      if (!this.folder) {
+        throw new exports.ValidationError('Folder does not exist');
+      }
+      const costingSheet = Proposal.costingSheetTemplate.makeCopy(`${this.yrmo} ${this.clientName} ${this.projectName} Costing Sheet`, this.folder);
+      this._costingSheetId = costingSheet.getId();
+      return costingSheet;
+    }
+
 
     /////////////////////////////////////////////
     //             Private Methods             //

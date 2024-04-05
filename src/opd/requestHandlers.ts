@@ -1,5 +1,5 @@
 import { Project, Proposal } from '../classes/initiatives';
-import { SerializedData, ProposalNameArray } from '../interfaces';
+import { SerializedData, ProposalNameArray, ProjectNameArray } from '../interfaces';
 import { ValidationError } from '../classes/errors';
 import { properties, spreadsheet, version } from '../constants';
 import { openChangelogAsModalDialogue } from '../changelog/handlers';
@@ -92,6 +92,26 @@ export function requestProposalAccept(): boolean {
 export function acceptProposal(nameArray: ProposalNameArray): void {
   Proposal.getProposal({nameArray}).acceptProposal();
   jumpToProject();
+}
+
+export function requestCostingGeneration(): boolean {
+  const project = Project.getProject();
+  if (project.type !== 'PROJECT') {
+    throw new ValidationError('Project type is not set to project.');
+  }
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    'Generate Costing?',
+    `Are you sure you want to generate a costing sheet in the ${project.clientName} folder?`,
+    ui.ButtonSet.YES_NO);
+  if (response === ui.Button.YES) {
+    return true;
+  }
+  return false;
+}
+
+export function generateCosting(nameArray: ProjectNameArray): void {
+  Project.getProject({nameArray}).createCostingSheet();
 }
 
 export function requestJobGeneration(): boolean {
