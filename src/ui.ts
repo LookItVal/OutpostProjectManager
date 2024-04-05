@@ -1,6 +1,7 @@
 import { Booking } from './classes/booking';
 import { InitEvent } from './interfaces';
 import { properties, version} from './constants';
+import { Initiative } from './classes/initiatives';
 
 // this next chunk deals with clasps inability to deal with imports properly.
 // it's a bit of a hack, but it works.
@@ -117,10 +118,18 @@ export function openOPDSidebar(): void {
 /////////////////////////////////////////////
 
 export function mainFooter(): GoogleAppsScript.Card_Service.FixedFooter {
+  const databaseButton = CardService.newTextButton()
+    .setText('Open Database')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setBackgroundColor('#3d9400')
+    .setOpenLink(CardService.newOpenLink()
+      .setUrl(`https://docs.google.com/spreadsheets/d/${Initiative.dataSpreadsheetId}/edit#gid=0`));
+  const changelogButton = CardService.newTextButton()
+    .setText(`${exports.version} Changes`)
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(CardService.newAction()
+      .setFunctionName('openCardChangelog'));
   return CardService.newFixedFooter()
-    .setPrimaryButton(CardService.newTextButton()
-      .setText(`${exports.version} Changelog`)
-      .setTextButtonStyle(CardService.TextButtonStyle.TEXT)
-      .setOnClickAction(CardService.newAction()
-        .setFunctionName('openCardChangelog')));
+    .setPrimaryButton(changelogButton)
+    .setSecondaryButton(databaseButton);
 }
