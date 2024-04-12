@@ -16,6 +16,13 @@ export const changelog = {
     2: [
       'Shiny Things Update',
       {
+        7: [
+          ['Fixed problem with finding the new sheet', 'Bug Fix'],
+          ['Added new heartbeat to the frontend to check for version number and connection status', 'New Feature'],
+          ['Connection now refreshes when the heartbeat is lost', 'New Feature'],
+          ['Now checks to see if the selection has changed', 'New Feature'],
+          ['Changed constants to cache value and only call when called to fix onOpen bug', 'Bug Fix'],
+        ],
         6: [
           ['Made new logo to make app more visable on white backgrounds', 'UI Change'],
           ['Made new style guide for sheets', 'New Feature'],

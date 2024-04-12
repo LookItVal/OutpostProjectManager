@@ -17,6 +17,20 @@
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
 ## Changelog
+### [1.2.7]
+  - Fixed Problem finding new sheets
+  - Added new heartbeat between front and backend.
+  - Now roughly auto updates when you click on a new project
+  - Now refreshes connection when session is lost
+  - Changed how constants are calculated to fix permission error on calling the constants file
+
+### [1.2.6]
+  - Made new logo to make app more visible on white
+  - Made new style guide for sheets
+  - Added injection into the style guide
+  - Added button to open the OPM from the calendar
+  - Added button to make new job costing from the project stage
+
 ### [1.2.5]
   - Added autofill to reconciliations
   - Fixed bug with copying elements in job costing sheet
@@ -71,9 +85,6 @@
 - [ ] Add function to add new page in the OPD. This function should be run automatically as the sheet runs out of room.
   - By 1.4
 
-
-
-
 ## 1.4
  - [ ] Split app into multiple sub bound apps so they can make use of onSelectionChange(e). This will allow the app to update faster and without the user having to click a button first, but it will require splitting up the codebase and accessing data via HTTP requests.
   - By 1.5
@@ -89,10 +100,7 @@
   - BY 1.6
 - [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
   - BY 1.6
-
   
-
-
 ## 1.3 The Optimization Update
 - [ ] Have initiatives and other object be able to be initiated by serialized data.
   - 1.3.0
