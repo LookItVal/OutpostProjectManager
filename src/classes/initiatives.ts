@@ -522,7 +522,7 @@ export class Project extends Initiative {
     if (digits.length !== 2) {
       throw new ReferenceError('No Digits Found');
     }
-    digits = [digits[0] + 50, digits[1] + 50];
+    digits = [String(Number(digits[0]) + 50), String(Number(digits[1]) + 50)];
     const nextSheet = Project.dataSpreadsheet.getSheetByName(`${digits[0]}-${digits[1]}`);
     if (nextSheet) {
       return nextSheet;
