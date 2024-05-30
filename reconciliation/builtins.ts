@@ -14,12 +14,12 @@ export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   }
   if (isFirstOpen(e)) {
     const sheet = e.source;
-    sheet.getSheetByName('Top Sheet')?.getRange('A1').setValue(sheet.getName());
+    sheet.getActiveSheet()?.getRange('A1').setValue(sheet.getName());
   }
 }
 
 export function isFirstOpen(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {
-  return e.source.getSheetByName('Top Sheet')?.getRange('A1').getValue() === e.source.getName();
+  return !(e.source.getActiveSheet()?.getRange('A1').getValue() === e.source.getName());
 }
 
 export function isTemplate(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {
