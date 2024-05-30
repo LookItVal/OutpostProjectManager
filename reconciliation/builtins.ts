@@ -19,7 +19,7 @@ export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
 }
 
 export function isFirstOpen(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {
-  return !exports.regexJobName.test(e.source.getName());
+  return e.source.getSheetByName('Top Sheet')?.getRange('A1').getValue() === e.source.getName();
 }
 
 export function isTemplate(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {
