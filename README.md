@@ -17,6 +17,8 @@
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
 ## Changelog
+### [1.2.8]
+
 ### [1.2.7]
   - Fixed Problem finding new sheets
   - Added new heartbeat between front and backend.
@@ -71,6 +73,19 @@
 
 ## Todo
 ## 1.3 The Utilities Update
+- [ ] Add feature.sh script that automates the process of linking and organizing features
+  - Bump
+    - 3 sub options
+      - Major
+      - Minor
+      - Bug
+    - updates the version number across everything
+  - Search
+    - runs a fuzzy search for features both current and past.
+  - Todo
+    - Adds a new feature to the todo list and also adds an estimated time to delivery
+  - New
+    - adds a new feature to the current version, either from scratch or from the next coming todo items
 - [ ] Link up items in the costing sheet with the proposal document.
   - Add OPM to the proper sheet and make new UI to pull information from the two.
   - By 1.3

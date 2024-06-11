@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+# This if for initializing a new directory for bound scripts that are not fully linked with the rest of the OPM
+
 echo "Please enter the name of the new directory:"
 read directory
 # if name exists as directory
