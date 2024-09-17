@@ -14,6 +14,7 @@ export function onOpen(e: DocEvent): void {
     .addItem('List Named Ranges', 'NamedRange.listNamedRanges')
     .addItem('Remove Named Range', 'NamedRange.removeNamedRange')
     .addItem('Named Range Details', 'NamedRange.namedRangeDetails')
+    .addItem('Named Date Range Details', 'NamedRange.namedDateRangeDetails')
     .addToUi();
 
   if (e.source.getName() === 'Proposal Template') {

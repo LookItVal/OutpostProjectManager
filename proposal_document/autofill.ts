@@ -5,6 +5,7 @@ export namespace Autofill {
   export function onOpen(e: DocEvent): void {
     console.log(e);
     const doc = e.source as GoogleAppsScript.Document.Document;
+    fillDate(e);
     if (doc.getNamedRanges('projectNameHeader').length !== 0) {
       initializeDocument(e);
     }
@@ -77,9 +78,18 @@ export namespace Autofill {
 
   export function fillEmail(e: DocEvent): void {
     const doc = e.source;
-    const email = e.user?.email;
+    const email = e.user?.email as string;
     const emailRange = doc.getNamedRanges('email')[0]?.getRange();
-    emailRange.getRangeElements()[0].getElement().asText().setText(`Prepared by: ${email} - Outpost Worldwide, Inc.`);
+    emailRange.getRangeElements()[0].getElement().asText().setText(email);
+    emailRange.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
+  }
+
+  export function fillDate(e: DocEvent): void {
+    const doc = e.source;
+    const dateFormat: Record<string, 'numeric' | '2-digit' | 'short' | undefined> = { year: 'numeric', month: 'short', day: '2-digit' };
+    const today = new Intl.DateTimeFormat('en-US', dateFormat).format(new Date());
+    const emailRange = doc.getNamedRanges('todaysDate')[0]?.getRange();
+    emailRange.getRangeElements()[0].getElement().asText().setText(today);
     emailRange.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
   }
 }
