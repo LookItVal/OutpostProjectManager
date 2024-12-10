@@ -1,8 +1,8 @@
-import { Project, Proposal } from '../classes/initiatives';
-import { SerializedData, ProposalNameArray, ProjectNameArray } from '../interfaces';
-import { ValidationError } from '../classes/errors';
-import { properties, spreadsheet, version } from '../constants';
-import { openChangelogAsModalDialogue } from '../changelog/handlers';
+import { Project, Proposal } from '../../src/classes/initiatives';
+import { SerializedData, ProposalNameArray, ProjectNameArray } from '../../src/interfaces';
+import { ValidationError } from '../../src/classes/errors';
+import { properties, spreadsheet, version } from '../../src/constants';
+import { openChangelogAsModalDialogue } from '../../src/changelog/handlers';
 
 interface RequestHandlersExports {
   Project: typeof Project;

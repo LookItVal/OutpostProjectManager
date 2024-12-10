@@ -44,7 +44,7 @@ do
     continue
   fi
   if [ $state -eq 3 ]; then
-      if [ $line = "" ]; then
+      if [ "$line" = "" ]; then
         continue
       fi
       ignore_directory=${line%%/**}
