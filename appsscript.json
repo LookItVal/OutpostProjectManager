@@ -29,10 +29,10 @@
   "addOns": {
     "calendar": {
       "eventOpenTrigger": {
-        "runFunction": "selectEventUI"
+        "runFunction": "CalendarUI.selectEventUI"
       },
       "homepageTrigger": {
-        "runFunction": "calendarHomepageUI",
+        "runFunction": "CalendarUI.homepageUI",
         "enabled": true
       }
     },
