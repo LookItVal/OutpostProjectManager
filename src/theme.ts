@@ -1,7 +1,22 @@
+/**
+ * Theme related functions.
+ * @module src/theme
+ */
+
 import { Colors } from './constants';
 
+/**
+ * Theme related functions.
+ * @namespace Theme
+ * @memberof src/theme
+ * @exports setTheme - Sets the theme for the spreadsheet.
+ */
 export namespace Theme {
-  // Only works from a sheets on open event.
+  /**
+   * Sets the theme for the spreadsheet. Must be called from the onOpen trigger.
+   * @function setTheme
+   * @param {GoogleAppsScript.Events.SheetsOnOpen} e - The onOpen event object.
+   */
   export function setTheme(e: GoogleAppsScript.Events.SheetsOnOpen) {
     const theme = e.source.getSpreadsheetTheme();
     theme?.setConcreteColor(SpreadsheetApp.ThemeColorType.TEXT, Colors.newColor(Colors.textColor));
