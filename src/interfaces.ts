@@ -1,7 +1,11 @@
+/**
+ * Set of types and interfaces used throughout the application.
+ * @module src/interfaces
+ */
+
 import { Project, Proposal } from './classes/initiatives';
 
-// no export interface needed here, this file will be empty on compile.
-
+/** The type of the event object passed to from the eventOpenTrigger function. */
 export interface InitEvent {
   hostApp: string,
   userLocale: string,
@@ -33,9 +37,12 @@ export interface InitEvent {
   }
 }
 
+/** Type representing data that has been serialized to a json parsable format. */
 export interface SerializedData {
   [key: string]: string | SerializedData | SerializedData[];
 }
+
+/** Type representing valid initialization parameters for the Initiative class. */
 export interface InitiativeParams {
   name?: string;
   nameArray?: ProjectNameArray | ProposalNameArray;
@@ -43,6 +50,7 @@ export interface InitiativeParams {
   serializedData?: SerializedData;
 }
 
+/** Type representing valid shapes for the ProjectNameArray parameter in the InitiativeParams interface. */
 export interface ProjectNameArray extends Array<string> {
   0: string;
   1: string;
@@ -51,6 +59,7 @@ export interface ProjectNameArray extends Array<string> {
   4: string;
 }
 
+/** Type representing valid shapes for the ProposalNameArray parameter in the InitiativeParams interface. */
 export interface ProposalNameArray extends Array<string> {
   0: string;
   1: string;
@@ -58,15 +67,18 @@ export interface ProposalNameArray extends Array<string> {
   3: string;
 }
 
+/** Type representing valid initialization parameters for the Client class. */
 export interface ClientParams {
   name?: string;
   folder?: GoogleAppsScript.Drive.Folder;
 }
 
+/** Type representing valid initialization parameters for the Booking class. */
 export interface BookingParams {
   event?: InitEvent;
 }
 
+/** Type representing the structure of the changelog dictionary. */ 
 export interface ChangelogDict {
   // Outermost key is the major version number
   [key: number]: {
@@ -81,9 +93,13 @@ export interface ChangelogDict {
   };
 }
 
+/** Type representing the union of the Project and Proposal classes. */
 export type Initiative = Project | Proposal;
 
-// fixes the issue with the GoogleAppsScript.Events.DocsOnOpen interface
+/**
+ * The type of the event object passed to the onOpen function in the Docs app.
+ * Fixes the issue with the GoogleAppsScript.Events.DocsOnOpen interface.
+ */
 export interface DocEvent {
   source: GoogleAppsScript.Document.Document;
   user?: {
