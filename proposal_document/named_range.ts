@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-namespace NamedRange {
+export namespace NamedRange {
   export function nameRange(): void {
     const doc = DocumentApp.getActiveDocument();
     const selection = doc.getSelection();

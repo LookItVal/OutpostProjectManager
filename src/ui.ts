@@ -121,7 +121,7 @@ export namespace SheetsUI {
    */
   export function openSidebar(): GoogleAppsScript.Card_Service.Card | void {
     const currentSheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
-    if (currentSheetId === exports.properties.getProperty('projectDataSpreadsheetId')) return openOPDSidebar();
+    if (currentSheetId === properties.getProperty('projectDataSpreadsheetId')) return openOPDSidebar();
     return getHomepage();
   }
 

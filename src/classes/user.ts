@@ -1,14 +1,8 @@
-import { properties } from '../constants';
+import { State } from '../constants';
 
-
-declare const exports: {
-  properties: typeof properties;
-};
 
 export class User {
-  constructor() {
-
-  }
+  constructor() {}
 
   static get email(): string {
     const user = People.People?.get('people/me', {personFields: 'emailAddresses'});
@@ -41,7 +35,7 @@ export class User {
   static get isAdmin(): boolean {
     const email = User.email;
     let isAdmin = false;
-    exports.properties.getProperty('administrators')?.split(',').forEach((adminEmail: string) => {
+    State.properties.getProperty('administrators')?.split(',').forEach((adminEmail: string) => {
       if (email == adminEmail) {
         isAdmin = true;
       }
@@ -52,12 +46,11 @@ export class User {
   static get isDeveloper(): boolean {
     const email = User.email;
     let isDeveloper = false;
-    exports.properties.getProperty('developers')?.split(',').forEach((developerEmail: string) => {
+    State.properties.getProperty('developers')?.split(',').forEach((developerEmail: string) => {
       if (email === developerEmail) {
         isDeveloper = true;
       }
     });
     return isDeveloper;
   }
-    
 }

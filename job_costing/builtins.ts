@@ -1,11 +1,5 @@
-import { regexProposalName } from '../src/constants';
+import { Regex } from '../src/constants';
 import { Theme } from '../src/theme';
-
-interface JobCostingExport {
-  regexProposalName: typeof regexProposalName;
-}
-
-declare const exports: JobCostingExport;
 
 export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   Theme.setTheme(e);
@@ -29,7 +23,7 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
 }
 
 export function isFirstOpen(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {
-  return !exports.regexProposalName.test(e.source.getName());
+  return !Regex.regexProposalName.test(e.source.getName());
 }
 
 export function isTemplate(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {

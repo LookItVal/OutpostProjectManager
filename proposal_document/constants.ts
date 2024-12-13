@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-namespace Constants {
+export namespace Terms {
   export const ORIGINAL_TERMS = 'Dates are firm with';
   export const ORIGINAL_TERMS_TERMINATOR = /^[\\s]*Orders or project additions/;
 

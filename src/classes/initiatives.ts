@@ -1,18 +1,11 @@
 import { ValidationError } from './errors';
-import { spreadsheet, properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits } from '../constants';
+import { State, Regex } from '../constants';
 import { Client } from './client';
 import { InitiativeParams, ProjectNameArray, ProposalNameArray, SerializedData } from '../interfaces';
 import { User } from './user';
 
 interface InitiativesExport {
     ValidationError: typeof ValidationError;
-    spreadsheet: typeof spreadsheet;
-    properties: typeof properties;
-    regex4Digits: typeof regex4Digits;
-    regexJobName: typeof regexJobName;
-    regexProposalName: typeof regexProposalName;
-    regexProposalOpen: typeof regexProposalOpen;
-    regexPullDigits: typeof regexPullDigits;
     Client: typeof Client;
     User: typeof User;
 }
@@ -103,15 +96,15 @@ export abstract class Initiative {
 
     public static get dataSpreadsheet (): GoogleAppsScript.Spreadsheet.Spreadsheet {
       const dataSpreadsheetId = Initiative.dataSpreadsheetId;
-      if (exports.spreadsheet?.getId() === dataSpreadsheetId) {
-        return exports.spreadsheet;
+      if (State.spreadsheet?.getId() === dataSpreadsheetId) {
+        return State.spreadsheet;
       }
       const projectDataSheetId = dataSpreadsheetId;
       return SpreadsheetApp.openById(projectDataSheetId);
     }
 
     public static get dataSpreadsheetId (): string {
-      return exports.properties.getProperty('projectDataSpreadsheetId') as string;
+      return State.properties.getProperty('projectDataSpreadsheetId') as string;
     }
 
     /////////////////////////////////////////////
@@ -264,8 +257,8 @@ export abstract class Initiative {
 
     public static getInitiative({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams = {}): Project | Proposal {
       if (!name && !nameArray && !folder) {
-        if (exports.spreadsheet?.getId() === exports.properties.getProperty('projectDataSpreadsheetId')) {
-          const sheet = exports.spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
+        if (State.spreadsheet?.getId() === State.properties.getProperty('projectDataSpreadsheetId')) {
+          const sheet = State.spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
           const row = sheet.getActiveCell().getRow(); 
           const dataArray = [];
           if (sheet.getName() === 'Proposals') {
@@ -293,19 +286,19 @@ export abstract class Initiative {
         }
       }
       if (name) {
-        if (exports.regexProposalName.test(name)) return new Proposal({name});
-        if (exports.regexJobName.test(name)) return new Project({name});
+        if (Regex.regexProposalName.test(name)) return new Proposal({name});
+        if (Regex.regexJobName.test(name)) return new Project({name});
         throw new exports.ValidationError('Name does not match any known initiative types');
       }
       if (nameArray && nameArray.length > 1) {
-        if (exports.regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
-        if (exports.regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
+        if (Regex.regexProposalOpen.test(nameArray[0] as string)) return new Proposal({nameArray});
+        if (Regex.regex4Digits.test(nameArray[1] as string)) return new Project({nameArray});
         throw new exports.ValidationError('Name Array does not match any known initiative types');
       }
       if (folder) {
         const folderName = folder.getName();
-        if (exports.regexProposalName.test(folderName)) return new Proposal({folder});
-        if (exports.regexJobName.test(folderName)) return new Project({folder});
+        if (Regex.regexProposalName.test(folderName)) return new Proposal({folder});
+        if (Regex.regexJobName.test(folderName)) return new Project({folder});
         throw new exports.ValidationError('Folder does not match any known initiative types');
       }
       throw new exports.ValidationError('Initiative must be initialized with a name, nameArray, or folder');
@@ -396,7 +389,7 @@ export abstract class Initiative {
             continue;
           }
           if (key === 'yrmo') {
-            if (!exports.regex4Digits.test(serializedData[key] as string)) {
+            if (!Regex.regex4Digits.test(serializedData[key] as string)) {
               throw new ValidationError('yrmo is not 4 digits');
             }
             continue;
@@ -431,7 +424,7 @@ export abstract class Initiative {
             throw new exports.ValidationError('One or more elements in the nameArray are missing.');
           }
         }
-        if (!exports.regex4Digits.test(nameArray[1] as string)) {
+        if (!Regex.regex4Digits.test(nameArray[1] as string)) {
           throw new exports.ValidationError('the second element in the nameArray must be 4 digits with nothing else.');
         }
         for (const item of nameArray) {
@@ -518,7 +511,7 @@ export class Project extends Initiative {
     if (recentSheet.getRange('A51').isBlank()) {
       return recentSheet;
     }
-    let digits = recentSheet.getName().match(exports.regexPullDigits) ?? [];
+    let digits = recentSheet.getName().match(Regex.regexPullDigits) ?? [];
     if (digits.length !== 2) {
       throw new ReferenceError('No Digits Found');
     }
@@ -554,12 +547,12 @@ export class Project extends Initiative {
   }
 
   public static get reconciliationFolder (): GoogleAppsScript.Drive.Folder {
-    const reconciliationFolderId = exports.properties.getProperty('reconciliationFolderId') ?? '';
+    const reconciliationFolderId = State.properties.getProperty('reconciliationFolderId') ?? '';
     return DriveApp.getFolderById(reconciliationFolderId);
   }
 
   public static get reconciliationSheetTemplate (): GoogleAppsScript.Drive.File {
-    const reconciliationSheetTemplateId = exports.properties.getProperty('reconciliationSheetTemplateId') ?? '';
+    const reconciliationSheetTemplateId = State.properties.getProperty('reconciliationSheetTemplateId') ?? '';
     return DriveApp.getFileById(reconciliationSheetTemplateId);
   }
 
@@ -632,7 +625,7 @@ export class Project extends Initiative {
       return this._yrmo;
     }
     this._yrmo = this.title.split(' ')[0];
-    if (!exports.regex4Digits.test(this._yrmo)) {
+    if (!Regex.regex4Digits.test(this._yrmo)) {
       throw new exports.ValidationError('yrmo is not 4 digits');
     }
     return this._yrmo;
@@ -644,7 +637,7 @@ export class Project extends Initiative {
       return this._jobNumber;
     }
     this._jobNumber = this.title.split(' ')[1];
-    if (!exports.regex4Digits.test(this._jobNumber)) {
+    if (!Regex.regex4Digits.test(this._jobNumber)) {
       throw new exports.ValidationError('jobNumber is not 4 digits');
     }
     return this._jobNumber;
@@ -709,7 +702,7 @@ export class Project extends Initiative {
     if (serializedData && extraData) {
       for (const key of Object.keys(extraData)) {
         if (key === 'jobNumber') {
-          if (!exports.regex4Digits.test(extraData[key] as string)) {
+          if (!Regex.regex4Digits.test(extraData[key] as string)) {
             throw new exports.ValidationError('jobNumber is not 4 digits');
           }
           continue;
@@ -725,7 +718,7 @@ export class Project extends Initiative {
       }
     }
     if (name) {
-      if (!exports.regexJobName.test(name)) {
+      if (!Regex.regexJobName.test(name)) {
         throw new exports.ValidationError('Project Name does not match expected pattern');
       }
     }
@@ -733,10 +726,10 @@ export class Project extends Initiative {
       if (nameArray.length != 5) {
         throw new exports.ValidationError('nameArray is not the expected length ');
       }
-      if (!exports.regex4Digits.test(nameArray[0])) {
+      if (!Regex.regex4Digits.test(nameArray[0])) {
         throw new exports.ValidationError('nameArray does not start with the yrmo pattern');
       }
-      if (!exports.regex4Digits.test(nameArray[1])) {
+      if (!Regex.regex4Digits.test(nameArray[1])) {
         throw new exports.ValidationError('nameArray does not start with the job number pattern');
       }
       if (!nameArray[4].match(/TRUE|FALSE/)) {
@@ -777,12 +770,12 @@ export class Proposal extends Initiative {
   /////////////////////////////////////////////
 
   public static get costingSheetTemplate (): GoogleAppsScript.Drive.File {
-    const costingSheetTemplateId = exports.properties.getProperty('costingSheetTemplateId') ?? '';
+    const costingSheetTemplateId = State.properties.getProperty('costingSheetTemplateId') ?? '';
     return DriveApp.getFileById(costingSheetTemplateId);
   }
 
   public static get proposalTemplate (): GoogleAppsScript.Drive.File {
-    const proposalTemplateId = exports.properties.getProperty('proposalTemplateId') ?? '';
+    const proposalTemplateId = State.properties.getProperty('proposalTemplateId') ?? '';
     return DriveApp.getFileById(proposalTemplateId);
   }
 
@@ -821,7 +814,7 @@ export class Proposal extends Initiative {
       return this._yrmo;
     }
     this._yrmo = this.title.split(' ')[1];
-    if (!exports.regex4Digits.test(this._yrmo)) {
+    if (!Regex.regex4Digits.test(this._yrmo)) {
       throw new exports.ValidationError('yrmo is not 4 digits');
     }
     return this._yrmo;
@@ -908,7 +901,7 @@ export class Proposal extends Initiative {
     if (serializedData && extraData) {
       for (const key of Object.keys(extraData)) {
         if (key === 'jobNumber') {
-          if (!exports.regex4Digits.test(extraData[key] as string)) {
+          if (!Regex.regex4Digits.test(extraData[key] as string)) {
             throw new exports.ValidationError('jobNumber is not 4 digits');
           }
           continue;
@@ -923,7 +916,7 @@ export class Proposal extends Initiative {
       }
     }
     if (name) {
-      if (!exports.regexProposalName.test(name)) {
+      if (!Regex.regexProposalName.test(name)) {
         throw new exports.ValidationError('Proposal Name does not match expected pattern');
       }
     }
@@ -931,10 +924,10 @@ export class Proposal extends Initiative {
       if (nameArray.length != 4) {
         throw new exports.ValidationError('nameArray is not the expected length');
       }
-      if (!exports.regex4Digits.test(nameArray[1])) {
+      if (!Regex.regex4Digits.test(nameArray[1])) {
         throw new exports.ValidationError('nameArray does not start with the yrmo pattern');
       }
-      if (!exports.regexProposalOpen.test(nameArray[0])) {
+      if (!Regex.regexProposalOpen.test(nameArray[0])) {
         throw new exports.ValidationError('nameArray does not start with the proposal pattern');
       }
     }

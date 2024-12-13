@@ -1,4 +1,5 @@
 import { DocEvent } from '../src/interfaces';
+import { Terms } from './constants';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export namespace Autofill {
@@ -56,15 +57,15 @@ export namespace Autofill {
   }
 
   export function setTerms100(e?: DocEvent): void {
-    setTerms(Constants.TERMS_100, e);
+    setTerms(Terms.TERMS_100, e);
   }
 
   export function setTerms50(e?: DocEvent): void {
-    setTerms(Constants.TERMS_50, e);
+    setTerms(Terms.TERMS_50, e);
   }
 
   export function setTerms35(e?: DocEvent): void {
-    setTerms(Constants.TERMS_35, e);
+    setTerms(Terms.TERMS_35, e);
   }
 
   export function fillName(e: DocEvent): void {

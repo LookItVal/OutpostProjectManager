@@ -1,22 +1,19 @@
 import { Project, Proposal } from '../classes/initiatives';
 import { SerializedData, ProposalNameArray, ProjectNameArray } from '../interfaces';
 import { ValidationError } from '../classes/errors';
-import { properties, spreadsheet, version } from '../constants';
+import { State } from '../constants';
 import { openChangelogAsModalDialogue } from '../changelog/handlers';
 
 interface RequestHandlersExports {
   Project: typeof Project;
   Proposal: typeof Proposal;
   ValidationError: typeof ValidationError;
-  properties: typeof properties;
-  spreadsheet: typeof spreadsheet;
-  version: typeof version;
   openChangelogAsModalDialogue: typeof openChangelogAsModalDialogue;
 }
 declare const exports: RequestHandlersExports;
 
 export function jumpToProposal(): void {
-  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  const spreadsheet = State.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
   const sheet = exports.Proposal.proposalSheet;
   if (!spreadsheet) {
     throw new ReferenceError('Spreadsheet is not defined');
@@ -30,7 +27,7 @@ export function jumpToProposal(): void {
 }
 
 export function jumpToProject(): void {
-  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  const spreadsheet = State.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
   const sheet = exports.Project.recentSheet;
   spreadsheet.setActiveSheet(sheet);
   sheet.setActiveRange(sheet.getRange(`A${exports.Project.recentRow}`));
@@ -140,5 +137,5 @@ export function openSheetChangelog(): void {
 }
 
 export function initConstants(): SerializedData {
-  return {version: exports.version};
+  return {version: State.version};
 }

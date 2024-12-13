@@ -1,11 +1,5 @@
-import { regexJobName } from '../src/constants';
+import { Regex } from '../src/constants';
 import { Theme } from '../src/theme';
-
-interface ReconciliationExport {
-  regexJobName: typeof regexJobName;
-}
-
-declare const exports: ReconciliationExport;
 
 export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   Theme.setTheme(e);
@@ -19,9 +13,9 @@ export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
 }
 
 export function isFirstOpen(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {
-  return !exports.regexJobName.test(e.source.getName());
+  return !Regex.regexJobName.test(e.source.getName());
 }
 
 export function isTemplate(e: GoogleAppsScript.Events.SheetsOnOpen): boolean {
-  return !exports.regexJobName.test(e.source.getName());
+  return !Regex.regexJobName.test(e.source.getName());
 }

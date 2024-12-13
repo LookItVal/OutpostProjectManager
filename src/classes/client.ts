@@ -1,13 +1,10 @@
 import { ValidationError } from './errors';
 import { ClientParams, Initiative } from '../interfaces';
-import { properties, regexJobName, regexProposalName } from '../constants';
+import { State, Regex } from '../constants';
 import { Project, Proposal } from './initiatives';
 
 interface ClientExports {
     ValidationError: typeof ValidationError;
-    properties: typeof properties;
-    regexJobName: typeof regexJobName;
-    regexProposalName: typeof regexProposalName;
     Project: typeof Project;
     Proposal: typeof Proposal;
 }
@@ -41,7 +38,7 @@ export class Client {
   /////////////////////////////////////////////
 
   public static get clientFolder(): GoogleAppsScript.Drive.Folder {
-    const folderId: string = exports.properties.getProperty('clientFolderId') ?? '';
+    const folderId: string = State.properties.getProperty('clientFolderId') ?? '';
     const folder: GoogleAppsScript.Drive.Folder = DriveApp.getFolderById(folderId);
     return folder;
   }
@@ -178,7 +175,7 @@ export class Client {
           console.info('skipping archive folder');
           continue;
         }
-        if (exports.regexJobName.test(folder.getName()) || exports.regexProposalName.test(folder.getName())) {
+        if (Regex.regexJobName.test(folder.getName()) || Regex.regexProposalName.test(folder.getName())) {
           console.info('Skipping initiative folder');
           continue;
         }
@@ -190,7 +187,7 @@ export class Client {
       while(files.hasNext()) {
         const file = files.next();
         console.count(`Working on Client: ${client.name} \nFile: ${file.getName()} \nNumber of Files Found in ${client.name}:`);
-        if (exports.regexJobName.test(file.getName()) || exports.regexProposalName.test(file.getName())) {
+        if (Regex.regexJobName.test(file.getName()) || Regex.regexProposalName.test(file.getName())) {
           console.info('looking for folder to move file to');
           const initiativeId = file.getName().split(' ').slice(0, 2).join(' ');
           const checkFolders = client.folder?.getFolders();
