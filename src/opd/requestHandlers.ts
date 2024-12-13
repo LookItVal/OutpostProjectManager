@@ -2,13 +2,12 @@ import { Project, Proposal } from '../classes/initiatives';
 import { SerializedData, ProposalNameArray, ProjectNameArray } from '../interfaces';
 import { ValidationError } from '../classes/errors';
 import { State } from '../constants';
-import { openChangelogAsModalDialogue } from '../changelog/handlers';
+import { Changelog } from '../changelog';
 
 interface RequestHandlersExports {
   Project: typeof Project;
   Proposal: typeof Proposal;
   ValidationError: typeof ValidationError;
-  openChangelogAsModalDialogue: typeof openChangelogAsModalDialogue;
 }
 declare const exports: RequestHandlersExports;
 
@@ -133,7 +132,7 @@ export function generateJob(nameArray: ProposalNameArray): void {
 
 export function openSheetChangelog(): void {
   const ui = SpreadsheetApp.getUi();
-  ui.showModalDialog(exports.openChangelogAsModalDialogue(), 'Changelog');
+  ui.showModalDialog(Changelog.openChangelogAsModalDialogue(), 'Changelog');
 }
 
 export function initConstants(): SerializedData {

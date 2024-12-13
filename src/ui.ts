@@ -5,7 +5,7 @@
 
 import { Booking } from './classes/booking';
 import { InitEvent } from './interfaces';
-import { properties, version} from './constants';
+import { State } from './constants';
 import { Initiative } from './classes/initiatives';
 
 // this next chunk deals with clasps inability to deal with imports properly.
@@ -15,9 +15,7 @@ import { Initiative } from './classes/initiatives';
 // always call imports from that exports object. it doesnt exist here,
 // but it will exist in the compiled code.
 interface UIExport {
-  properties: typeof properties;
   Booking: typeof Booking;
-  version: typeof version;
 }
 declare const exports: UIExport;
 
@@ -121,7 +119,7 @@ export namespace SheetsUI {
    */
   export function openSidebar(): GoogleAppsScript.Card_Service.Card | void {
     const currentSheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
-    if (currentSheetId === properties.getProperty('projectDataSpreadsheetId')) return openOPDSidebar();
+    if (currentSheetId === State.properties.getProperty('projectDataSpreadsheetId')) return openOPDSidebar();
     return getHomepage();
   }
 
@@ -171,10 +169,10 @@ function mainFooter(): GoogleAppsScript.Card_Service.FixedFooter {
     .setOpenLink(CardService.newOpenLink()
       .setUrl(`https://docs.google.com/spreadsheets/d/${Initiative.dataSpreadsheetId}/edit#gid=0`));
   const changelogButton = CardService.newTextButton()
-    .setText(`${exports.version} Changes`)
+    .setText(`${State.version} Changes`)
     .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
     .setOnClickAction(CardService.newAction()
-      .setFunctionName('openCardChangelog'));
+      .setFunctionName('Changelog.openCardChangelog'));
   return CardService.newFixedFooter()
     .setPrimaryButton(changelogButton)
     .setSecondaryButton(databaseButton);
