@@ -4,7 +4,7 @@
   let loadingInterval;
   let version;
 
-  // Run initializations on sidebar load.
+  /** Initializes the sidebar. */
   $(function() {
     // Assign handler functions to sidebar elements here, if needed.
     $('#project-refresh-button').click(refreshSidebar);
@@ -81,6 +81,7 @@
     // the dialog, if necessary.
   });
 
+  /** Initializes the constants for the sidebar. */
   function initConstants() {
     google.script.run.withSuccessHandler(function(constants) {
       console.log(constants);
@@ -94,7 +95,7 @@
 
   }
 
-  // Update the ui to show loading info and remove dynamic content.
+  /** Starts the loading animation and sets the loading text. */
   function startLoading(loadingText = "Loading") {
     let dots = '';
     fadeOutAll();
@@ -110,6 +111,7 @@
     $('#project-refresh-button').prop('disabled', true);
   }
 
+  /** Stops the loading animation. */
   function stopLoading() {
     if (loadingInterval) {
       clearInterval(loadingInterval);
@@ -118,7 +120,7 @@
     $('#project-refresh-button').prop('disabled', false);
   }
 
-  // Fade out all dynamic content.
+  /** Fades out all buttons and messages. */
   function fadeOutAll() {
     $('.info-message').fadeOut();
     $('#open-folder-button').fadeOut();
@@ -136,6 +138,7 @@
     $('#create-costing-button').fadeOut();
   }
 
+  /** Fades in the buttons for the current initiative. */
   function fadeInAnyInfo() {
     if (globalInitiative.reconciliationSheetId) {
       $('#open-reconciliation-button').fadeIn();
@@ -170,6 +173,7 @@
     }
   }
 
+  /** Fades in the proposal info buttons. */
   function fadeInProposalInfo() {
     let count = 0;
     if (globalInitiative.proposalDocumentId) {
@@ -206,7 +210,7 @@
     }
   }
 
-  // Get the current project info from the server and display the appropriate dynamic content.
+  /** Requests the server to send the current initiative data. */
   function refreshSidebar() {
     startLoading();
     google.script.run.withSuccessHandler(function(initiative) {
@@ -220,7 +224,7 @@
     }).getInitiative();
   }
 
-  // update the ui with whatever is liaded as the state
+  /** Refreshes the UI with the current initiative data. */
   function refreshUI() {
     initiative = globalInitiative;
     console.log(initiative);
@@ -232,7 +236,7 @@
     fadeInAnyInfo();
   }
 
-  //gets the local initiative object and opens in a new tab the costing sheet
+  /** Opens the costing sheet in a new tab. */
   function openCostingSheet() {
     //if initiative is set
     if (globalInitiative.costingSheetId) {
@@ -246,6 +250,7 @@
     $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
   }
 
+  /** Opens the proposal document in a new tab. */
   function openProposal() {
     //if initiative is set
     if (globalInitiative.proposalDocumentId) {
@@ -259,6 +264,7 @@
     $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
   }
 
+  /** Opens the reconciliation sheet in a new tab. */
   function openReconciliationSheet() {
     //if reconciliationSheetId is set
     if (globalInitiative.reconciliationSheetId) {
@@ -272,6 +278,7 @@
     $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
   }
 
+  /** Opens the project folder in a new tab. */
   function openFolder() {
     //if folderId is set
     if (globalInitiative.folderId) {
@@ -285,7 +292,7 @@
     $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
   }
     
-  // Calls the server to change the active sheet to the most recent job.
+  /** Requests the server to change the active sheet to the most recent project. */
   function jumpToProject() {
     startLoading(loadingText = 'Searching for Project');
       google.script.run
@@ -296,7 +303,7 @@
       .jumpToProject();
   }
   
-  // Calls The server to change the active sheet to the proposal sheet.
+  /** Requests the server to change the active sheet to the most recent proposal. */
   function jumpToProposal() {
     startLoading(loadingText = 'Searching for Proposal');
     google.script.run
@@ -307,7 +314,7 @@
       .jumpToProposal();
   }
 
-  // Calls the server to generate a new proposal.
+  /** Requests the server opens a dialog to generate a new proposal. */
   function requestProposalGeneration() {
     startLoading(loadingText = 'Generating Metadata');
     google.script.run
@@ -323,6 +330,7 @@
       .requestProposalGeneration();
   }
 
+  /** Requests the server to generate a new proposal. */
   function generateProposal() {
     startLoading(loadingText = 'Generating New Proposal Documents');
     google.script.run
@@ -339,6 +347,7 @@
       .generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 
+  /** Requests the server opens a dialog to accept the proposal and convert it to a project. */
   function requestProposalAccept() {
     startLoading(loadingText = 'Retrieving Proposal Information');
     google.script.run
@@ -354,6 +363,7 @@
       .requestProposalAccept();
   }
 
+  /** Requests the server to accept the proposal and convert it to a project. */
   function acceptProposal() {
     startLoading(loadingText = 'Converting Proposal to Project');
     google.script.run
@@ -370,6 +380,7 @@
       .acceptProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 
+  /** Requests the server opens a dialog to generate a new reconciliation sheet. */
   function requestJobGeneration() {
     startLoading(loadingText = 'Generating Metadata');
     google.script.run
@@ -385,6 +396,7 @@
       .requestJobGeneration();
   }
 
+  /** Requests the server to generate a new reconciliation sheet. */
   function generateJob() {
     startLoading(loadingText = 'Generating New Reconciliation Sheet');
     google.script.run
@@ -396,6 +408,7 @@
       .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
   }
 
+  /** Requests the server opens a dialog to generate a new costing sheet. */
   function requestCostingGeneration() {
     startLoading(loadingText = 'Generating Metadata');
     google.script.run
@@ -411,6 +424,7 @@
       .requestCostingGeneration();
   }
 
+  /** Requests the server to generate a new costing sheet. */
   function generateCosting() {
     startLoading(loadingText = 'Generating New Costing Sheet');
     google.script.run
@@ -422,6 +436,7 @@
       .generateCosting([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
   }
 
+  /** Requests the sever opens the changelog sheet in a new tab. */
   function openChangelog() {
     startLoading(loadingText = 'Opening Changelog');
     google.script.run
@@ -433,6 +448,11 @@
     .openSheetChangelog();
   }
 
+  /**
+   * Error handler function to stop loading and display an error message.
+   * @param {string} msg - The error message to display.
+   * @param {object} element - The element that caused the error.
+   */
   function errorHandler(msg, element) {
     stopLoading();
     $('#project-title').text('An error occured. Please check the console for details.');
