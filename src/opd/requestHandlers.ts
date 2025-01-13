@@ -9,20 +9,13 @@ import { ValidationError } from '../classes/errors';
 import { State } from '../constants';
 import { Changelog } from '../changelog';
 
-interface RequestHandlersExports {
-  Project: typeof Project;
-  Proposal: typeof Proposal;
-  ValidationError: typeof ValidationError;
-}
-declare const exports: RequestHandlersExports;
-
 /**
  * Jump to the proposal sheet.
  * @function jumpToProposal
  */
 export function jumpToProposal(): void {
   const spreadsheet = State.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
-  const sheet = exports.Proposal.proposalSheet;
+  const sheet = Proposal.proposalSheet;
   if (!spreadsheet) {
     throw new ReferenceError('Spreadsheet is not defined');
   }
@@ -40,9 +33,9 @@ export function jumpToProposal(): void {
  */
 export function jumpToProject(): void {
   const spreadsheet = State.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
-  const sheet = exports.Project.recentSheet;
+  const sheet = Project.recentSheet;
   spreadsheet.setActiveSheet(sheet);
-  sheet.setActiveRange(sheet.getRange(`A${exports.Project.recentRow}`));
+  sheet.setActiveRange(sheet.getRange(`A${Project.recentRow}`));
 }
 
 /**

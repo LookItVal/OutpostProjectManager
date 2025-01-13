@@ -6,18 +6,7 @@
 import { Booking } from './classes/booking';
 import { InitEvent } from './interfaces';
 import { State } from './constants';
-import { Initiative } from './classes/initiatives';
-
-// this next chunk deals with clasps inability to deal with imports properly.
-// it's a bit of a hack, but it works.
-// just put define everything you want to import in the export interface
-// then declare a const exports of that type.
-// always call imports from that exports object. it doesnt exist here,
-// but it will exist in the compiled code.
-interface UIExport {
-  Booking: typeof Booking;
-}
-declare const exports: UIExport;
+import { Project } from './classes/initiatives';
 
 /**
  * UI functions for the Calendar.
@@ -52,7 +41,7 @@ export namespace CalendarUI {
    */
   export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card {
     try {
-      const booking = new exports.Booking({event: e}) as Booking;
+      const booking = new Booking({event: e}) as Booking;
       const sidebar = CardService.newCardBuilder()
         .setName('Select Event')
         .setHeader(CardService.newCardHeader().setTitle('Project Details'));
@@ -167,7 +156,7 @@ function mainFooter(): GoogleAppsScript.Card_Service.FixedFooter {
     .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
     .setBackgroundColor('#3d9400')
     .setOpenLink(CardService.newOpenLink()
-      .setUrl(`https://docs.google.com/spreadsheets/d/${Initiative.dataSpreadsheetId}/edit#gid=0`));
+      .setUrl(`https://docs.google.com/spreadsheets/d/${Project.dataSpreadsheetId}/edit#gid=0`));
   const changelogButton = CardService.newTextButton()
     .setText(`${State.version} Changes`)
     .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
