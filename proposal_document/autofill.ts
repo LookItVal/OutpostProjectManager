@@ -75,6 +75,7 @@ export namespace Autofill {
     nameRange.getRangeElements()[0].getElement().asText().setForegroundColor('#000000');
   }
 
+
   export function fillEmail(e: DocEvent): void {
     const doc = e.source;
     const email = e.user?.email as string;
