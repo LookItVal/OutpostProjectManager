@@ -10,18 +10,19 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.2.6';
+export const version = '1.2.7';
 export const changelog = {
   1: {
     2: [
       'Shiny Things Update',
       {
         7: [
-          ['Fixed problem with finding the new sheet', 'Bug Fix'],
-          ['Added new heartbeat to the frontend to check for version number and connection status', 'New Feature'],
-          ['Connection now refreshes when the heartbeat is lost', 'New Feature'],
-          ['Now checks to see if the selection has changed', 'New Feature'],
-          ['Changed constants to cache value and only call when called to fix onOpen bug', 'Bug Fix'],
+          //['Fixed problem with finding the new sheet', 'Bug Fix'],
+          //['Added new heartbeat to the frontend to check for version number and connection status', 'New Feature'],
+          //['Connection now refreshes when the heartbeat is lost', 'New Feature'],
+          //['Now checks to see if the selection has changed', 'New Feature'],
+          //['Changed constants to cache value and only call when called to fix onOpen bug', 'Bug Fix'],
+          ['Added new button to make a more basic proposal', 'New Feature']
         ],
         6: [
           ['Made new logo to make app more visable on white backgrounds', 'UI Change'],
