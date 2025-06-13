@@ -70,6 +70,26 @@ export function generateProposal(nameArray: ProposalNameArray): void {
   Proposal.getProposal({nameArray}).generateProposal();
 }
 
+export function requestQuoteGeneration(): boolean {
+  const proposal = Proposal.getProposal();
+  if (proposal.type !== 'PROPOSAL') {
+    throw new ValidationError('Proposal type is not set to proposal.');
+  }
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    'Generate Quote?',
+    `Are you sure you want to generate a quote in the ${proposal.clientName}? folder called ${proposal.title}?`,
+    ui.ButtonSet.YES_NO);
+  if (response === ui.Button.YES) {
+    return true;
+  }
+  return false;
+}
+
+export function generateQuote(nameArray: ProposalNameArray): void {
+  Proposal.getProposal({nameArray}).generateQuote();
+}
+
 export function requestProposalAccept(): boolean {
   const proposal = Proposal.getProposal();
   if (proposal.type !== 'PROPOSAL') {

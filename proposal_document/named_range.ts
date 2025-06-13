@@ -28,7 +28,7 @@ namespace NamedRange {
     const doc = DocumentApp.getActiveDocument();
     const ui = DocumentApp.getUi();
     const namedRanges = doc.getNamedRanges();
-    const rangeNames = namedRanges.map(range => range.getName());
+    const rangeNames = namedRanges.map(range => ` ${range.getName()}`);
     const response = ui.prompt('Remove Named Range', `Enter the name of the range to remove from the list:\n${rangeNames}`, ui.ButtonSet.OK_CANCEL);
     if (response.getSelectedButton() !== ui.Button.OK) {
       return;
@@ -45,12 +45,12 @@ namespace NamedRange {
     const doc = DocumentApp.getActiveDocument();
     const ui = DocumentApp.getUi();
     const namedRanges = doc.getNamedRanges();
-    const rangeNames = namedRanges.map(range => range.getName());
+    const rangeNames = namedRanges.map(range => ` ${range.getName()}`);
     const response = ui.prompt('Named Range Details', `Enter the name of the range to get details for:\n${rangeNames}`, ui.ButtonSet.OK_CANCEL);
     if (response.getSelectedButton() !== ui.Button.OK) {
       return;
     }
-    if (!rangeNames.includes(response.getResponseText())) {
+    if (!rangeNames.includes(` ${response.getResponseText()}`)) {
       ui.alert('Error', 'The named range does not exist.', ui.ButtonSet.OK);
       return;
     }

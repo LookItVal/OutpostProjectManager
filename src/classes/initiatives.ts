@@ -522,7 +522,7 @@ export class Project extends Initiative {
     if (digits.length !== 2) {
       throw new ReferenceError('No Digits Found');
     }
-    digits = [digits[0] + 50, digits[1] + 50];
+    digits = [String(Number(digits[0]) + 50), String(Number(digits[1]) + 50)];
     const nextSheet = Project.dataSpreadsheet.getSheetByName(`${digits[0]}-${digits[1]}`);
     if (nextSheet) {
       return nextSheet;
@@ -776,14 +776,19 @@ export class Proposal extends Initiative {
   //            Static Properties            //
   /////////////////////////////////////////////
 
-  public static get costingSheetTemplate (): GoogleAppsScript.Drive.File {
+  public static get costingSheetTemplate(): GoogleAppsScript.Drive.File {
     const costingSheetTemplateId = exports.properties.getProperty('costingSheetTemplateId') ?? '';
     return DriveApp.getFileById(costingSheetTemplateId);
   }
 
-  public static get proposalTemplate (): GoogleAppsScript.Drive.File {
+  public static get proposalTemplate(): GoogleAppsScript.Drive.File {
     const proposalTemplateId = exports.properties.getProperty('proposalTemplateId') ?? '';
     return DriveApp.getFileById(proposalTemplateId);
+  }
+
+  public static get quoteTemplate(): GoogleAppsScript.Drive.File {
+    const quoteTemplateId = exports.properties.getProperty('quoteTemplateId') ?? '';
+    return DriveApp.getFileById(quoteTemplateId);
   }
 
   public static get proposalSheet(): GoogleAppsScript.Spreadsheet.Sheet {
@@ -794,7 +799,7 @@ export class Proposal extends Initiative {
   //          Immutable Properties           //
   /////////////////////////////////////////////
 
-  public get dataSheet (): GoogleAppsScript.Spreadsheet.Sheet {
+  public get dataSheet(): GoogleAppsScript.Spreadsheet.Sheet {
     if (this._dataSheet) {
       return this._dataSheet;
     }
@@ -802,7 +807,7 @@ export class Proposal extends Initiative {
     return this._dataSheet;
   }
 
-  public get rowNumber (): number {
+  public get rowNumber(): number {
     if (this._rowNumber) {
       return this._rowNumber;
     }
@@ -816,7 +821,7 @@ export class Proposal extends Initiative {
     throw new ReferenceError('Proposal Not Found');
   }
 
-  public get yrmo (): string {
+  public get yrmo(): string {
     if (this._yrmo) {
       return this._yrmo;
     }
@@ -857,6 +862,17 @@ export class Proposal extends Initiative {
     }
     const folder = this.makeFolder();
     Proposal.proposalTemplate.makeCopy(`${this.shortTitle} Proposal`, folder);
+    Proposal.costingSheetTemplate.makeCopy(`${this.shortTitle} Costing Sheet`, folder);
+    this.creationDate = new Date();
+    this.producer = exports.User.fullName;
+  }
+
+  public generateQuote(): void {
+    if (this.folder) {
+      throw new exports.ValidationError('Proposal Folder already exists');
+    }
+    const folder = this.makeFolder();
+    Proposal.quoteTemplate.makeCopy(`${this.shortTitle} Proposal`, folder);
     Proposal.costingSheetTemplate.makeCopy(`${this.shortTitle} Costing Sheet`, folder);
     this.creationDate = new Date();
     this.producer = exports.User.fullName;

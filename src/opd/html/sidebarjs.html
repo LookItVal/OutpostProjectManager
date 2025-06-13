@@ -12,6 +12,7 @@
     $('#jump-to-job-button').click(jumpToProject);
     $('#jump-to-proposals-button').click(jumpToProposal);
     $('#create-proposal-button').click(requestProposalGeneration);
+    $('#create-quote-button').click(requestQuoteGeneration);
     $('#open-costing-button').click(openCostingSheet);
     $('#open-proposal-button').click(openProposal);
     $('#open-reconciliation-button').click(openReconciliationSheet);
@@ -133,6 +134,7 @@
     $('#accept-proposal-button').fadeOut();
     $('#create-job-button').fadeOut();
     $('#create-proposal-button').fadeOut();
+    $('#create-quote-button').fadeOut();
     $('#create-costing-button').fadeOut();
   }
 
@@ -166,6 +168,7 @@
       }
       if (globalInitiative.status === "NEW") {
         $('#create-proposal-button').fadeIn();
+        $('#create-quote-button').fadeIn();
       }
     }
   }
@@ -337,6 +340,37 @@
         }, 1000);
       })
       .generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
+  }
+
+  function requestQuoteGeneration() {
+    startLoading(loadingText = 'Generating Metadata');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function(result) {
+        stopLoading();
+        if (result) {
+          generateQuote();
+          return;
+        }
+        refreshUI();
+      })
+      .requestQuoteGeneration();
+  }
+
+  function generateQuote() {
+    startLoading(loadingText = 'Generating New Proposal Documents');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function() {
+        stopLoading();
+        startLoading(loadingText = 'Loading New Proposal');
+        // wait one second for everything to fully register
+        setTimeout(function() {
+          stopLoading(); 
+          refreshSidebar();
+        }, 1000);
+      })
+      .generateQuote(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 
   function requestProposalAccept() {
