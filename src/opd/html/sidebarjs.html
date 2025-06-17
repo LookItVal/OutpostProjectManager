@@ -3,6 +3,7 @@
   let globalInitiative = {};
   let loadingInterval;
   let version;
+  let isAdmin = "false";
 
   // Run initializations on sidebar load.
   $(function() {
@@ -16,6 +17,7 @@
     $('#open-costing-button').click(openCostingSheet);
     $('#open-proposal-button').click(openProposal);
     $('#open-reconciliation-button').click(openReconciliationSheet);
+    $('#close-project-button').click(requestCloseProject);
     $('#accept-proposal-button').click(requestProposalAccept);
     $('#create-job-button').click(requestJobGeneration);
     $('#versionChangelog').click(openChangelog);
@@ -82,14 +84,22 @@
     // the dialog, if necessary.
   });
 
+  function errorHandler(msg, element) {
+    stopLoading();
+    $('#project-title').text('An error occured. Please check the console for details.');
+    console.log(msg, element);
+  }
+
   function initConstants() {
     google.script.run.withSuccessHandler(function(constants) {
-      console.log(constants);
       if (constants.version) {
         version = constants.version;
         $('#versionChangelog').text(version);
       } else {
         version = "Unknown";
+      }
+      if (constants.isAdmin) {
+        isAdmin = constants.isAdmin;
       }
     }).initConstants();
 
@@ -124,6 +134,7 @@
     $('.info-message').fadeOut();
     $('#open-folder-button').fadeOut();
     $('#open-reconciliation-button').fadeOut();
+    $('#close-project-button').fadeOut();
     $('.proposal-section').fadeOut();
     $('#open-costing-button').fadeOut(function() {
       $(this).hide();
@@ -139,8 +150,12 @@
   }
 
   function fadeInAnyInfo() {
+    console.log(isAdmin);
     if (globalInitiative.reconciliationSheetId) {
       $('#open-reconciliation-button').fadeIn();
+      if (isAdmin === "true" && globalInitiative.closed === "FALSE") {
+        $('#close-project-button').fadeIn();
+      }
     }
     fadeInProposalInfo();
     if (globalInitiative.folderId) {
@@ -427,7 +442,7 @@
         stopLoading();
         refreshSidebar();
       })
-      .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+      .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, globalInitiative.closed]);
   }
 
   function requestCostingGeneration() {
@@ -456,6 +471,37 @@
       .generateCosting([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
   }
 
+  function requestCloseProject() {
+    startLoading(loadingText = 'Retrieving Project Information');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function(result) {
+        stopLoading();
+        if (result) {
+          closeProject();
+          return;
+        }
+        refreshUI();
+      })
+      .requestCloseProject();
+  }
+
+  function closeProject() {
+    startLoading(loadingText = 'Closing Project');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function() {
+        stopLoading();
+        startLoading(loadingText = 'Loading Closed Project');
+        // wait one second for everything to fully register
+        setTimeout(function() {
+          stopLoading(); 
+          refreshSidebar();
+        }, 1000);
+      })
+      .closeProject([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+  }
+
   function openChangelog() {
     startLoading(loadingText = 'Opening Changelog');
     google.script.run
@@ -465,11 +511,5 @@
         refreshSidebar();
       })
     .openSheetChangelog();
-  }
-
-  function errorHandler(msg, element) {
-    stopLoading();
-    $('#project-title').text('An error occured. Please check the console for details.');
-    console.log(msg, element);
   }
 </script>

@@ -682,6 +682,20 @@ export class Project extends Initiative {
     }
   }
 
+  public closeProject(): void {
+    if (this.closed === 'TRUE') {
+      throw new exports.ValidationError('Project is already closed');
+    }
+    this._closed = 'TRUE';
+    if (this.reconciliationSheet && this.folder) {
+      this.reconciliationSheet.moveTo(this.folder);
+    }
+    const data = this.dataSheet.getDataRange().getValues();
+    const closedColumn = data[0].indexOf('CLOSED') + 1;
+    this.dataSheet.getRange(this.rowNumber, closedColumn).setValue('TRUE');
+    
+  }
+
   /////////////////////////////////////////////
   //              Static Methods             //
   /////////////////////////////////////////////

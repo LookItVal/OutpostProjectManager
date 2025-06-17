@@ -11,15 +11,7 @@ export class User {
   }
 
   static get email(): string {
-    const user = People.People?.get('people/me', {personFields: 'emailAddresses'});
-    if (!user) {
-      throw new Error('User not found');
-    }
-    const emailAddresses = user.emailAddresses as GoogleAppsScript.People.Schema.EmailAddress[];
-    if (!emailAddresses || !emailAddresses[0]) {
-      throw new Error('User email not found');
-    }
-    return emailAddresses[0].value as string;
+    return Session.getActiveUser().getEmail();
   }
 
   static get fullName(): string {
@@ -40,6 +32,16 @@ export class User {
 
   static get isAdmin(): boolean {
     const email = User.email;
+    let isAdmin = false;
+    exports.properties.getProperty('administrators')?.split(',').forEach((adminEmail: string) => {
+      if (email == adminEmail) {
+        isAdmin = true;
+      }
+    });
+    return isAdmin;
+  }
+
+  static isAdminEmail(email: string): boolean {
     let isAdmin = false;
     exports.properties.getProperty('administrators')?.split(',').forEach((adminEmail: string) => {
       if (email == adminEmail) {
