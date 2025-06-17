@@ -1,4 +1,5 @@
 import { Project, Proposal } from '../classes/initiatives';
+import { User } from '../classes/user';
 import { SerializedData, ProposalNameArray, ProjectNameArray } from '../interfaces';
 import { ValidationError } from '../classes/errors';
 import { properties, spreadsheet, version } from '../constants';
@@ -7,6 +8,7 @@ import { openChangelogAsModalDialogue } from '../changelog/handlers';
 interface RequestHandlersExports {
   Project: typeof Project;
   Proposal: typeof Proposal;
+  User: typeof User;
   ValidationError: typeof ValidationError;
   properties: typeof properties;
   spreadsheet: typeof spreadsheet;
@@ -154,11 +156,28 @@ export function generateJob(nameArray: ProposalNameArray): void {
   Project.getProject({nameArray}).generateProject();
 }
 
+export function requestCloseProject(): boolean {
+  const project = Project.getProject();
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    'Close Project?',
+    `Are you sure you want to close the project ${project.title}? This will archive the project and remove it from the active projects list.`,
+    ui.ButtonSet.YES_NO);
+  if (response === ui.Button.YES) {
+    return true;
+  }
+  return false;
+}
+
+export function closeProject(nameArray: ProjectNameArray): void {
+  Project.getProject({nameArray}).closeProject();
+}
+
 export function openSheetChangelog(): void {
   const ui = SpreadsheetApp.getUi();
   ui.showModalDialog(exports.openChangelogAsModalDialogue(), 'Changelog');
 }
 
 export function initConstants(): SerializedData {
-  return {version: exports.version};
+  return {version: exports.version, isAdmin: String(exports.User.isAdmin)};
 }

@@ -17,11 +17,7 @@ export const changelog = {
       'Shiny Things Update',
       {
         7: [
-          //['Fixed problem with finding the new sheet', 'Bug Fix'],
-          //['Added new heartbeat to the frontend to check for version number and connection status', 'New Feature'],
-          //['Connection now refreshes when the heartbeat is lost', 'New Feature'],
-          //['Now checks to see if the selection has changed', 'New Feature'],
-          //['Changed constants to cache value and only call when called to fix onOpen bug', 'Bug Fix'],
+          ['Added new button to close project that is only visable to administrators', 'New Feature'],
           ['Added new button to make a more basic proposal', 'New Feature']
         ],
         6: [
