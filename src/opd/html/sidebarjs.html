@@ -2,6 +2,9 @@
 <script>
   let globalInitiative = {};
   let loadingInterval;
+  let heartbeatInterval;
+  let heartbeatValue = true;
+  let focusCount = 1;
   let version;
   let isAdmin = "false";
 
@@ -80,9 +83,53 @@
 
     initConstants();
     refreshSidebar();
-    // Call the server here to retrieve any information needed to build
-    // the dialog, if necessary.
+    heartbeatInterval = setInterval(heartbeat, heartbeatTime(focusCount))
   });
+
+  function resetFocus() {
+    focusCount = 0;
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(heartbeat, heartbeatTime(focusCount));
+  }
+
+  function heartbeatTime(count) {
+    return Math.min(Math.exp(Math.max( (count - 15) / 2, 0 )), 359) * 1000
+  }
+
+  function heartbeat() {
+    if (!document.hidden && heartbeatValue) {
+      clearInterval(heartbeatInterval);
+      heartbeatInterval = setInterval(heartbeat, heartbeatTime(focusCount))
+      heartbeatValue = false;
+      google.script.run.withSuccessHandler(function(initiative) {
+        heartbeatValue = true;
+        let update = false;
+        for (const [key, value] of Object.entries(initiative)) {
+          if (globalInitiative[key]) {
+            if (globalInitiative[key] !== value) {
+              update = true;
+              break;
+            }
+          } else { update = true; }
+        }
+        if (update) {
+          globalInitiative = initiative;
+          startLoading();
+          setTimeout(() => {
+            stopLoading();
+            refreshUI();
+          }, 300);        
+        } else { focusCount++; }
+      }).withFailureHandler(function(msg, element) {
+        startLoading();
+        setTimeout(() => {
+          stopLoading();
+          console.log(msg, element);
+          $('#project-title').text("Error With Addon: Refresh Webpage and Try Again");
+        }, 300);
+      }).getInitiative();
+    }
+  }
 
   function errorHandler(msg, element) {
     stopLoading();
@@ -150,7 +197,6 @@
   }
 
   function fadeInAnyInfo() {
-    console.log(isAdmin);
     if (globalInitiative.reconciliationSheetId) {
       $('#open-reconciliation-button').fadeIn();
       if (isAdmin === "true" && globalInitiative.closed === "FALSE") {
@@ -240,8 +286,8 @@
 
   // update the ui with whatever is liaded as the state
   function refreshUI() {
+    resetFocus();
     initiative = globalInitiative;
-    console.log(initiative);
     $('#project-title').text(initiative.title);
     if (!initiative.type) {
       $('.info-message').text("Select a project and hit load project to refresh.");

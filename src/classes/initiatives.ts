@@ -693,7 +693,6 @@ export class Project extends Initiative {
     const data = this.dataSheet.getDataRange().getValues();
     const closedColumn = data[0].indexOf('CLOSED') + 1;
     this.dataSheet.getRange(this.rowNumber, closedColumn).setValue('TRUE');
-    
   }
 
   /////////////////////////////////////////////
