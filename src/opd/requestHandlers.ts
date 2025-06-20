@@ -170,7 +170,16 @@ export function requestCloseProject(): boolean {
 }
 
 export function closeProject(nameArray: ProjectNameArray): void {
-  Project.getProject({nameArray}).closeProject();
+  const project = Project.getProject({nameArray});
+  const bookings = project.getUnreconciledBookings();
+  if (bookings.length === 0) {
+    project.closeProject();
+  }
+  else {
+    const ui = SpreadsheetApp.getUi();
+    const modalAlert = HtmlService.createTemplateFromFile('src/opd/html/unreconciledBookings').evaluate();
+    ui.showModalDialog(modalAlert, 'Unreconciled Bookings');
+  }
 }
 
 export function openSheetChangelog(): void {

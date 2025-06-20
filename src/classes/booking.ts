@@ -1,5 +1,6 @@
 import { BookingParams, Initiative } from '../interfaces';
 import { Project, Proposal } from './initiatives';
+import { Reconciliation } from './reconciliation';
 
 interface BookingExports {
     Project: typeof Project;
@@ -13,6 +14,7 @@ export class Booking {
 
   private _calendar?: GoogleAppsScript.Calendar.Calendar;
   private _calendarEvent?: GoogleAppsScript.Calendar.CalendarEvent;
+  private _reconciliation?: Reconciliation;
   private _project?: Initiative;
   private _date?: Date;
   private _duration?: number;
@@ -39,7 +41,21 @@ export class Booking {
       return this._project;
     }
     return undefined;
+  }
 
+  public get reconciliation(): Reconciliation | undefined {
+    if (this._reconciliation) return this._reconciliation;
+    if (!this.project?.reconciliationSheet) {
+      return undefined;
+    }
+    const rows = Reconciliation.findRow(this);
+    if (rows.length === 1) {
+      this._reconciliation = new Reconciliation({
+        sheetId: this.project.reconciliationSheetId !== undefined ? String(this.project.reconciliationSheetId) : undefined,
+        row: rows[0]});
+      return this._reconciliation;
+    }
+    return undefined;
   }
 
   public get calendar(): GoogleAppsScript.Calendar.Calendar | undefined {
