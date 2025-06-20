@@ -65,6 +65,14 @@ export interface ClientParams {
 
 export interface BookingParams {
   event?: InitEvent;
+  calendarId?: string;
+  eventId?: string;
+}
+
+export interface ReconciliationParams {
+  event?: InitEvent;
+  row?: number;
+  sheetId?: string;
 }
 
 export interface ChangelogDict {

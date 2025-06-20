@@ -14,12 +14,22 @@ export class Booking {
   private _calendar?: GoogleAppsScript.Calendar.Calendar;
   private _calendarEvent?: GoogleAppsScript.Calendar.CalendarEvent;
   private _project?: Initiative;
+  private _date?: Date;
+  private _duration?: number;
+  private _technician?: string;
 
-  constructor({event = undefined}: BookingParams) {
+  constructor({event = undefined, calendarId = undefined, eventId = undefined}: BookingParams) {
     if (event) {
       this.eventId = event.calendar.id;
       this.calendarId = event.calendar.calendarId;
+      return;
     }
+    if (calendarId && eventId) {
+      this.calendarId = calendarId;
+      this.eventId = eventId;
+      return;
+    }
+    throw new ReferenceError('Booking must be initialized with an event or calendarId and eventId');
   }
 
   public get project(): Initiative | undefined {
@@ -52,7 +62,37 @@ export class Booking {
     return this.project?.reconciliationSheetId ?? '';
   }
 
-  public get row(): number {
-    throw new Error('Not implemented');
+  public get date(): Date {
+    if (this._date) return this._date;
+    if (this.calendarEvent) {
+      this._date = new Date(this.calendarEvent.getStartTime().getTime());
+      console.log(this._date);
+      return this._date;
+    }
+    throw new ReferenceError('Booking date is not set.');
+  }
+
+  public get duration(): number {
+    if (this._duration) return this._duration;
+    if (this.calendarEvent) {
+      this._duration = (this.calendarEvent.getEndTime().getTime() - this.calendarEvent.getStartTime().getTime()) / (1000 * 60 * 60);
+      console.log(this._duration);
+      return this._duration;
+    }
+    throw new ReferenceError('Booking duration is not set.');
+  }
+
+  public get technician(): string {
+    if (this._technician) return this._technician;
+    if (this.calendar) {
+      const name = this.calendar.getName();
+      const match = name.match(/^\*(.+) - Outpost$/i);
+      if (match) {
+        this._technician = name.substring(1, name.length - ' - Outpost'.length).trim();
+        console.log(this._technician);
+        return this._technician;
+      }
+    }
+    return '';
   }
 }
