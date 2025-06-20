@@ -1,0 +1,17 @@
+ <!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
+    <?!= HtmlService.createHtmlOutputFromFile('stylesheet').getContent(); ?>
+  </head>
+  <body>
+    <!-- Below is the HTML code that defines the sidebar element structure. -->
+    <div class="top-bar width-100">
+      text
+    </div>
+
+    <?!= HtmlService.createHtmlOutputFromFile('src/opd/html/unreconciledBookingsjs').getContent(); ?>
+  </body>
+</html>

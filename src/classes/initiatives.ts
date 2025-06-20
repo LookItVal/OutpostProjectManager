@@ -1,6 +1,7 @@
 import { ValidationError } from './errors';
 import { spreadsheet, properties, regex4Digits, regexJobName, regexProposalName, regexProposalOpen, regexPullDigits } from '../constants';
 import { Client } from './client';
+import { Booking } from './booking';
 import { InitiativeParams, ProjectNameArray, ProposalNameArray, SerializedData } from '../interfaces';
 import { User } from './user';
 
@@ -13,6 +14,7 @@ interface InitiativesExport {
     regexProposalName: typeof regexProposalName;
     regexProposalOpen: typeof regexProposalOpen;
     regexPullDigits: typeof regexPullDigits;
+    Booking: typeof Booking;
     Client: typeof Client;
     User: typeof User;
 }
@@ -693,6 +695,30 @@ export class Project extends Initiative {
     const data = this.dataSheet.getDataRange().getValues();
     const closedColumn = data[0].indexOf('CLOSED') + 1;
     this.dataSheet.getRange(this.rowNumber, closedColumn).setValue('TRUE');
+  }
+
+  public getUnreconciledBookings(): Booking[] {
+    if (!this.reconciliationSheet) {
+      throw new exports.ValidationError('Reconciliation Sheet does not exist');
+    }
+    const unreconciledBookings: Booking[] = [];
+    const allCalendars = CalendarApp.getAllCalendars();
+    const startDate = this.creationDate ? new Date(this.creationDate.getTime()) : new Date(2020, 1, 1);
+    for (const calendar of allCalendars) {
+      const calendarNameFormat = calendar.getName().match(/^\*(.+) - Outpost$/i);
+      if (calendarNameFormat) {
+        const endDate = new Date();
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        const calendarEvents = calendar.getEvents(startDate, endDate, { search: this.title });
+        for (const event of calendarEvents) {
+          const booking = new exports.Booking({ calendarId: calendar.getId(), eventId: event.getId() });
+          if (!booking.reconciliation) {
+            unreconciledBookings.push(booking);
+          }
+        }
+      }
+    }
+    return unreconciledBookings;
   }
 
   /////////////////////////////////////////////
