@@ -79,193 +79,191 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
       filesSection.addWidget(CardService.newTextParagraph()
         .setText('\n - No associated files found.'));
     }
+    sidebar.addSection(filesSection);
 
-    const sheetRows = exports.Reconciliation.findRow(booking);
-    //const reconciliation = new exports.Reconciliation({event: e, row: sheetRow}) as Reconciliation;
+    if (booking.project?.reconciliationSheet) {
+      const sheetRows = exports.Reconciliation.findRow(booking);
+      //const reconciliation = new exports.Reconciliation({event: e, row: sheetRow}) as Reconciliation;
 
-    let reconciliationSection: GoogleAppsScript.Card_Service.CardSection;
-    if (sheetRows.length === 0) {
-      reconciliationSection = CardService.newCardSection()
-        .setHeader('Reconciliation Details 🔴');
-    }
-    else if (sheetRows.length > 1) {
-      reconciliationSection = CardService.newCardSection()
-        .setHeader('Reconciliation Details 🟡');
-    }
-    CardService.newCardSection()
-      .setHeader('Reconciliation Details 🟢');
-    if (sheetRows.length > 1) {
-      reconciliationSection.addWidget(
-        CardService.newTextParagraph()
-          .setText(`Found ${sheetRows.length} reconciliation rows for this event. Select one to link it to the booking.\n\n`)
-      );
-      sheetRows.forEach((row) => {
-        const reconciliation = new exports.Reconciliation({event: e, row: row}) as Reconciliation;
-
-        const selectButton = CardService.newTextButton()
-          .setText(`Select Row ${row}`)
-          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-          .setOnClickAction(
-            CardService.newAction()
-              .setFunctionName('setReconciliationRow')
-              .setParameters({ row: JSON.stringify(row) })
-          );
-        const openButton = CardService.newTextButton()
-          .setText('Open')
-          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-          .setBackgroundColor('#3d9400')
-          .setOpenLink(CardService.newOpenLink()
-            .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0&range=A${row}:H${row}`));
-        // Add a title with the name of the row
+      let reconciliationSection = CardService.newCardSection()
+        .setHeader('Reconciliation Details');
+      if (sheetRows.length === 0) {
+        reconciliationSection = CardService.newCardSection()
+          .setHeader('Reconciliation Details 🔴');
+      }
+      if (sheetRows.length > 1) {
+        reconciliationSection = CardService.newCardSection()
+          .setHeader('Reconciliation Details 🟡');
         reconciliationSection.addWidget(
           CardService.newTextParagraph()
-            .setText(`<b>Row ${row}</b>`)
+            .setText(`Found ${sheetRows.length} reconciliation rows for this event. Select one to link it to the booking.\n\n`)
+        );
+        sheetRows.forEach((row) => {
+          const reconciliation = new exports.Reconciliation({event: e, row: row}) as Reconciliation;
+
+          const selectButton = CardService.newTextButton()
+            .setText(`Select Row ${row}`)
+            .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+            .setOnClickAction(
+              CardService.newAction()
+                .setFunctionName('setReconciliationRow')
+                .setParameters({ row: JSON.stringify(row) })
+            );
+          const openButton = CardService.newTextButton()
+            .setText('Open')
+            .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+            .setBackgroundColor('#3d9400')
+            .setOpenLink(CardService.newOpenLink()
+              .setUrl(`https://docs.google.com/spreadsheets/d/${booking.sheetId}/edit#gid=0&range=A${row}:H${row}`));
+          // Add a title with the name of the row
+          reconciliationSection.addWidget(
+            CardService.newTextParagraph()
+              .setText(`<b>Row ${row}</b>`)
+          );
+          reconciliationSection.addWidget(
+            CardService.newButtonSet()
+              .addButton(selectButton)
+              .addButton(openButton)
+          );        reconciliationSection.addWidget(
+            CardService.newTextParagraph()
+              .setText(`<b>Date:</b> ${reconciliation.date?.toLocaleDateString('en-GB')}
+                        <b>Hours:</b> ${reconciliation.hours}
+                        <b>Work Performed:</b> ${reconciliation.workPerformed}
+                        <b>Description:</b> ${reconciliation.description}
+                        <b>Billing Additions:</b> ${reconciliation.billingAdditions}
+                        <b>Spot Numbers:</b> ${reconciliation.spotNumbers}
+                        <b>Project Status:</b> ${reconciliation.status}`)
+          );
+          reconciliationSection.addWidget(
+            CardService.newDivider()
+          );
+          reconciliationSection.addWidget(
+            CardService.newTextParagraph()
+              .setText('\n')
+          );
+        });
+      } 
+      let currentWorkPerformed = '';
+      let currentDescription = '';
+      let currentBillingAdditions = '';
+      let currentSpotNumbers = '';
+      let currentStatus = '';
+      let row: number = 0;
+      if (sheetRows.length == 1) {
+        row = sheetRows[0];
+        const reconciliation = new exports.Reconciliation({event: e, row: row}) as Reconciliation;
+        if (!reconciliation.date) {
+          reconciliationSection = CardService.newCardSection()
+            .setHeader('Reconciliation Details 🔴');
+        } else if (reconciliation.date.getMonth() !== booking.date.getMonth() ||
+                  reconciliation.date.getDate() !== booking.date.getDate()) {
+          reconciliationSection = CardService.newCardSection()
+            .setHeader('Reconciliation Details 🟡');
+        } else if (reconciliation.date.getMonth() === booking.date.getMonth() &&
+                  reconciliation.date.getDate() === booking.date.getDate()) {
+          reconciliationSection = CardService.newCardSection()
+            .setHeader('Reconciliation Details 🟢');
+        }
+        currentWorkPerformed = reconciliation.workPerformed;
+        currentDescription = reconciliation.description;
+        currentBillingAdditions = reconciliation.billingAdditions;
+        currentSpotNumbers = reconciliation.spotNumbers;
+        currentStatus = reconciliation.status;
+      } 
+      if (sheetRows.length <= 1) {
+        const sheet = SpreadsheetApp.openById(booking.sheetId).getSheets()[0];
+        const workPerformedCell = sheet.getRange('D3');
+        const workPerformedRule = workPerformedCell.getDataValidation();
+        let dropdownItems: string[] = [];
+        if (workPerformedRule && workPerformedRule.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
+          const args = workPerformedRule.getCriteriaValues();
+          if (args && args[0] && Array.isArray(args[0])) {
+            dropdownItems = args[0] as string[];
+          }
+        }
+        const workPerformedDropdown = CardService.newSelectionInput()
+          .setType(CardService.SelectionInputType.DROPDOWN)
+          .setTitle('Work Performed')
+          .setFieldName('workPerformed');
+        dropdownItems.forEach(item => {
+          workPerformedDropdown.addItem(item, item, currentWorkPerformed === item);
+        });
+
+        const descriptionInput = CardService.newTextInput()
+          .setFieldName('description')
+          .setTitle('Description')
+          .setValue(currentDescription || '');
+
+        const billingAdditionsInput = CardService.newTextInput()
+          .setFieldName('billingAdditions')
+          .setTitle('Billing Additions')
+          .setValue(currentBillingAdditions || '');
+
+        const spotNumbersInput = CardService.newTextInput()
+          .setFieldName('spotNumbers')
+          .setTitle('Spot Numbers')
+          .setValue(currentSpotNumbers || '');
+
+
+        const statusCell = sheet.getRange('H3');
+        const statusRule = statusCell.getDataValidation();
+        dropdownItems = [];
+        if (statusRule && statusRule.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
+          const args = statusRule.getCriteriaValues();
+          if (args && args[0] && Array.isArray(args[0])) {
+            dropdownItems = args[0] as string[];
+          }
+        }
+        const statusDropdown = CardService.newSelectionInput()
+          .setType(CardService.SelectionInputType.DROPDOWN)
+          .setTitle('Project Status')
+          .setFieldName('status');
+        dropdownItems.forEach(item => {
+          statusDropdown.addItem(item, item, currentStatus === item);
+        });
+
+        const comfirmButton = CardService.newTextButton()
+          .setText('Confirm Changes')
+          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+          .setBackgroundColor('#3d9400')
+          .setOnClickAction(
+            CardService.newAction()
+              .setFunctionName('fillReconciliationRow')
+              .setParameters({ row: JSON.stringify(row) })
+          );
+        
+        const cancleButton = CardService.newTextButton()
+          .setText('Cancel')
+          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+          .setBackgroundColor('#d93025') 
+          .setOnClickAction(
+            CardService.newAction()
+              .setFunctionName('selectEventUI')
+          );
+
+        
+        reconciliationSection.addWidget(
+          CardService.newTextParagraph()
+            .setText('')
+        );
+        reconciliationSection.addWidget(workPerformedDropdown);
+        reconciliationSection.addWidget(descriptionInput);
+        reconciliationSection.addWidget(billingAdditionsInput);
+        reconciliationSection.addWidget(spotNumbersInput);
+        reconciliationSection.addWidget(statusDropdown);
+        reconciliationSection.addWidget(
+          CardService.newTextParagraph()
+            .setText('')
         );
         reconciliationSection.addWidget(
           CardService.newButtonSet()
-            .addButton(selectButton)
-            .addButton(openButton)
-        );        reconciliationSection.addWidget(
-          CardService.newTextParagraph()
-            .setText(`<b>Date:</b> ${reconciliation.date?.toLocaleDateString('en-GB')}
-                      <b>Hours:</b> ${reconciliation.hours}
-                      <b>Work Performed:</b> ${reconciliation.workPerformed}
-                      <b>Description:</b> ${reconciliation.description}
-                      <b>Billing Additions:</b> ${reconciliation.billingAdditions}
-                      <b>Spot Numbers:</b> ${reconciliation.spotNumbers}
-                      <b>Project Status:</b> ${reconciliation.status}`)
+            .addButton(comfirmButton)
+            .addButton(cancleButton)
         );
-        reconciliationSection.addWidget(
-          CardService.newDivider()
-        );
-        reconciliationSection.addWidget(
-          CardService.newTextParagraph()
-            .setText('\n')
-        );
-      });
-    } 
-    let currentWorkPerformed = '';
-    let currentDescription = '';
-    let currentBillingAdditions = '';
-    let currentSpotNumbers = '';
-    let currentStatus = '';
-    let row: number = 0;
-    if (sheetRows.length == 1) {
-      row = sheetRows[0];
-      const reconciliation = new exports.Reconciliation({event: e, row: row}) as Reconciliation;
-      if (!reconciliation.date) {
-        reconciliationSection = CardService.newCardSection()
-          .setHeader('Reconciliation Details 🔴');
-      } else if (reconciliation.date.getMonth() !== booking.date.getMonth() ||
-                 reconciliation.date.getDate() !== booking.date.getDate()) {
-        reconciliationSection = CardService.newCardSection()
-          .setHeader('Reconciliation Details 🟡');
-      } else if (reconciliation.date.getMonth() === booking.date.getMonth() &&
-                 reconciliation.date.getDate() === booking.date.getDate()) {
-        reconciliationSection = CardService.newCardSection()
-          .setHeader('Reconciliation Details 🟢');
       }
-      currentWorkPerformed = reconciliation.workPerformed;
-      currentDescription = reconciliation.description;
-      currentBillingAdditions = reconciliation.billingAdditions;
-      currentSpotNumbers = reconciliation.spotNumbers;
-      currentStatus = reconciliation.status;
-    } 
-    if (sheetRows.length <= 1) {
-      const sheet = SpreadsheetApp.openById(booking.sheetId).getSheets()[0];
-      const workPerformedCell = sheet.getRange('D3');
-      const workPerformedRule = workPerformedCell.getDataValidation();
-      let dropdownItems: string[] = [];
-      if (workPerformedRule && workPerformedRule.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
-        const args = workPerformedRule.getCriteriaValues();
-        if (args && args[0] && Array.isArray(args[0])) {
-          dropdownItems = args[0] as string[];
-        }
-      }
-      const workPerformedDropdown = CardService.newSelectionInput()
-        .setType(CardService.SelectionInputType.DROPDOWN)
-        .setTitle('Work Performed')
-        .setFieldName('workPerformed');
-      dropdownItems.forEach(item => {
-        workPerformedDropdown.addItem(item, item, currentWorkPerformed === item);
-      });
-
-      const descriptionInput = CardService.newTextInput()
-        .setFieldName('description')
-        .setTitle('Description')
-        .setValue(currentDescription || '');
-
-      const billingAdditionsInput = CardService.newTextInput()
-        .setFieldName('billingAdditions')
-        .setTitle('Billing Additions')
-        .setValue(currentBillingAdditions || '');
-
-      const spotNumbersInput = CardService.newTextInput()
-        .setFieldName('spotNumbers')
-        .setTitle('Spot Numbers')
-        .setValue(currentSpotNumbers || '');
-
-
-      const statusCell = sheet.getRange('H3');
-      const statusRule = statusCell.getDataValidation();
-      dropdownItems = [];
-      if (statusRule && statusRule.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
-        const args = statusRule.getCriteriaValues();
-        if (args && args[0] && Array.isArray(args[0])) {
-          dropdownItems = args[0] as string[];
-        }
-      }
-      const statusDropdown = CardService.newSelectionInput()
-        .setType(CardService.SelectionInputType.DROPDOWN)
-        .setTitle('Project Status')
-        .setFieldName('status');
-      dropdownItems.forEach(item => {
-        statusDropdown.addItem(item, item, currentStatus === item);
-      });
-
-      const comfirmButton = CardService.newTextButton()
-        .setText('Confirm Changes')
-        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-        .setBackgroundColor('#3d9400')
-        .setOnClickAction(
-          CardService.newAction()
-            .setFunctionName('fillReconciliationRow')
-            .setParameters({ row: JSON.stringify(row) })
-        );
-      
-      const cancleButton = CardService.newTextButton()
-        .setText('Cancel')
-        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-        .setBackgroundColor('#d93025') 
-        .setOnClickAction(
-          CardService.newAction()
-            .setFunctionName('selectEventUI')
-        );
-
-      reconciliationSection.addWidget(
-        CardService.newTextParagraph()
-          .setText('')
-      );
-      reconciliationSection.addWidget(workPerformedDropdown);
-      reconciliationSection.addWidget(descriptionInput);
-      reconciliationSection.addWidget(billingAdditionsInput);
-      reconciliationSection.addWidget(spotNumbersInput);
-      reconciliationSection.addWidget(statusDropdown);
-      reconciliationSection.addWidget(
-        CardService.newTextParagraph()
-          .setText('')
-      );
-      reconciliationSection.addWidget(
-        CardService.newButtonSet()
-          .addButton(comfirmButton)
-          .addButton(cancleButton)
-      );
-
+      sidebar.addSection(reconciliationSection);
     }
-
-    sidebar.addSection(filesSection)
-      .addSection(reconciliationSection)
-      .setFixedFooter(mainFooter());
+    sidebar.setFixedFooter(mainFooter());
     return sidebar.build();
   } catch (e: unknown) {
     console.error(e);
