@@ -97,7 +97,7 @@
   }
 
   function heartbeat() {
-    if (!document.hidden && heartbeatValue) {
+    if (heartbeatValue) {
       clearInterval(heartbeatInterval);
       heartbeatInterval = setInterval(heartbeat, heartbeatTime(focusCount))
       heartbeatValue = false;
