@@ -17,13 +17,15 @@
 [Explain how to use your project. Provide examples and code snippets if necessary.]
 
 ## Changelog
-### [1.2.7]
-  - Fixed Problem finding new sheets
-  - Added new heartbeat between front and backend.
-  - Now roughly auto updates when you click on a new project
-  - Now refreshes connection when session is lost
-  - Changed how constants are calculated to fix permission error on calling the constants file
 
+### [1.3.0] - Shiny Colors Update - 2024-01-24
+  - Added link between calendar bookings and project reconciliations
+  - Added Means of viewing and editing project reconciliations from the calendar
+  - Added heartbeat to the sheets sidebar to prevent it from closing
+  - Outpost Project Database now occasionally auto-refreshes the sidebar in the background
+### [1.2.7]
+  - Added new button to close project that is only visible to administrators
+ - Added new button to make a more basic proposal
 ### [1.2.6]
   - Made new logo to make app more visible on white
   - Made new style guide for sheets
@@ -70,109 +72,5 @@
 - Prepared the code base for more rapid changes.
 
 ## Todo
-## 1.3 The Utilities Update
-- [ ] Link up items in the costing sheet with the proposal document.
-  - Add OPM to the proper sheet and make new UI to pull information from the two.
-  - By 1.3
-- [ ] Make frontend sends always come with a version number, to check to see if you need to update. This prevents the problem of the app breaking when updates are pushed until everyone refreshes their client.
-  - BY 1.3
-- [ ] Make sure calendar only adds a reconciliation sheet button if it actually found a real sheet
-  - BY 1.3
-- [ ] Make generative functions do things based on what has been selected previously, not what is currently selected if they have changed. This fixes the problem where if someone clicks away while files are being generated it may cause errors.
-  - BY 1.3
-- [ ] Add function to add new page in the OPD. This function should be run automatically as the sheet runs out of room.
-  - By 1.4
-- [ ] Add function to add new page in the OPD. This function should be run automatically as the sheet runs out of room.
-  - By 1.4
-
-## 1.4
- - [ ] Split app into multiple sub bound apps so they can make use of onSelectionChange(e). This will allow the app to update faster and without the user having to click a button first, but it will require splitting up the codebase and accessing data via HTTP requests.
-  - By 1.5
-- [ ] Turn the rest of the app into a web app and send http requests to each other to run functions. This speeds up updating on editors with advanced functions, and also will allow a hub for users to see everything in once place.
-  - By 1.5
-
-## 1.4 
-- [ ] Link calendar bookings and specific lines of the reconciliation sheet.
-  - BY 1.6
-- [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
-  - BY 1.6
-- [ ] Add something to the reconciliation sheet to show when something has been confirmed.
-  - BY 1.6
-- [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
-  - BY 1.6
-  
-## 1.3 The Optimization Update
-- [ ] Have initiatives and other object be able to be initiated by serialized data.
-  - 1.3.0
-- [ ] The Changelog html is really just the base for any html file, change its name accordingly
-  - 1.3.0
-- [ ] OPD should jump to projects on open
-  - 1.3
-- [ ] Add Benchmarking
-  - By 1.3
-- [ ] Have every initiative initialize from serialized data and back them up to properties
-  - The key of each property is the YR/MO + job number
-  - add function to check the object to make sure everything is up to date
-  - BY 1.3
-- [ ] Add Caching not just properties. Cache should mirror the properties
-  - By 1.3
-- [ ] Change text to say generating and not making
-  -BY 1.3
-- [ ] Make frontend sends always come with a version number, to check to see if you need to update. This prevents the problem of the app breaking when updates are pushed until everyone refreshes their client.
-  - BY 1.3
-- [ ] Make sure calendar only adds a reconciliation sheet button if it actually found a real sheet
-  - BY 1.3
-- [ ] Make generative functions do things based on what has been selected previously, not what is currently selected if they have changed. This fixes the problem where if someone clicks away while files are being generated it may cause errors.
-  - BY 1.3
-## 1.4 The Utilities Update
-- [ ] Add requirement so you can do red button actions
-  - BY 1.4
-- [ ] Link up items in the costing sheet with the proposal document.
-  - By 1.4
-- [ ] Update basic project name variables in documents that get generated
-  - By 1.4
-- [ ] Build this readme out to make sure anyone else who needs to edit this codebase can easily understand how this app works.
-  -BY 1.4
-- [ ] Add some kind of bug reporter for the client.
-  - BY 1.4
-- [ ] Add some kind of Feature Request for the client.
-  - By 1.4
-- [ ] Give instructions from the Google Drive file on how to get here. Probably a another readme file that is a .gs file and not a .md file. Will be far smaller than the readme.md, it will just link to the git so people can read the real readme.
-  -BY 1.4
-- [ ] Add function to add new page in the OPD. This function should be run automatically as the sheet runs out of room.
-  - By 1.4
-- [ ] If admin, be able to close reconciliation sheets. This function will just move the reconciliation sheet into the project folder, and lock the sheet. It could also mark the projects as closed in the Outpost Project Database.
-  - BY 1.4
-## 1.5 The UX Update
-- [ ] Split app into multiple sub bound apps so they can make use of onSelectionChange(e). This will allow the app to update faster and without the user having to click a button first, but it will require splitting up the codebase and accessing data via HTTP requests.
-  - By 1.5
-- [ ] Turn the rest of the app into a web app and send http requests to each other to run functions. This speeds up updating on editors with advanced functions, and also will allow a hub for users to see everything in once place.
-  - By 1.5
-## 1.6 The Calendar Update
-- [ ] Link calendar bookings and specific lines of the reconciliation sheet.
-  - BY 1.6
-- [ ] Fill calendar booking sidebar with info from the reconciliation sheet.
-  - BY 1.6
-- [ ] Add something to the reconciliation sheet to show when something has been confirmed.
-  - BY 1.6
-- [ ] In reconciliation sheet, be able to get information about calendar bookings through rows.
-  - BY 1.6
-## OPM V2.0
-- [ ] Add Chat Integration
-  - By 2.0
-- [ ] Reskin Web-App with Kyle?
-  - By 2.0
-- [ ] New Space for each active project
-  - By 2.0
-- [ ] Mark who is involved in the project based on calendar bookings and the listed producer
-  - By 2.0
-- [ ] Add Chat to each section of the app (where possible, bound apps may be harder)
-  - By 2.0
-- [ ] Integrate Zoho Database, and database search method
-  - By 2.0
-- [ ] Add Admin console
-  - By 2.0
-- [ ] Launch as android and IOS application.
-  - By 2.0
-- [ ] Integrate Making new Bookings and requesting time off to web-app.
-  - By 2.0
+ - New reconciliation system that adds to the homepage of the calendar any unreconciled bookings
+ - New system for warning about closing a project with unreconciled bookings

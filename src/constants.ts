@@ -10,14 +10,25 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.2.7';
+export const version = '1.3.0';
 export const changelog = {
   1: {
+    3: [
+      'Project Reconciliation',
+      {
+        0: [
+          ['Added link between calendar bookings and project reconciliations', 'New Feature'],
+          ['Added Means of viewing and editing project reconciliations from the calendar', 'New Feature'],
+          ['Added heartbeat to the sheets sidebar to prevent it from closing', 'Bug Fix'],
+          ['Outpost Project Database now occasionally auto-refreshes the sidebar in the background', 'New Feature']
+        ]
+      }
+    ],
     2: [
       'Shiny Things Update',
       {
         7: [
-          ['Added new button to close project that is only visable to administrators', 'New Feature'],
+          ['Added new button to close project that is only visible to administrators', 'New Feature'],
           ['Added new button to make a more basic proposal', 'New Feature']
         ],
         6: [
