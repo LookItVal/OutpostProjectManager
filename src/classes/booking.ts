@@ -37,7 +37,7 @@ export class Booking {
   public get project(): Initiative | undefined {
     if (this._project) return this._project;
     if (this.calendarEvent) {
-      this._project = exports.Project.getInitiative({ name: this.calendarEvent.getTitle() });
+      this._project = exports.Project.getInitiative({ name: this.calendarEvent.getTitle().trim() });
       return this._project;
     }
     return undefined;

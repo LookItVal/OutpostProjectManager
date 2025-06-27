@@ -10,12 +10,15 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.3.0';
+export const version = '1.3.1';
 export const changelog = {
   1: {
     3: [
       'Project Reconciliation',
       {
+        1: [
+          ['Ensure calendar bookings can find the reconciliation sheet with leading and trailing whitespace', 'Bug Fix']
+        ],
         0: [
           ['Added link between calendar bookings and project reconciliations', 'New Feature'],
           ['Added Means of viewing and editing project reconciliations from the calendar', 'New Feature'],
