@@ -73,6 +73,8 @@ export interface ReconciliationParams {
   event?: InitEvent;
   row?: number;
   sheetId?: string;
+  calId?: string;
+  eventId?: string;
 }
 
 export interface ChangelogDict {

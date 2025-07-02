@@ -1,10 +1,13 @@
 import { BookingParams, Initiative } from '../interfaces';
 import { Project, Proposal } from './initiatives';
 import { Reconciliation } from './reconciliation';
+import { regex4Digits, regexJobName } from '../constants';
 
 interface BookingExports {
     Project: typeof Project;
     Proposal: typeof Proposal;
+    regex4Digits: typeof regex4Digits;
+    regexJobName: typeof regexJobName;
 }
 declare const exports: BookingExports;
 
@@ -14,6 +17,7 @@ export class Booking {
 
   private _calendar?: GoogleAppsScript.Calendar.Calendar;
   private _calendarEvent?: GoogleAppsScript.Calendar.CalendarEvent;
+  private _calendarEventLink?: string;
   private _reconciliation?: Reconciliation;
   private _project?: Initiative;
   private _date?: Date;
@@ -73,6 +77,17 @@ export class Booking {
     return undefined;
   }
 
+  public get calendarEventLink(): string {
+    if (this._calendarEventLink) return this._calendarEventLink;
+    if (this.calendarEvent) {
+      let id = `${this.calendarEvent.getId().split('@')[0]} ${this.calendarId}`;
+      id = Utilities.base64Encode(id);
+      this._calendarEventLink = `https://calendar.google.com/calendar/u/0/r/eventedit/${id}`;
+      return this._calendarEventLink;
+    }
+    return '';
+  }
+
   public get sheetId(): string {
     if (this.project instanceof exports.Proposal) return '';
     return this.project?.reconciliationSheetId ?? '';
@@ -82,7 +97,6 @@ export class Booking {
     if (this._date) return this._date;
     if (this.calendarEvent) {
       this._date = new Date(this.calendarEvent.getStartTime().getTime());
-      console.log(this._date);
       return this._date;
     }
     throw new ReferenceError('Booking date is not set.');
@@ -92,7 +106,6 @@ export class Booking {
     if (this._duration) return this._duration;
     if (this.calendarEvent) {
       this._duration = (this.calendarEvent.getEndTime().getTime() - this.calendarEvent.getStartTime().getTime()) / (1000 * 60 * 60);
-      console.log(this._duration);
       return this._duration;
     }
     throw new ReferenceError('Booking duration is not set.');
@@ -105,10 +118,35 @@ export class Booking {
       const match = name.match(/^\*(.+) - Outpost$/i);
       if (match) {
         this._technician = name.substring(1, name.length - ' - Outpost'.length).trim();
-        console.log(this._technician);
         return this._technician;
       }
     }
     return '';
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  //        Static Methods
+  ////////////////////////////////////////////////////////////////////////////////
+
+  public static getReconciliationPeriod(): Date {
+    const projectNames: string[] = [];
+    const files = exports.Project.reconciliationFolder.getFiles();
+    while (files.hasNext()) {
+      const file = files.next();
+      if (exports.regexJobName.test(file.getName())) {
+        projectNames.push(file.getName().match(exports.regexJobName)![0]);
+      }
+    }
+    const projectDates: number[] = [];
+    projectNames.forEach(name => {
+      const match = name.match(exports.regex4Digits);
+      if (match) {
+        projectDates.push(Number(match[0]));
+      }
+    });
+    const yrmo = String(Math.min(...projectDates));
+    const year = Number(yrmo.substring(0, 2)) + 2000;
+    const month = Number(yrmo.substring(2, 4)) - 1;
+    return new Date(year, month, 1);
   }
 }
