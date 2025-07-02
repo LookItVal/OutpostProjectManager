@@ -31,7 +31,7 @@ export class Reconciliation {
   private _bookingSheet?: GoogleAppsScript.Spreadsheet.Sheet;
   private _row?: number;
 
-  constructor({ sheetId = '', row = undefined, event = undefined }: ReconciliationParams) {
+  constructor({ sheetId = '', row = undefined, event = undefined, calId = undefined, eventId = undefined}: ReconciliationParams) {
     if (sheetId) {
       this._spreadsheetId = sheetId;
       this._row = row;
@@ -41,6 +41,14 @@ export class Reconciliation {
       this._bookingCalId = event.calendar.calendarId;
       this._bookingId = event.calendar.id;
       this._row = row;
+      return;
+    }
+    if (calId && eventId) {
+      this._bookingCalId = calId;
+      this._bookingId = eventId;
+      if (row !== undefined) {
+        this._row = row;
+      }
       return;
     }
     throw new exports.ValidationError('Reconciliation must be initialized with a booking or reconciliation row.');
@@ -107,6 +115,28 @@ export class Reconciliation {
       const booking = new Booking({ calendarId: this._bookingCalId, eventId: this._bookingId });
       this._booking = booking;
       return booking;
+    }
+    return undefined;
+  }
+
+  public get bookingId(): string | undefined {
+    if (this._bookingId) {
+      return this._bookingId;
+    }
+    if (this.booking) {
+      this._bookingId = this.booking.eventId;
+      return this._bookingId;
+    }
+    return undefined;
+  }
+
+  public get bookingCalId(): string | undefined {
+    if (this._bookingCalId) {
+      return this._bookingCalId;
+    }
+    if (this.booking) {
+      this._bookingCalId = this.booking.calendarId;
+      return this._bookingCalId;
     }
     return undefined;
   }
@@ -282,15 +312,17 @@ export class Reconciliation {
   //              Static Methods             //
   /////////////////////////////////////////////
 
-  public static findRow(booking: Booking | null = null): number[] {
+  public static findRow(booking: Booking | null = null, spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet | null = null): number[] {
     if (!booking) {
       throw new exports.ValidationError('Booking is not provided.');
     }
-    const spreadsheetFile = booking.project?.reconciliationSheet;
-    if (!spreadsheetFile) {
-      throw new exports.ValidationError('Reconciliation sheet is not available.');
+    if (!spreadsheet) {
+      const spreadsheetFile = booking.project?.reconciliationSheet;
+      if (!spreadsheetFile) {
+        throw new exports.ValidationError('Reconciliation sheet is not available.');
+      }
+      spreadsheet = SpreadsheetApp.open(spreadsheetFile as GoogleAppsScript.Drive.File);
     }
-    const spreadsheet = SpreadsheetApp.open(spreadsheetFile as GoogleAppsScript.Drive.File);
     let bookingsSheet = spreadsheet.getSheetByName('bookings');
     if (!bookingsSheet) {
       bookingsSheet = spreadsheet.insertSheet('bookings');

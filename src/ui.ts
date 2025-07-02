@@ -1,5 +1,6 @@
 import { Booking } from './classes/booking';
 import { Reconciliation } from './classes/reconciliation';
+import { User } from './classes/user';
 import { InitEvent } from './interfaces';
 import { properties, version} from './constants';
 import { Initiative } from './classes/initiatives';
@@ -14,6 +15,7 @@ interface UIExport {
   properties: typeof properties;
   Booking: typeof Booking;
   Reconciliation: typeof Reconciliation;
+  User: typeof User;
   version: typeof version;
 }
 declare const exports: UIExport;
@@ -23,15 +25,45 @@ declare const exports: UIExport;
 /////////////////////////////////////////////
 
 export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
-  return CardService.newCardBuilder()
-    .setName('Card name')
-    .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
-    .addSection(CardService.newCardSection()
-      .setHeader('No Event Selected.')
-      .addWidget(CardService.newTextParagraph()
-        .setText('Select an event to find its reconciliation sheet.')))
-    .setFixedFooter(mainFooter())
-    .build();
+  const unreconciledEvents = exports.User.getUnreconciledEvents(exports.Booking.getReconciliationPeriod());
+  if (unreconciledEvents.length > 1) {
+    const cardSection = CardService.newCardSection()
+      .setHeader('Unreconciled Events');
+
+    unreconciledEvents.forEach(event => {
+      const booking = new exports.Booking({ eventId: event.getId(), calendarId: User.calendar.getId() }) as Booking;
+      cardSection.addWidget(
+        CardService.newTextParagraph()
+          .setText(`<b><i>${booking.date.toLocaleDateString('en-US')}</i></b><br><b>${event.getTitle()}</b>`)
+      );
+      cardSection.addWidget(
+        CardService.newTextButton()
+          .setText('Open in New Tab')
+          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+          .setOpenLink(CardService.newOpenLink()
+            .setUrl(booking.calendarEventLink)
+            .setOpenAs(CardService.OpenAs.FULL_SIZE)
+            .setOnClose(CardService.OnClose.NOTHING))
+      );
+      cardSection.addWidget(CardService.newDivider());
+    });
+    return CardService.newCardBuilder()
+      .setName('Card name')
+      .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
+      .addSection(cardSection)
+      .setFixedFooter(mainFooter())
+      .build();
+  } else {
+    return CardService.newCardBuilder()
+      .setName('Card name')
+      .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
+      .addSection(CardService.newCardSection()
+        .setHeader('All Events Reconciled')
+        .addWidget(CardService.newTextParagraph()
+          .setText('Select an event to find its associated files and reconciliation.')))
+      .setFixedFooter(mainFooter())
+      .build();
+  }
 }
 
 export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card {
