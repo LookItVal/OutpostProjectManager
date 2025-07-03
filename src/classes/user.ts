@@ -103,23 +103,23 @@ export class User {
   
   static getUnreconciledEvents(start: Date): GoogleAppsScript.Calendar.CalendarEvent[] {
     let events = User.calendar.getEvents(start, new Date());
-    const projectNames: string[] = [];
+    const activeProjectNames: string[] = [];
     const files = exports.Project.reconciliationFolder.getFiles();
     while (files.hasNext()) {
       const file = files.next();
       if (exports.regexJobName.test(file.getName())) {
-        projectNames.push(file.getName().match(exports.regexJobName)![0]);
+        activeProjectNames.push(file.getName().match(exports.regexJobName)![0]);
       }
     }
     events = events.filter(event => {
       const title = event.getTitle().trim();
-      return projectNames.includes(title);
+      return activeProjectNames.includes(title);
     });
     const projects: Project[] = [];
     for (const event of events) {
-
+      console.log(`Processing event: ${event.getTitle()} from date ${event.getStartTime()}`);
       const title = event.getTitle().trim();
-      if (projectNames.indexOf(title) === -1) {
+      if (activeProjectNames.indexOf(title) === -1) {
         continue;
       }
       if (!projects.some(p => p.title === title)) {
@@ -129,6 +129,7 @@ export class User {
     for (const project of projects) {
       const reconciliations = User.getReconciliations(project);
       for (const reconciliation of reconciliations) {
+        console.log(`Checking reconciliation for row ${reconciliation.row} in project ${project.title}`);
         const eventIds = events.map(event => event.getId());
         const bookingId = reconciliation.bookingId?.split('@')[0] + '@google.com';
         const index = eventIds.indexOf(bookingId);
@@ -136,12 +137,13 @@ export class User {
           console.log(`Reconciliation for event ${bookingId} not found in the list of events.`);
           console.log(bookingId, eventIds);
           continue;
-        }
-        if (index !== -1) {
+        } else {
           events.splice(index, 1);
+          console.log('Reconciliation found and removed from the list of events. \n the new list of events is:\n', events.map(event => event.getTitle() + ' at ' + event.getStartTime()));
         }
       }
     }
+    console.log(`Unreconciled events: ${events.length}`, events.map(event => event.getTitle() + ' at ' + event.getStartTime()));
     return events;  
   }
 }

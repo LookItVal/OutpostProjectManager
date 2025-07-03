@@ -16,6 +16,11 @@ export const changelog = {
     3: [
       'Project Reconciliation',
       {
+        2: [
+          ['Calendar sidebar now searches for unreconciled bookings when no project is selected', 'New Feature'],
+          ['The Reconciliation data is not lost when updating reconciliations to new days', 'Bug Fix'],
+          ['The Reconciliation Details sections of the calendar sidebar now shows 🟡 when the time does not match', 'Bug Fix']
+        ],
         1: [
           ['Ensure calendar bookings can find the reconciliation sheet with leading and trailing whitespace', 'Bug Fix']
         ],
