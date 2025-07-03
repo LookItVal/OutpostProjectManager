@@ -10,7 +10,7 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.3.1';
+export const version = '1.3.2';
 export const changelog = {
   1: {
     3: [
@@ -18,6 +18,7 @@ export const changelog = {
       {
         2: [
           ['Calendar sidebar now searches for unreconciled bookings when no project is selected', 'New Feature'],
+          ['Calendar sidebar now returns events to their original position when the changed are cancled', 'New Feature'],
           ['The Reconciliation data is not lost when updating reconciliations to new days', 'Bug Fix'],
           ['The Reconciliation Details sections of the calendar sidebar now shows 🟡 when the time does not match', 'Bug Fix']
         ],

@@ -1,5 +1,3 @@
-import { Theme } from './theme';
-
 export function onInstall(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   onOpen(e);
 }
@@ -7,7 +5,7 @@ export function onInstall(e: GoogleAppsScript.Events.SheetsOnOpen): void {
 // This function runs no matter what app is open.
 // For script specific needs, use bound scripts not this.
 export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  Theme.setTheme(e);
+  //Theme.setTheme(e);
   console.log(e);
 }
 
