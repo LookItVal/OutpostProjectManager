@@ -25,6 +25,21 @@ declare const exports: UIExport;
 /////////////////////////////////////////////
 
 export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
+  const card = CardService.newCardBuilder()
+    .setName('Outpost Project Manager')
+    .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
+    .addSection(CardService.newCardSection()
+      .setHeader('No Event Selected')
+      .addWidget(CardService.newTextButton()
+        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+        .setText('Check all Reconciliations')
+        .setOnClickAction(CardService.newAction()
+          .setFunctionName('checkForUnreconciledEvents'))));
+  card.setFixedFooter(mainFooter());
+  return card.build();
+}
+
+export function checkForUnreconciledEvents(): GoogleAppsScript.Card_Service.Card {
   const unreconciledEvents = exports.User.getUnreconciledEvents(exports.Booking.getReconciliationPeriod());
   if (unreconciledEvents.length >= 1) {
     const cardSection = CardService.newCardSection()
@@ -262,7 +277,7 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
             .setBackgroundColor('#d93025') 
             .setOnClickAction(
               CardService.newAction()
-                .setFunctionName('selectEventUI')
+                .setFunctionName('resetEventToReconciliation')
             );
 
           
@@ -392,7 +407,7 @@ export function fillReconciliationRow(e: InitEvent & { parameters: { row?: strin
                     .setBackgroundColor('#d93025')
                     .setOnClickAction(
                       CardService.newAction()
-                        .setFunctionName('selectEventUI')
+                        .setFunctionName('resetEventToReconciliation')
                     ))).build()))
             .build();
         }
@@ -424,6 +439,13 @@ export function fillReconciliationRow(e: InitEvent & { parameters: { row?: strin
       .build();
   }
 }
+
+export function resetEventToReconciliation(e: InitEvent): GoogleAppsScript.Card_Service.ActionResponse {
+  const booking = new exports.Booking({ event: e }) as Booking;
+  booking.resetBookingToReconciliation();
+  return selectEventUI(e);
+}
+   
 
 /////////////////////////////////////////////
 //                 Sheets                  //

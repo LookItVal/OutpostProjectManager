@@ -143,6 +143,11 @@ export class Booking {
     }
     return '';
   }
+  
+  public resetBookingToReconciliation(): void {
+    this.date = this.reconciliation?.date ?? new Date();
+    this.duration = this.reconciliation?.hours ?? 1;
+  }
 
   ////////////////////////////////////////////////////////////////////////////////
   //        Static Methods
