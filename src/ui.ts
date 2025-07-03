@@ -26,24 +26,14 @@ declare const exports: UIExport;
 
 export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
   const unreconciledEvents = exports.User.getUnreconciledEvents(exports.Booking.getReconciliationPeriod());
-  if (unreconciledEvents.length > 1) {
+  if (unreconciledEvents.length >= 1) {
     const cardSection = CardService.newCardSection()
-      .setHeader('Unreconciled Events');
+      .setHeader('UNRECONCILED EVENTS');
 
     unreconciledEvents.forEach(event => {
-      const booking = new exports.Booking({ eventId: event.getId(), calendarId: User.calendar.getId() }) as Booking;
       cardSection.addWidget(
         CardService.newTextParagraph()
-          .setText(`<b><i>${booking.date.toLocaleDateString('en-US')}</i></b><br><b>${event.getTitle()}</b>`)
-      );
-      cardSection.addWidget(
-        CardService.newTextButton()
-          .setText('Open in New Tab')
-          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-          .setOpenLink(CardService.newOpenLink()
-            .setUrl(booking.calendarEventLink)
-            .setOpenAs(CardService.OpenAs.FULL_SIZE)
-            .setOnClose(CardService.OnClose.NOTHING))
+          .setText(`<b>${event.getStartTime().toLocaleDateString()}</b><br><p>${event.getTitle()}</p>`)
       );
       cardSection.addWidget(CardService.newDivider());
     });
@@ -189,7 +179,8 @@ export function selectEventUI(e: InitEvent): GoogleAppsScript.Card_Service.Card 
             reconciliationSection = CardService.newCardSection()
               .setHeader('Reconciliation Details 🔴');
           } else if (reconciliation.date.getMonth() !== booking.date.getMonth() ||
-                    reconciliation.date.getDate() !== booking.date.getDate()) {
+                     reconciliation.date.getDate() !== booking.date.getDate() ||
+                     reconciliation.hours !== booking.duration) {
             reconciliationSection = CardService.newCardSection()
               .setHeader('Reconciliation Details 🟡');
           } else if (reconciliation.date.getMonth() === booking.date.getMonth() &&
@@ -330,8 +321,11 @@ export function setReconciliationRow(e: InitEvent & { parameters: { row: string 
   }
 }
 
-export function fillReconciliationRow(e: InitEvent & { parameters: { row?: string, overwriteDate?: 'true' | 'false' }, formInputs: { [key: string]: string } }): GoogleAppsScript.Card_Service.ActionResponse {
+export function fillReconciliationRow(e: InitEvent & { parameters: { row?: string, overwriteDate?: 'true' | 'false', formInputs?: string }, formInputs: { [key: string]: string } }): GoogleAppsScript.Card_Service.ActionResponse {
   try {
+    console.log(e.parameters.formInputs);
+    const formInputs = e.parameters.formInputs ? JSON.parse(e.parameters.formInputs) : e.formInputs;
+    console.log(formInputs);
     let row: number;
     const booking = new exports.Booking({ event: e }) as Booking;
     const sheet = SpreadsheetApp.openById(booking.sheetId).getSheets()[0];
@@ -377,11 +371,11 @@ export function fillReconciliationRow(e: InitEvent & { parameters: { row?: strin
                               <b>Date:</b> ${booking.date.toLocaleDateString('en-GB')}
                               <b>Hours:</b> ${booking.duration}
                               <b>Technician:</b> ${booking.technician}
-                              <b>Work Performed:</b> ${e.formInputs.workPerformed ? e.formInputs.workPerformed[0] : ''}
-                              <b>Description:</b> ${e.formInputs.description ? e.formInputs.description[0] : ''}
-                              <b>Billing Additions:</b> ${e.formInputs.billingAdditions ? e.formInputs.billingAdditions[0] : ''}
-                              <b>Spot Numbers:</b> ${e.formInputs.spotNumbers ? e.formInputs.spotNumbers[0] : ''}
-                              <b>Status:</b> ${e.formInputs.status ? e.formInputs.status[0] : ''}`)))
+                              <b>Work Performed:</b> ${formInputs.workPerformed ? formInputs.workPerformed[0] : ''}
+                              <b>Description:</b> ${formInputs.description ? formInputs.description[0] : ''}
+                              <b>Billing Additions:</b> ${formInputs.billingAdditions ? formInputs.billingAdditions[0] : ''}
+                              <b>Spot Numbers:</b> ${formInputs.spotNumbers ? formInputs.spotNumbers[0] : ''}
+                              <b>Status:</b> ${formInputs.status ? formInputs.status[0] : ''}`)))
                 .addSection(CardService.newCardSection()
                   .addWidget(CardService.newTextButton()
                     .setText('Yes, overwrite date')
@@ -390,7 +384,7 @@ export function fillReconciliationRow(e: InitEvent & { parameters: { row?: strin
                     .setOnClickAction(
                       CardService.newAction()
                         .setFunctionName('fillReconciliationRow')
-                        .setParameters({ row: JSON.stringify(row), overwriteDate: 'true' })
+                        .setParameters({ row: JSON.stringify(row), overwriteDate: 'true', formInputs: JSON.stringify(e.formInputs) })
                     ))
                   .addWidget(CardService.newTextButton()
                     .setText('No, keep existing date')
@@ -408,11 +402,11 @@ export function fillReconciliationRow(e: InitEvent & { parameters: { row?: strin
     }
     reconciliation.hours = booking.duration;
     reconciliation.technician = booking.technician;
-    reconciliation.workPerformed = (e.formInputs.workPerformed ?? [''])[0];
-    reconciliation.description = (e.formInputs.description ?? [''])[0];
-    reconciliation.billingAdditions = (e.formInputs.billingAdditions ?? [''])[0];
-    reconciliation.spotNumbers = (e.formInputs.spotNumbers ?? [''])[0];
-    reconciliation.status = (e.formInputs.status ?? [''])[0];
+    reconciliation.workPerformed = (formInputs.workPerformed ?? [''])[0];
+    reconciliation.description = (formInputs.description ?? [''])[0];
+    reconciliation.billingAdditions = (formInputs.billingAdditions ?? [''])[0];
+    reconciliation.spotNumbers = (formInputs.spotNumbers ?? [''])[0];
+    reconciliation.status = (formInputs.status ?? [''])[0];
 
     const updatedCard = selectEventUI(e);
     return CardService.newActionResponseBuilder()

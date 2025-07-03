@@ -80,9 +80,7 @@ export class Booking {
   public get calendarEventLink(): string {
     if (this._calendarEventLink) return this._calendarEventLink;
     if (this.calendarEvent) {
-      let id = `${this.calendarEvent.getId().split('@')[0]} ${this.calendarId}`;
-      id = Utilities.base64Encode(id);
-      this._calendarEventLink = `https://calendar.google.com/calendar/u/0/r/eventedit/${id}`;
+      this._calendarEventLink = `https://calendar.google.com/calendar/u/0/r/week/${this.calendarEvent.getStartTime().getFullYear()}/${this.calendarEvent.getStartTime().getMonth() + 1}/${this.calendarEvent.getStartTime().getDate()}`;
       return this._calendarEventLink;
     }
     return '';
@@ -102,6 +100,17 @@ export class Booking {
     throw new ReferenceError('Booking date is not set.');
   }
 
+  public set date(date: Date) {
+    if (date instanceof Date) {
+      this._date = date;
+      if (this.calendarEvent) {
+        this.calendarEvent.setTime(date, new Date(date.getTime() + this.duration * 60 * 60 * 1000));
+      }
+    } else {
+      throw new TypeError('Date must be a Date object.');
+    }
+  }
+
   public get duration(): number {
     if (this._duration) return this._duration;
     if (this.calendarEvent) {
@@ -109,6 +118,17 @@ export class Booking {
       return this._duration;
     }
     throw new ReferenceError('Booking duration is not set.');
+  }
+
+  public set duration(hours: number) {
+    if (typeof hours === 'number') {
+      this._duration = hours;
+      if (this.calendarEvent) {
+        this.calendarEvent.setTime(this.date, new Date(this.date.getTime() + hours * 60 * 60 * 1000));
+      }
+    } else {
+      throw new TypeError('Duration must be a number.');
+    }
   }
 
   public get technician(): string {
