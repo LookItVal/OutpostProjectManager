@@ -20,6 +20,7 @@
     $('#open-costing-button').click(openCostingSheet);
     $('#open-proposal-button').click(openProposal);
     $('#open-reconciliation-button').click(openReconciliationSheet);
+    $('#check-reconciliation-button').click(checkReconciliationSheet);
     $('#close-project-button').click(requestCloseProject);
     $('#accept-proposal-button').click(requestProposalAccept);
     $('#create-job-button').click(requestJobGeneration);
@@ -181,7 +182,7 @@
     $('.info-message').fadeOut();
     $('#open-folder-button').fadeOut();
     $('#open-reconciliation-button').fadeOut();
-    $('#close-project-button').fadeOut();
+    $('.close-project-section').fadeOut();
     $('.proposal-section').fadeOut();
     $('#open-costing-button').fadeOut(function() {
       $(this).hide();
@@ -200,7 +201,7 @@
     if (globalInitiative.reconciliationSheetId) {
       $('#open-reconciliation-button').fadeIn();
       if (isAdmin === "true" && globalInitiative.closed === "FALSE") {
-        $('#close-project-button').fadeIn();
+        $('.close-project-section').fadeIn();
       }
     }
     fadeInProposalInfo();
@@ -515,6 +516,17 @@
         refreshSidebar();
       })
       .generateCosting([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+  }
+
+  function checkReconciliationSheet() {
+    startLoading(loadingText = 'Checking Reconciliation Sheet');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function(result) {
+        stopLoading();
+        refreshSidebar();
+      })
+      .checkReconciliationSheet([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
   }
 
   function requestCloseProject() {

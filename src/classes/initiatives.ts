@@ -705,6 +705,9 @@ export class Project extends Initiative {
     const allCalendars = CalendarApp.getAllCalendars();
     const startDate = this.creationDate ? new Date(this.creationDate.getTime()) : new Date(2020, 1, 1);
     for (const calendar of allCalendars) {
+      if (calendar.getName() === '*Interns - Outpost') {
+        continue; // Skip the Interns calendar
+      }
       const calendarNameFormat = calendar.getName().match(/^\*(.+) - Outpost$/i);
       if (calendarNameFormat) {
         const endDate = new Date();
