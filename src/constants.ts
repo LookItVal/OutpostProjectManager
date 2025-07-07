@@ -10,12 +10,16 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.3.2';
+export const version = '1.3.3';
 export const changelog = {
   1: {
     3: [
       'Project Reconciliation',
       {
+        3: [
+          ['Added Button only visable to administrators to check the status of unreconciled bookings.', 'New Feature'],
+          ['Close Project button now checks for unreconciled bookings before closing.', 'New Feature']
+        ],
         2: [
           ['Calendar sidebar now searches for unreconciled bookings when no project is selected', 'New Feature'],
           ['Calendar sidebar now returns events to their original position when the changed are cancled', 'New Feature'],

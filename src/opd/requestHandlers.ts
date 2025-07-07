@@ -1,4 +1,5 @@
 import { Project, Proposal } from '../classes/initiatives';
+import { Booking } from '../classes/booking';
 import { User } from '../classes/user';
 import { SerializedData, ProposalNameArray, ProjectNameArray } from '../interfaces';
 import { ValidationError } from '../classes/errors';
@@ -156,31 +157,87 @@ export function generateJob(nameArray: ProposalNameArray): void {
   Project.getProject({nameArray}).generateProject();
 }
 
+function showUnreconciledBookingsModal(bookings: Booking[]): GoogleAppsScript.HTML.HtmlOutput {
+  const output = HtmlService.createTemplateFromFile('src/changelog/html/changelog').evaluate();
+  for (const booking of bookings) {
+    output.append(`<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;" id="booking-${booking.calendarId?.split('@')[0]}-${booking.eventId?.split('@')[0]}">`);
+    output.append(`<p><b>${booking.technician}</b> - ${booking.date.toLocaleDateString()} - ${booking.duration} hours</p>`);
+    output.append('<div style="display: flex; gap: 10px;">');
+    output.append(`<button class="open-booking-button action" onclick="window.open('${booking.calendarEventLink}', '_blank')">Open</button>`);
+    output.append(`<button class="delete-booking-button create" booking-id="${booking.eventId?.split('@')[0]}" calendar-id="${booking.calendarId?.split('@')[0]}" onclick="deleteBooking(this)">Delete</button>`);
+    output.append('</div>');
+    output.append('</div>');
+  }
+  output.append('<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>');
+  output.append('<script>\n');
+  output.append(`let counter = ${bookings.length};\n`);
+  output.append('function deleteBooking(button) {\n');
+  output.append('  counter--;\n');
+  output.append('  const bookingId = button.getAttribute("booking-id");\n');
+  output.append('  const calendarId = button.getAttribute("calendar-id");\n');
+  output.append('  $("#booking-" + calendarId + "-" + bookingId).fadeOut();\n');
+  output.append('  setTimeout(() => {\n');
+  output.append('    $("#booking-" + calendarId + "-" + bookingId).remove();\n');
+  output.append('    if (counter === 0) {\n');
+  output.append('      google.script.host.close();\n');
+  output.append('    }\n');
+  output.append('  }, 500);\n');
+  output.append('  google.script.run.withFailureHandler(() => {}).withSuccessHandler(() => {}).deleteBooking({calendarId, bookingId});\n');
+  output.append('}\n');
+  output.append('</script>');
+  output.append('</body>');
+  output.append('</html>');
+  return output;
+}
+
+export function deleteBooking({calendarId, bookingId}: {calendarId: string, bookingId: string}): void {
+  calendarId = calendarId + '@group.calendar.google.com';
+  bookingId = bookingId + '@google.com';
+  CalendarApp.getCalendarById(calendarId)?.getEventById(bookingId)?.deleteEvent();
+}
+  
+export function checkReconciliationSheet(nameArray: ProjectNameArray): void {
+  const project = Project.getProject({nameArray});
+  if (project.type !== 'PROJECT') {
+    throw new ValidationError('Project type is not set to project.');
+  }
+  if (!project.reconciliationSheetId) {
+    throw new ValidationError('Can not find reconciliation sheet');
+  }
+  const bookings = project.getUnreconciledBookings();
+  if (bookings.length === 0) {
+    const ui = SpreadsheetApp.getUi();
+    ui.alert('No unreconciled bookings found', 'Found no unreconciled bookings for this project.\n*Currently does not check for Intern or Freelance Reconciliations. Coming Soon.', ui.ButtonSet.OK);
+    return;
+  } else {
+    const ui = SpreadsheetApp.getUi();
+    const modalAlert = showUnreconciledBookingsModal(bookings);
+    ui.showModalDialog(modalAlert, 'Unreconciled Bookings');
+  }
+}
+
 export function requestCloseProject(): boolean {
   const project = Project.getProject();
+  const bookings = project.getUnreconciledBookings();
   const ui = SpreadsheetApp.getUi();
-  const response = ui.alert(
-    'Close Project?',
-    `Are you sure you want to close the project ${project.title}? This will archive the project and remove it from the active projects list.`,
-    ui.ButtonSet.YES_NO);
-  if (response === ui.Button.YES) {
-    return true;
+  if (bookings.length === 0) {
+    const response = ui.alert(
+      'Close Project?',
+      `Are you sure you want to close the project ${project.title}? This will archive the project and remove it from the active projects list.`,
+      ui.ButtonSet.YES_NO);
+    if (response === ui.Button.YES) {
+      return true;
+    }
+    return false;
+  } else {
+    const modalAlert = showUnreconciledBookingsModal(bookings);
+    ui.showModalDialog(modalAlert, 'Can Not Close: Unreconciled Bookings');
+    return false;
   }
-  return false;
 }
 
 export function closeProject(nameArray: ProjectNameArray): void {
-  const project = Project.getProject({nameArray});
-  project.closeProject();
-  return;
-  const bookings = project.getUnreconciledBookings();
-  if (bookings.length === 0) {
-    project.closeProject();
-  } else {  // For the modal dialoge to do
-    const ui = SpreadsheetApp.getUi();
-    const modalAlert = HtmlService.createTemplateFromFile('src/opd/html/unreconciledBookings').evaluate();
-    ui.showModalDialog(modalAlert, 'Unreconciled Bookings');
-  }
+  Project.getProject({nameArray}).closeProject();  
 }
 
 export function openSheetChangelog(): void {
