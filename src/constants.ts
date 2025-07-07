@@ -18,7 +18,8 @@ export const changelog = {
       {
         3: [
           ['Added Button only visable to administrators to check the status of unreconciled bookings.', 'New Feature'],
-          ['Close Project button now checks for unreconciled bookings before closing.', 'New Feature']
+          ['Close Project button now checks for unreconciled bookings before closing.', 'New Feature'],
+          ['Can now delete unreconciled bookings from the OPD if admin.', 'New Feature'],
         ],
         2: [
           ['Calendar sidebar now searches for unreconciled bookings when no project is selected', 'New Feature'],

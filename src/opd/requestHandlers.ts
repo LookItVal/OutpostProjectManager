@@ -158,13 +158,24 @@ export function generateJob(nameArray: ProposalNameArray): void {
 }
 
 function showUnreconciledBookingsModal(bookings: Booking[]): GoogleAppsScript.HTML.HtmlOutput {
-  const output = HtmlService.createTemplateFromFile('src/changelog/html/changelog').evaluate();
+  const output = HtmlService.createTemplateFromFile('src/opd/html/unreconciledBookings').evaluate();
   for (const booking of bookings) {
-    output.append(`<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;" id="booking-${booking.calendarId?.split('@')[0]}-${booking.eventId?.split('@')[0]}">`);
+    output.append(`<div class="row-container" id="booking-${booking.calendarId?.split('@')[0]}-${booking.eventId?.split('@')[0]}">`);
+    output.append('<div class="row">');
+    output.append('<div class="main">');
     output.append(`<p><b>${booking.technician}</b> - ${booking.date.toLocaleDateString()} - ${booking.duration} hours</p>`);
-    output.append('<div style="display: flex; gap: 10px;">');
+    output.append('<div style="display: flex; align-items: center; gap: 10px;">');
     output.append(`<button class="open-booking-button action" onclick="window.open('${booking.calendarEventLink}', '_blank')">Open</button>`);
-    output.append(`<button class="delete-booking-button create" booking-id="${booking.eventId?.split('@')[0]}" calendar-id="${booking.calendarId?.split('@')[0]}" onclick="deleteBooking(this)">Delete</button>`);
+    output.append(`<button class="delete-booking-button create" booking-id="${booking.eventId?.split('@')[0]}" calendar-id="${booking.calendarId?.split('@')[0]}" onclick="confirmDeleteBooking(this)">Delete</button>`);
+    output.append('</div>');
+    output.append('</div>');
+    output.append('<div class="confirm-delete">');
+    output.append('<p><b>Are you sure you want to delete this booking?</b></p>');
+    output.append('<div style="display: flex; align-items: center; gap: 10px;">');
+    output.append(`<button class="confirm-delete-button create" booking-id="${booking.eventId?.split('@')[0]}" calendar-id="${booking.calendarId?.split('@')[0]}" onclick="deleteBooking(this)">Yes</button>`);
+    output.append(`<button class="cancel-delete-button action" booking-id="${booking.eventId?.split('@')[0]}" calendar-id="${booking.calendarId?.split('@')[0]}" onclick="cancelDeleteBooking(this)">No</button>`);
+    output.append('</div>');
+    output.append('</div>');
     output.append('</div>');
     output.append('</div>');
   }
@@ -183,6 +194,18 @@ function showUnreconciledBookingsModal(bookings: Booking[]): GoogleAppsScript.HT
   output.append('    }\n');
   output.append('  }, 500);\n');
   output.append('  google.script.run.withFailureHandler(() => {}).withSuccessHandler(() => {}).deleteBooking({calendarId, bookingId});\n');
+  output.append('}\n');
+
+  output.append('function confirmDeleteBooking(button) {\n');
+  output.append('  const bookingId = button.getAttribute("booking-id");\n');
+  output.append('  const calendarId = button.getAttribute("calendar-id");\n');
+  output.append('  $("#booking-" + calendarId + "-" + bookingId + " .row").addClass("checking-confirm");\n');
+  output.append('}\n');
+
+  output.append('function cancelDeleteBooking(button) {\n');
+  output.append('  const bookingId = button.getAttribute("booking-id");\n');
+  output.append('  const calendarId = button.getAttribute("calendar-id");\n');
+  output.append('  $("#booking-" + calendarId + "-" + bookingId + " .row").removeClass("checking-confirm");\n');
   output.append('}\n');
   output.append('</script>');
   output.append('</body>');
