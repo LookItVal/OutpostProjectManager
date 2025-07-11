@@ -26,6 +26,7 @@
     $('#create-job-button').click(requestJobGeneration);
     $('#versionChangelog').click(openChangelog);
     $('#create-costing-button').click(requestCostingGeneration);
+    $('#cancel-rename-button').click(cancelRename);
 
     $('#open-folder-button').hover(
       function() {
@@ -106,6 +107,7 @@
         heartbeatValue = true;
         let update = false;
         for (const [key, value] of Object.entries(initiative)) {
+          if (key === 'newProject') continue; // Skip newProject as it is handled separately
           if (globalInitiative[key]) {
             if (globalInitiative[key] !== value) {
               update = true;
@@ -195,6 +197,7 @@
     $('#create-proposal-button').fadeOut();
     $('#create-quote-button').fadeOut();
     $('#create-costing-button').fadeOut();
+    $('.rename-project-section').fadeOut();
   }
 
   function fadeInAnyInfo() {
@@ -271,6 +274,16 @@
     }
   }
 
+  function fadeInProjectChangeInfo() {
+    const originalProject = globalInitiative;
+    const newProject = globalInitiative.newProject;
+    if (originalProject.projectName !== newProject.projectName) {
+      $('.info-message').text(`Would you like to rename the project from: "${originalProject.projectName}" to: "${newProject.projectName}"?`);
+    } else {
+      $('.info-message').text(`Would you like to change the project name to: "${newProject.projectName}"?`);
+    }
+  }
+
   // Get the current project info from the server and display the appropriate dynamic content.
   function refreshSidebar() {
     startLoading();
@@ -288,8 +301,16 @@
   // update the ui with whatever is liaded as the state
   function refreshUI() {
     resetFocus();
-    initiative = globalInitiative;
+    const initiative = globalInitiative;
     $('#project-title').text(initiative.title);
+    if (initiative.newProject) {
+      fadeInProjectChangeInfo();
+      $('#project-title').text("Project Rename Detected");
+      $('.info-message').text(`Would you like to rename the project from: "${initiative.projectName}" to: "${initiative.newProject.projectName}"?`);
+      $('.info-message').fadeIn();
+      $('.rename-project-section').fadeIn();
+      return;
+    }
     if (!initiative.type) {
       $('.info-message').text("Select a project and hit load project to refresh.");
       $('.info-message').fadeIn();
@@ -357,8 +378,7 @@
       .withFailureHandler(errorHandler)
       .withSuccessHandler(function() {
         refreshSidebar();
-      })
-      .jumpToProject();
+      }).jumpToProject();
   }
   
   // Calls The server to change the active sheet to the proposal sheet.
@@ -368,8 +388,7 @@
       .withFailureHandler(errorHandler)
       .withSuccessHandler(function() {
         refreshSidebar();
-      })
-      .jumpToProposal();
+      }).jumpToProposal();
   }
 
   // Calls the server to generate a new proposal.
@@ -384,8 +403,7 @@
           return;
         }
         refreshUI();
-      })
-      .requestProposalGeneration();
+      }).requestProposalGeneration();
   }
 
   function generateProposal() {
@@ -400,8 +418,7 @@
           stopLoading(); 
           refreshSidebar();
         }, 1000);
-      })
-      .generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
+      }).generateProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 
   function requestQuoteGeneration() {
@@ -415,8 +432,7 @@
           return;
         }
         refreshUI();
-      })
-      .requestQuoteGeneration();
+      }).requestQuoteGeneration();
   }
 
   function generateQuote() {
@@ -431,8 +447,7 @@
           stopLoading(); 
           refreshSidebar();
         }, 1000);
-      })
-      .generateQuote(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
+      }).generateQuote(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 
   function requestProposalAccept() {
@@ -446,8 +461,7 @@
           return;
         }
         refreshUI();
-      })
-      .requestProposalAccept();
+      }).requestProposalAccept();
   }
 
   function acceptProposal() {
@@ -462,8 +476,7 @@
           stopLoading(); 
           refreshSidebar();
         }, 1000);
-      })
-      .acceptProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
+      }).acceptProposal(["PROPOSAL:", globalInitiative.yrmo, globalInitiative.clientName, globalInitiative.projectName]);
   }
 
   function requestJobGeneration() {
@@ -477,8 +490,7 @@
           return;
         }
         refreshUI();
-      })
-      .requestJobGeneration();
+      }).requestJobGeneration();
   }
 
   function generateJob() {
@@ -488,8 +500,7 @@
       .withSuccessHandler(function() {
         stopLoading();
         refreshSidebar();
-      })
-      .generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, globalInitiative.closed]);
+      }).generateJob([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, globalInitiative.closed]);
   }
 
   function requestCostingGeneration() {
@@ -503,8 +514,7 @@
           return;
         }
         refreshUI();
-      })
-      .requestCostingGeneration();
+      }).requestCostingGeneration();
   }
 
   function generateCosting() {
@@ -514,8 +524,7 @@
       .withSuccessHandler(function() {
         stopLoading();
         refreshSidebar();
-      })
-      .generateCosting([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+      }).generateCosting([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
   }
 
   function checkReconciliationSheet() {
@@ -525,8 +534,7 @@
       .withSuccessHandler(function(result) {
         stopLoading();
         refreshSidebar();
-      })
-      .checkReconciliationSheet([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+      }).checkReconciliationSheet([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
   }
 
   function requestCloseProject() {
@@ -540,8 +548,7 @@
           return;
         }
         refreshUI();
-      })
-      .requestCloseProject();
+      }).requestCloseProject();
   }
 
   function closeProject() {
@@ -556,8 +563,17 @@
           stopLoading(); 
           refreshSidebar();
         }, 1000);
-      })
-      .closeProject([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+      }).closeProject([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+  }
+
+  function cancelRename() {
+    startLoading(loadingText = 'Cancelling Project Rename');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function() {
+        stopLoading();
+        refreshSidebar();
+      }).cancelRename(`${globalInitiative.title.substring(0, 9)} ${globalInitiative.clientName}`);
   }
 
   function openChangelog() {
@@ -567,7 +583,6 @@
       .withSuccessHandler(function () {
         stopLoading();
         refreshSidebar();
-      })
-    .openSheetChangelog();
+      }).openSheetChangelog();
   }
 </script>
