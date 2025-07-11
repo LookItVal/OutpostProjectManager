@@ -41,6 +41,7 @@ export interface InitiativeParams {
   nameArray?: ProjectNameArray | ProposalNameArray;
   folder?: GoogleAppsScript.Drive.Folder;
   serializedData?: SerializedData;
+  jobYrMo?: string;
 }
 
 export interface ProjectNameArray extends Array<string> {

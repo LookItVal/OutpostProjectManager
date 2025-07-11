@@ -264,7 +264,7 @@ export abstract class Initiative {
     //              Static Methods             //
     /////////////////////////////////////////////
 
-    public static getInitiative({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams = {}): Project | Proposal {
+    public static getInitiative({ name = '', nameArray = undefined, folder = undefined}: InitiativeParams = {}): Project | Proposal {
       if (!name && !nameArray && !folder) {
         if (exports.spreadsheet?.getId() === exports.properties.getProperty('projectDataSpreadsheetId')) {
           const sheet = exports.spreadsheet.getActiveSheet() as GoogleAppsScript.Spreadsheet.Sheet;
@@ -728,10 +728,22 @@ export class Project extends Initiative {
   //              Static Methods             //
   /////////////////////////////////////////////
 
-  public static getProject({ name = '', nameArray = undefined, folder = undefined }: InitiativeParams = {}): Project {
+  public static getProject({ name = '', nameArray = undefined, folder = undefined, jobYrMo = ''}: InitiativeParams = {}): Project {
+    if (jobYrMo) {
+      const folder = exports.Client.clientFolder;
+      const folders = folder.getFolders();
+      while (folders.hasNext()) {
+        const folder = folders.next();
+        const projectFolderSearch = folder.searchFolders(`title contains '${jobYrMo}'`);
+        if (projectFolderSearch.hasNext()) {
+          return Initiative.getInitiative({ folder: projectFolderSearch.next() }) as Project;
+        }
+      }
+      throw new exports.ValidationError(`Project Not Found: No folder found with yrmo ${jobYrMo}`);
+    }      
     const project = Initiative.getInitiative({ name, nameArray, folder });
-    if (project.type == 'PROJECT') return project as Project;
-    throw new exports.ValidationError('Initiative is not a Project');
+    if (project.type !== 'PROJECT') throw new exports.ValidationError('Initiative is not a Project');
+    return project as Project;
   }
 
   /////////////////////////////////////////////
