@@ -10,9 +10,20 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.3.3';
+export const version = '1.4.0';
 export const changelog = {
   1: {
+    4: [
+      'File Structure Update',
+      {
+        0: [
+          ['Developed system for renaming projects', 'New Feature'],
+          ['Developed system for merging projects', 'New Feature'],
+          ['Developed system for renaming clients', 'New Feature'],
+          ['Developed system for merging clients', 'New Feature']
+        ]
+      }
+    ],
     3: [
       'Project Reconciliation',
       {

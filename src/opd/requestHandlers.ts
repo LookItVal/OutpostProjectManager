@@ -41,8 +41,18 @@ export function jumpToProject(): void {
 
 export function getInitiative(): SerializedData {
   try {
-    const lucky_charms = Project.getInitiative().serialize();
-    return lucky_charms;
+    const project = exports.Project.getProject();
+    if (!project.folder) {
+      try {
+        const originalProject = exports.Project.getProject({jobYrMo: `${project.yrmo} ${project.jobNumber}`});
+        return originalProject.serialize();
+      } catch (e: unknown) {
+        if (e instanceof ValidationError) {
+          return project.serialize();
+        }
+      }
+    }
+    return project.serialize();
   } catch (e: unknown) {
     if (e instanceof ValidationError) {
       console.error(e.message);
