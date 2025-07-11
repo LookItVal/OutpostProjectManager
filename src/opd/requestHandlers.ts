@@ -44,8 +44,10 @@ export function getInitiative(): SerializedData {
     const project = exports.Project.getProject();
     if (!project.folder) {
       try {
-        const originalProject = exports.Project.getProject({jobYrMo: `${project.yrmo} ${project.jobNumber}`});
-        return originalProject.serialize();
+        const originalProject = exports.Project.getProject({jobYrMo: `${project.yrmo} ${project.jobNumber} ${project.clientName}`});
+        const lucky_charms = originalProject.serialize();
+        lucky_charms.newProject = project.serialize();
+        return lucky_charms;
       } catch (e: unknown) {
         if (e instanceof ValidationError) {
           return project.serialize();
@@ -271,6 +273,11 @@ export function requestCloseProject(): boolean {
 
 export function closeProject(nameArray: ProjectNameArray): void {
   Project.getProject({nameArray}).closeProject();  
+}
+
+export function cancelRename(jobYrMo: string): void {
+  const project = Project.getProject({jobYrMo});
+  project.resetDatabaseRow();
 }
 
 export function openSheetChangelog(): void {

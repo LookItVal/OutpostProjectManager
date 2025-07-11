@@ -724,21 +724,35 @@ export class Project extends Initiative {
     return unreconciledBookings;
   }
 
+  public resetDatabaseRow(): void {
+    this.dataSheet.getRange(this.rowNumber, 3, 1, 2).setValues([[this.clientName, this.projectName]]);
+  }
+
   /////////////////////////////////////////////
   //              Static Methods             //
   /////////////////////////////////////////////
 
   public static getProject({ name = '', nameArray = undefined, folder = undefined, jobYrMo = ''}: InitiativeParams = {}): Project {
     if (jobYrMo) {
+      const clientName = jobYrMo.slice(10);
+      const client = new exports.Client({ name: clientName });
+      jobYrMo = jobYrMo.slice(0, 9);
+      const clientFolderSearch = client.folder?.searchFolders(`title contains '${jobYrMo}`);
+      if (clientFolderSearch?.hasNext()) {
+        console.log('found in client folddr');
+        return Initiative.getInitiative({ folder: clientFolderSearch.next() }) as Project;
+      }
       const folder = exports.Client.clientFolder;
       const folders = folder.getFolders();
       while (folders.hasNext()) {
         const folder = folders.next();
         const projectFolderSearch = folder.searchFolders(`title contains '${jobYrMo}'`);
         if (projectFolderSearch.hasNext()) {
+          console.log('found in all clients');
           return Initiative.getInitiative({ folder: projectFolderSearch.next() }) as Project;
         }
       }
+      console.log('not found');
       throw new exports.ValidationError(`Project Not Found: No folder found with yrmo ${jobYrMo}`);
     }      
     const project = Initiative.getInitiative({ name, nameArray, folder });
