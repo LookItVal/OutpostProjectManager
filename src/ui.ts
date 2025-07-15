@@ -25,18 +25,25 @@ declare const exports: UIExport;
 /////////////////////////////////////////////
 
 export function calendarHomepageUI(): GoogleAppsScript.Card_Service.Card {
-  const card = CardService.newCardBuilder()
+  const cardBuilder = CardService.newCardBuilder()
     .setName('Outpost Project Manager')
-    .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'))
-    .addSection(CardService.newCardSection()
-      .setHeader('No Event Selected')
-      .addWidget(CardService.newTextButton()
-        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-        .setText('Check all Reconciliations')
-        .setOnClickAction(CardService.newAction()
-          .setFunctionName('checkForUnreconciledEvents'))));
-  card.setFixedFooter(mainFooter());
-  return card.build();
+    .setHeader(CardService.newCardHeader().setTitle('Outpost Project Manager'));
+
+  const section = CardService.newCardSection()
+    .setHeader('No Event Selected');
+
+  // Only add the button if User.fullName does NOT contain "Outpost"
+  if (!exports.User.fullName.includes('Outpost')) {
+    section.addWidget(CardService.newTextButton()
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setText('Check all Reconciliations')
+      .setOnClickAction(CardService.newAction()
+        .setFunctionName('checkForUnreconciledEvents')));
+  }
+
+  cardBuilder.addSection(section);
+  cardBuilder.setFixedFooter(mainFooter());
+  return cardBuilder.build();
 }
 
 export function checkForUnreconciledEvents(): GoogleAppsScript.Card_Service.Card {
