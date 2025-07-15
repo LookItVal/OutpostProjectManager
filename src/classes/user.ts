@@ -79,9 +79,10 @@ export class User {
     if (!sheet) {
       throw new ValidationError('Reconciliation sheet not found');
     }
-    const bookingsSheet = sheet.getSheetByName('bookings');
+    let bookingsSheet = sheet.getSheetByName('bookings');
     if (!bookingsSheet) {
-      throw new ValidationError('Bookings sheet not found in reconciliation sheet');
+      bookingsSheet = sheet.insertSheet('bookings');
+      bookingsSheet.hideSheet();
     }
     const mainSheet = sheet.getSheets()[0];
     const rows = bookingsSheet.getDataRange().getValues();
@@ -117,7 +118,6 @@ export class User {
     });
     const projects: Project[] = [];
     for (const event of events) {
-      console.log(`Processing event: ${event.getTitle()} from date ${event.getStartTime()}`);
       const title = event.getTitle().trim();
       if (activeProjectNames.indexOf(title) === -1) {
         continue;
@@ -129,21 +129,16 @@ export class User {
     for (const project of projects) {
       const reconciliations = User.getReconciliations(project);
       for (const reconciliation of reconciliations) {
-        console.log(`Checking reconciliation for row ${reconciliation.row} in project ${project.title}`);
         const eventIds = events.map(event => event.getId());
         const bookingId = reconciliation.bookingId?.split('@')[0] + '@google.com';
         const index = eventIds.indexOf(bookingId);
         if (index === -1) {
-          console.log(`Reconciliation for event ${bookingId} not found in the list of events.`);
-          console.log(bookingId, eventIds);
           continue;
         } else {
           events.splice(index, 1);
-          console.log('Reconciliation found and removed from the list of events. \n the new list of events is:\n', events.map(event => event.getTitle() + ' at ' + event.getStartTime()));
         }
       }
     }
-    console.log(`Unreconciled events: ${events.length}`, events.map(event => event.getTitle() + ' at ' + event.getStartTime()));
     return events;  
   }
 }
