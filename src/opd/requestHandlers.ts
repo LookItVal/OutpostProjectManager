@@ -39,30 +39,65 @@ export function jumpToProject(): void {
   sheet.setActiveRange(sheet.getRange(`A${exports.Project.recentRow}`));
 }
 
+
 export function getInitiative(): SerializedData {
-  try {
-    const project = exports.Project.getProject();
-    if (!project.folder) {
-      try {
-        const originalProject = exports.Project.getProject({jobYrMo: `${project.yrmo} ${project.jobNumber} ${project.clientName}`});
-        const lucky_charms = originalProject.serialize();
-        lucky_charms.newProject = project.serialize();
-        return lucky_charms;
-      } catch (e: unknown) {
-        if (e instanceof ValidationError) {
-          return project.serialize();
-        }
-      }
+  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  if (!spreadsheet) {
+    throw new ReferenceError('Spreadsheet is not defined');
+  }
+  const sheet = spreadsheet.getActiveSheet();
+  if (/^\d{4}-\d{4}$/.test(sheet.getName())) { // Check if the open sheet is a project sheet
+    const selection = sheet.getActiveRange();
+    if (!selection) {
+      throw new ReferenceError('No selection found');
+    }
+    if (selection.getValues().length > 1) {
+      return {'title': 'Multiple rows selected. Please select a single row.'} as SerializedData;
+    }
+    if (selection.getRow() === 1) {
+      return {'title': 'Project Not Found.'} as SerializedData;
+    }
+    const rowValues = sheet.getRange(selection.getRow(), 1, 1, sheet.getLastColumn()).getValues()[0];
+    if ((rowValues[0].toString().trim() === '') || (rowValues[1].toString().trim() === '') || (rowValues[2].toString().trim() === '') || (rowValues[3].toString().trim() === '')) {
+      return {'title': 'Selected row is empty. Please select a valid project.'} as SerializedData;
+    }
+    const project = exports.Project.getProject({ nameArray: [rowValues[0].toString().trim(), rowValues[1].toString().trim(), rowValues[2].toString().trim(), rowValues[3].toString().trim(), rowValues[10] ? 'TRUE' : 'FALSE'] });
+    if (!project) {
+      return {'title': 'Project Not Found.'} as SerializedData;
+    }
+    if (project.folder) {
+      return project.serialize();
+    }
+    const originalProject = exports.Project.getProject({ jobYrMo: `${project.yrmo} ${project.jobNumber} ${project.clientName}` });
+    if (originalProject) {
+      const lucky_charms = originalProject.serialize();
+      lucky_charms.newProject = project.serialize();
+      return lucky_charms;
     }
     return project.serialize();
-  } catch (e: unknown) {
-    if (e instanceof ValidationError) {
-      console.error(e.message);
-      return {'title': e.message.split(':')[0]} as SerializedData;
-    }
-    console.error(e);
-    return {'title': 'A fatal error has occured.'} as SerializedData;
   }
+  if (sheet.getName() === 'Proposals') {
+    const selection = sheet.getActiveRange();
+    if (!selection) {
+      throw new ReferenceError('No selection found');
+    }
+    if (selection.getValues().length > 1) {
+      return {'title': 'Multiple rows selected. Please select a single row.'} as SerializedData;
+    }
+    if (selection.getRow() === 1) {
+      return {'title': 'Proposal Not Found.'} as SerializedData;
+    }
+    const rowValues = sheet.getRange(selection.getRow(), 1, 1, sheet.getLastColumn()).getValues()[0];
+    if ((rowValues[0].toString().trim() === '') || (rowValues[1].toString().trim() === '') || (rowValues[2].toString().trim() === '')) {
+      return {'title': 'Selected row is empty. Please select a valid proposal.'} as SerializedData;
+    }
+    const proposal = exports.Proposal.getProposal({ nameArray: ['PROPOSAL:', rowValues[0].toString().trim(), rowValues[1].toString().trim(), rowValues[2].toString().trim()] });
+    if (!proposal) {
+      return {'title': 'Proposal Not Found.'} as SerializedData;
+    }
+    return proposal.serialize();
+  }
+  return {};
 }
 
 export function requestProposalGeneration(): boolean {
@@ -131,13 +166,13 @@ export function acceptProposal(nameArray: ProposalNameArray): void {
 
 export function requestCostingGeneration(): boolean {
   const project = Project.getProject();
-  if (project.type !== 'PROJECT') {
+  if (project!.type !== 'PROJECT') {
     throw new ValidationError('Project type is not set to project.');
   }
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
     'Generate Costing?',
-    `Are you sure you want to generate a costing sheet in the ${project.clientName} folder?`,
+    `Are you sure you want to generate a costing sheet in the ${project!.clientName} folder?`,
     ui.ButtonSet.YES_NO);
   if (response === ui.Button.YES) {
     return true;
@@ -146,18 +181,18 @@ export function requestCostingGeneration(): boolean {
 }
 
 export function generateCosting(nameArray: ProjectNameArray): void {
-  Project.getProject({nameArray}).createCostingSheet();
+  Project.getProject({nameArray})!.createCostingSheet();
 }
 
 export function requestJobGeneration(): boolean {
   const project = Project.getProject();
-  if (project.type !== 'PROJECT') {
+  if (project!.type !== 'PROJECT') {
     throw new ValidationError('Project type is not set to project.');
   }
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
     'Generate Job?',
-    `Are you sure you want to generate a job in the ${project.clientName}? folder called ${project.title}?`,
+    `Are you sure you want to generate a job in the ${project!.clientName}? folder called ${project!.title}?`,
     ui.ButtonSet.YES_NO);
   if (response === ui.Button.YES) {
     return true;
@@ -166,7 +201,7 @@ export function requestJobGeneration(): boolean {
 }
 
 export function generateJob(nameArray: ProposalNameArray): void {
-  Project.getProject({nameArray}).generateProject();
+  Project.getProject({nameArray})!.generateProject();
 }
 
 function showUnreconciledBookingsModal(bookings: Booking[]): GoogleAppsScript.HTML.HtmlOutput {
@@ -233,13 +268,13 @@ export function deleteBooking({calendarId, bookingId}: {calendarId: string, book
   
 export function checkReconciliationSheet(nameArray: ProjectNameArray): void {
   const project = Project.getProject({nameArray});
-  if (project.type !== 'PROJECT') {
+  if (project!.type !== 'PROJECT') {
     throw new ValidationError('Project type is not set to project.');
   }
-  if (!project.reconciliationSheetId) {
+  if (!project!.reconciliationSheetId) {
     throw new ValidationError('Can not find reconciliation sheet');
   }
-  const bookings = project.getUnreconciledBookings();
+  const bookings = project!.getUnreconciledBookings();
   if (bookings.length === 0) {
     const ui = SpreadsheetApp.getUi();
     ui.alert('No unreconciled bookings found', 'Found no unreconciled bookings for this project.\n*Currently does not check for Intern or Freelance Reconciliations. Coming Soon.', ui.ButtonSet.OK);
@@ -253,12 +288,12 @@ export function checkReconciliationSheet(nameArray: ProjectNameArray): void {
 
 export function requestCloseProject(): boolean {
   const project = Project.getProject();
-  const bookings = project.getUnreconciledBookings();
+  const bookings = project!.getUnreconciledBookings();
   const ui = SpreadsheetApp.getUi();
   if (bookings.length === 0) {
     const response = ui.alert(
       'Close Project?',
-      `Are you sure you want to close the project ${project.title}? This will archive the project and remove it from the active projects list.`,
+      `Are you sure you want to close the project ${project!.title}? This will archive the project and remove it from the active projects list.`,
       ui.ButtonSet.YES_NO);
     if (response === ui.Button.YES) {
       return true;
@@ -272,12 +307,12 @@ export function requestCloseProject(): boolean {
 }
 
 export function closeProject(nameArray: ProjectNameArray): void {
-  Project.getProject({nameArray}).closeProject();  
+  Project.getProject({nameArray})!.closeProject();  
 }
 
 export function cancelRename(jobYrMo: string): void {
   const project = Project.getProject({jobYrMo});
-  project.resetDatabaseRow();
+  project!.resetDatabaseRow();
 }
 
 export function openSheetChangelog(): void {

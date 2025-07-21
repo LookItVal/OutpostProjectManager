@@ -732,14 +732,13 @@ export class Project extends Initiative {
   //              Static Methods             //
   /////////////////////////////////////////////
 
-  public static getProject({ name = '', nameArray = undefined, folder = undefined, jobYrMo = ''}: InitiativeParams = {}): Project {
+  public static getProject({ name = '', nameArray = undefined, folder = undefined, jobYrMo = ''}: InitiativeParams = {}): Project | undefined {
     if (jobYrMo) {
       const clientName = jobYrMo.slice(10);
       const client = new exports.Client({ name: clientName });
       jobYrMo = jobYrMo.slice(0, 9);
-      const clientFolderSearch = client.folder?.searchFolders(`title contains '${jobYrMo}`);
+      const clientFolderSearch = client.folder?.searchFolders(`title contains '${jobYrMo}'`);
       if (clientFolderSearch?.hasNext()) {
-        console.log('found in client folddr');
         return Initiative.getInitiative({ folder: clientFolderSearch.next() }) as Project;
       }
       const folder = exports.Client.clientFolder;
@@ -748,13 +747,11 @@ export class Project extends Initiative {
         const folder = folders.next();
         const projectFolderSearch = folder.searchFolders(`title contains '${jobYrMo}'`);
         if (projectFolderSearch.hasNext()) {
-          console.log('found in all clients');
           return Initiative.getInitiative({ folder: projectFolderSearch.next() }) as Project;
         }
       }
-      console.log('not found');
-      throw new exports.ValidationError(`Project Not Found: No folder found with yrmo ${jobYrMo}`);
-    }      
+      return undefined;
+    }
     const project = Initiative.getInitiative({ name, nameArray, folder });
     if (project.type !== 'PROJECT') throw new exports.ValidationError('Initiative is not a Project');
     return project as Project;
