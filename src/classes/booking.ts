@@ -1,4 +1,4 @@
-import { BookingParams, Initiative } from '../interfaces';
+import { BookingParams, Initiative, SerializedData } from '../interfaces';
 import { Project, Proposal } from './initiatives';
 import { Reconciliation } from './reconciliation';
 import { regex4Digits, regexJobName } from '../constants';
@@ -12,6 +12,8 @@ interface BookingExports {
 declare const exports: BookingExports;
 
 export class Booking {
+  [key: string]: string | number | object | (() => string) | undefined;
+
   public eventId?: string;
   public calendarId?: string;
 
@@ -62,9 +64,18 @@ export class Booking {
     return undefined;
   }
 
+  public set reconciliation(value: Reconciliation | undefined) {
+    this._reconciliation = value;
+  }
+
   public get calendar(): GoogleAppsScript.Calendar.Calendar | undefined {
     if (this._calendar) return this._calendar;
-    this._calendar =  CalendarApp.getCalendarById(this.calendarId ?? '');
+    if (this.calendarId) {
+      this._calendar =  CalendarApp.getCalendarById(this.calendarId);
+      if (!this._calendar) {
+        this._calendar = CalendarApp.getCalendarById(`${this.calendarId}@group.calendar.google.com`);
+      }
+    }
     return this._calendar;
   }
 
@@ -147,6 +158,31 @@ export class Booking {
   public resetBookingToReconciliation(): void {
     this.date = this.reconciliation?.date ?? new Date();
     this.duration = this.reconciliation?.hours ?? 1;
+  }
+
+  public reconcileBooking(): void {
+    if (!this.project) {
+      throw new ReferenceError('Cannot reconcile booking without a project.');
+    }
+    if (this.project.type !== 'PROJECT') {
+      throw new TypeError('Cannot reconcile booking for a non-project initiative.');
+    }
+    this.reconciliation = new Reconciliation({sheetId: this.project?.reconciliationSheetId as string, row: -1});
+    this.reconciliation.date = this.date;
+    this.reconciliation.hours = this.duration;
+    this.reconciliation.technician = this.technician;
+  }
+
+  public serialize(): SerializedData {
+    const bookingData: SerializedData = {
+      eventId: this.eventId?.split('@')[0] ?? '',
+      calendarId: this.calendarId?.split('@')[0] ?? '',
+      date: this.date.toLocaleDateString(),
+      duration: String(this.duration),
+      technician: this.technician,
+      project: this.project?.name as string,
+    };
+    return bookingData;
   }
 
   ////////////////////////////////////////////////////////////////////////////////

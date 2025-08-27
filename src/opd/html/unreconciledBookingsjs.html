@@ -1,0 +1,94 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+  
+  let counter = $('.booking-item').length;
+
+  function confirmDeleteBooking(button) {
+    const bookingId = button.getAttribute('booking-id');
+    const calendarId = button.getAttribute('calendar-id');
+    $(`#booking-${calendarId}-${bookingId} .row`).addClass('checking-confirm');
+  }
+
+  function cancelDeleteBooking(button) {
+    const bookingId = button.getAttribute('booking-id');
+    const calendarId = button.getAttribute('calendar-id');
+    $(`#booking-${calendarId}-${bookingId} .row`).removeClass('checking-confirm');
+  }
+
+  function deleteBooking(button) {
+    counter--;
+    const bookingId = button.getAttribute('booking-id');
+    const calendarId = button.getAttribute('calendar-id');
+    $(`#booking-${calendarId}-${bookingId}`).fadeOut();
+    setTimeout(() => {
+      $(`#booking-${calendarId}-${bookingId}`).remove();
+      if (counter === 0) {
+        google.script.host.close();
+      }
+    }, 500);
+    google.script.run.deleteBooking({calendarId, bookingId});
+  }
+
+  function confirmDeleteAllBookings() {
+    $('.footer .row .confirm-delete').show();
+    $('.footer .row .confirm-reconcile').hide();
+    $('.footer .row').addClass('checking-confirm');
+  }
+
+  function cancelDeleteAllBookings() {
+    $('.footer .row').removeClass('checking-confirm');
+  }
+
+  function deleteAllBookings() {
+    showLoadingIndicator();
+    google.script.run.withSuccessHandler(() => {
+      $('.booking-item').fadeOut();
+      setTimeout(() => {
+        $('.booking-item').remove();
+        google.script.host.close();
+      }, 500);
+    }).deleteAllBookings(packageBookings());
+  }
+
+  function confirmReconcileAllBookings() {
+    $('.footer .row .confirm-delete').hide();
+    $('.footer .row .confirm-reconcile').show();
+    $('.footer .row').addClass('checking-confirm');
+  }
+
+  function cancelReconcileAllBookings() {
+    $('.footer .row').removeClass('checking-confirm');
+  }
+
+  function reconcileAllBookings() {
+    showLoadingIndicator();
+    google.script.run.withSuccessHandler(() => {
+      $('.booking-item').fadeOut();
+      setTimeout(() => {
+        $('.booking-item').remove();
+        google.script.host.close();
+      }, 500);
+    }).reconcileAllBookings(packageBookings());
+  }
+
+  function packageBookings() {
+    const bookings = [];
+    $('.booking-item').each(function() {
+      const idParts = this.id.split('-');
+      const calendarId = idParts[1];
+      const eventId = idParts[2];
+      bookings.push({ calendarId, eventId });
+    });
+    return bookings;
+  }
+
+  function showLoadingIndicator() {
+    $('.footer .row .buttons').fadeOut(200);
+    $('.footer .row .confirm-delete').fadeOut(200);
+    $('.footer .row .confirm-reconcile').fadeOut(200);
+    setTimeout(() => {
+      $('.footer .row .loading-indicator').fadeIn(300);
+    }, 220); // Delay to allow fade outs to finish before fading in
+  }
+
+</script>

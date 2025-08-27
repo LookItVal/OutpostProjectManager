@@ -6,17 +6,17 @@ import { ValidationError } from '../classes/errors';
 import { properties, spreadsheet, version } from '../constants';
 import { openChangelogAsModalDialogue } from '../changelog/handlers';
 
-interface RequestHandlersExports {
+declare const exports: {
   Project: typeof Project;
   Proposal: typeof Proposal;
   User: typeof User;
+  Booking: typeof Booking;
   ValidationError: typeof ValidationError;
   properties: typeof properties;
   spreadsheet: typeof spreadsheet;
   version: typeof version;
   openChangelogAsModalDialogue: typeof openChangelogAsModalDialogue;
-}
-declare const exports: RequestHandlersExports;
+};
 
 export function jumpToProposal(): void {
   const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
@@ -205,59 +205,10 @@ export function generateJob(nameArray: ProposalNameArray): void {
 }
 
 function showUnreconciledBookingsModal(bookings: Booking[]): GoogleAppsScript.HTML.HtmlOutput {
-  const output = HtmlService.createTemplateFromFile('src/opd/html/unreconciledBookings').evaluate();
-  for (const booking of bookings) {
-    output.append(`<div class="row-container" id="booking-${booking.calendarId?.split('@')[0]}-${booking.eventId?.split('@')[0]}">`);
-    output.append('<div class="row">');
-    output.append('<div class="main">');
-    output.append(`<p><b>${booking.technician}</b> - ${booking.date.toLocaleDateString()} - ${booking.duration} hours</p>`);
-    output.append('<div style="display: flex; align-items: center; gap: 10px;">');
-    output.append(`<button class="open-booking-button action" onclick="window.open('${booking.calendarEventLink}', '_blank')">Open</button>`);
-    output.append(`<button class="delete-booking-button create" booking-id="${booking.eventId?.split('@')[0]}" calendar-id="${booking.calendarId?.split('@')[0]}" onclick="confirmDeleteBooking(this)">Delete</button>`);
-    output.append('</div>');
-    output.append('</div>');
-    output.append('<div class="confirm-delete">');
-    output.append('<p><b>Are you sure you want to delete this booking?</b></p>');
-    output.append('<div style="display: flex; align-items: center; gap: 10px;">');
-    output.append(`<button class="confirm-delete-button create" booking-id="${booking.eventId?.split('@')[0]}" calendar-id="${booking.calendarId?.split('@')[0]}" onclick="deleteBooking(this)">Yes</button>`);
-    output.append(`<button class="cancel-delete-button action" booking-id="${booking.eventId?.split('@')[0]}" calendar-id="${booking.calendarId?.split('@')[0]}" onclick="cancelDeleteBooking(this)">No</button>`);
-    output.append('</div>');
-    output.append('</div>');
-    output.append('</div>');
-    output.append('</div>');
-  }
-  output.append('<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>');
-  output.append('<script>\n');
-  output.append(`let counter = ${bookings.length};\n`);
-  output.append('function deleteBooking(button) {\n');
-  output.append('  counter--;\n');
-  output.append('  const bookingId = button.getAttribute("booking-id");\n');
-  output.append('  const calendarId = button.getAttribute("calendar-id");\n');
-  output.append('  $("#booking-" + calendarId + "-" + bookingId).fadeOut();\n');
-  output.append('  setTimeout(() => {\n');
-  output.append('    $("#booking-" + calendarId + "-" + bookingId).remove();\n');
-  output.append('    if (counter === 0) {\n');
-  output.append('      google.script.host.close();\n');
-  output.append('    }\n');
-  output.append('  }, 500);\n');
-  output.append('  google.script.run.withFailureHandler(() => {}).withSuccessHandler(() => {}).deleteBooking({calendarId, bookingId});\n');
-  output.append('}\n');
-
-  output.append('function confirmDeleteBooking(button) {\n');
-  output.append('  const bookingId = button.getAttribute("booking-id");\n');
-  output.append('  const calendarId = button.getAttribute("calendar-id");\n');
-  output.append('  $("#booking-" + calendarId + "-" + bookingId + " .row").addClass("checking-confirm");\n');
-  output.append('}\n');
-
-  output.append('function cancelDeleteBooking(button) {\n');
-  output.append('  const bookingId = button.getAttribute("booking-id");\n');
-  output.append('  const calendarId = button.getAttribute("calendar-id");\n');
-  output.append('  $("#booking-" + calendarId + "-" + bookingId + " .row").removeClass("checking-confirm");\n');
-  output.append('}\n');
-  output.append('</script>');
-  output.append('</body>');
-  output.append('</html>');
-  return output;
+  const output = HtmlService.createTemplateFromFile('src/opd/html/unreconciledBookings');
+  output.bookings = bookings;
+  output.bookings = bookings.map(b => b.serialize());
+  return output.evaluate();
 }
 
 export function deleteBooking({calendarId, bookingId}: {calendarId: string, bookingId: string}): void {
@@ -313,6 +264,32 @@ export function closeProject(nameArray: ProjectNameArray): void {
 export function cancelRename(jobYrMo: string): void {
   const project = Project.getProject({jobYrMo});
   project!.resetDatabaseRow();
+}
+
+export function renameProject(projects: SerializedData): void {
+  const originalProject = Project.getProject({nameArray: [projects.yrmo as string, projects.jobNumber as string, projects.clientName as string, projects.projectName as string, 'FALSE']}); 
+  const newProject = projects.newProject as SerializedData;
+  originalProject!.renameProject(newProject);
+}
+
+export function deleteAllBookings(bookings: SerializedData[]): void {
+  bookings.forEach(b => {
+    const calendarId = b.calendarId as string;
+    const bookingId = b.eventId as string;
+    deleteBooking({calendarId, bookingId});
+  });
+}
+
+export function reconcileAllBookings(bookings: SerializedData[]): void {
+  if (!bookings || bookings.length === 0) {
+    throw new ValidationError('No bookings provided for reconciliation.');
+  }
+  bookings.forEach(b => {
+    const calendarId = b.calendarId as string;
+    const eventId = b.eventId as string;
+    const booking = new exports.Booking({calendarId, eventId});
+    booking.reconcileBooking();
+  });
 }
 
 export function openSheetChangelog(): void {

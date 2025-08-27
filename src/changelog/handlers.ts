@@ -9,7 +9,6 @@ declare const exports: ChangelogHandlersExport;
 export function openCardChangelog(): GoogleAppsScript.Card_Service.Card {
   const changelog: ChangelogDict = exports.changelog;
   const card = CardService.newCardBuilder();
-  console.log(changelog);
   card.setHeader(CardService.newCardHeader().setTitle('Changelog'));
   // Iterate over the changelog and add each item as a text paragraph
   for (const minorVersionKey of Object.keys(changelog[1]).reverse()) {
@@ -57,7 +56,6 @@ export function openChangelogAsModalDialogue(): GoogleAppsScript.HTML.HtmlOutput
   }
   output.append('</body>');
   output.append('</html>');
-  console.log(output.getContent());
   return output;
 }
 
