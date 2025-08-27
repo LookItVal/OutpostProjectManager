@@ -345,9 +345,7 @@ export function setReconciliationRow(e: InitEvent & { parameters: { row: string 
 
 export function fillReconciliationRow(e: InitEvent & { parameters: { row?: string, overwriteDate?: 'true' | 'false', formInputs?: string }, formInputs: { [key: string]: string } }): GoogleAppsScript.Card_Service.ActionResponse {
   try {
-    console.log(e.parameters.formInputs);
     const formInputs = e.parameters.formInputs ? JSON.parse(e.parameters.formInputs) : e.formInputs;
-    console.log(formInputs);
     let row: number;
     const booking = new exports.Booking({ event: e }) as Booking;
     const sheet = SpreadsheetApp.openById(booking.sheetId).getSheets()[0];

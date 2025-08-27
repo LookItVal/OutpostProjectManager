@@ -95,7 +95,7 @@
   }
 
   function heartbeatTime(count) {
-    return Math.min(Math.exp(Math.max( (count - 15) / 2, 0 )), 359) * 1000
+    return Math.min(Math.exp(Math.max( (count - 15) / 2, 0 )), 329) * 1000
   }
 
   function heartbeat() {
@@ -105,24 +105,26 @@
       heartbeatValue = false;
       google.script.run.withSuccessHandler(function(initiative) {
         heartbeatValue = true;
-        let update = false;
-        for (const [key, value] of Object.entries(initiative)) {
-          if (key === 'newProject') continue; // Skip newProject as it is handled separately
-          if (globalInitiative[key]) {
-            if (globalInitiative[key] !== value) {
-              update = true;
-              break;
-            }
-          } else { update = true; }
+        if (!loadingInterval) { 
+          let update = false;
+          for (const [key, value] of Object.entries(initiative)) {
+            if (key === 'newProject') continue; // Skip newProject as it is handled separately
+            if (globalInitiative[key]) {
+              if (globalInitiative[key] !== value) {
+                update = true;
+                break;
+              }
+            } else { update = true; }
+          }
+          if (update) {
+            globalInitiative = initiative;
+            startLoading();
+            setTimeout(() => {
+              stopLoading();
+              refreshUI();
+            }, 300);        
+          } else { focusCount++; }
         }
-        if (update) {
-          globalInitiative = initiative;
-          startLoading();
-          setTimeout(() => {
-            stopLoading();
-            refreshUI();
-          }, 300);        
-        } else { focusCount++; }
       }).withFailureHandler(function(msg, element) {
         startLoading();
         setTimeout(() => {
@@ -174,6 +176,7 @@
   function stopLoading() {
     if (loadingInterval) {
       clearInterval(loadingInterval);
+      loadingInterval = null;
     }
     $('#project-refresh-button .material-symbols-outlined').addClass('icon-paused');
     $('#project-refresh-button').prop('disabled', false);
@@ -277,11 +280,22 @@
   function fadeInProjectChangeInfo() {
     const originalProject = globalInitiative;
     const newProject = globalInitiative.newProject;
-    if (originalProject.projectName !== newProject.projectName) {
-      $('.info-message').text(`Would you like to rename the project from: "${originalProject.projectName}" to: "${newProject.projectName}"?`);
-    } else {
-      $('.info-message').text(`Would you like to change the project name to: "${newProject.projectName}"?`);
+    $('#project-title').text("Project Rename Detected");
+    let text = 'Another project was found with the same Job Number:\n';
+    text += `\n${originalProject.title}\n`;
+    text += '\nWould you like to rename those project files to match the current details?\n';
+    if (originalProject.yrmo !== newProject.yrmo) {
+      text += `\nYear-Month: '${originalProject.yrmo}' to '${newProject.yrmo}'`;
     }
+    if (originalProject.clientName !== newProject.clientName) {
+      text += `\nClient Name: '${originalProject.clientName}' to '${newProject.clientName}'`;
+    }
+    if (originalProject.projectName !== newProject.projectName) {
+      text += `\nProject Name: '${originalProject.projectName}' to '${newProject.projectName}'`;
+    }
+    $('.info-message').text(text + '\n');
+    $('.info-message').fadeIn();
+    $('.rename-project-section').fadeIn();
   }
 
   // Get the current project info from the server and display the appropriate dynamic content.
@@ -306,10 +320,6 @@
     $('#project-title').text(initiative.title);
     if (initiative.newProject) {
       fadeInProjectChangeInfo();
-      $('#project-title').text("Project Rename Detected");
-      $('.info-message').text(`Would you like to rename the project from: "${initiative.projectName}" to: "${initiative.newProject.projectName}"?`);
-      $('.info-message').fadeIn();
-      $('.rename-project-section').fadeIn();
       return;
     }
     if (!initiative.type) {

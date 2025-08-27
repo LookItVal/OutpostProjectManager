@@ -206,6 +206,17 @@ export abstract class Initiative {
       return this._proposalDocumentId;
     }
 
+    public get proposalDocument (): GoogleAppsScript.Drive.File | undefined {
+      if (this._proposalDocument) {
+        return this._proposalDocument;
+      }
+      if (!this.proposalDocumentId) {
+        return undefined;
+      }
+      this._proposalDocument = DriveApp.getFileById(this.proposalDocumentId);
+      return this._proposalDocument;
+    }
+
     public get costingSheetId (): string | undefined {
       if (this._costingSheetId) {
         return this._costingSheetId;
@@ -220,6 +231,17 @@ export abstract class Initiative {
       }
       this._costingSheetId = search.next().getId();
       return this._costingSheetId;
+    }
+
+    public get costingSheet (): GoogleAppsScript.Drive.File | undefined {
+      if (this._costingSheet) {
+        return this._costingSheet;
+      }
+      if (!this.costingSheetId) {
+        return undefined;
+      }
+      this._costingSheet = DriveApp.getFileById(this.costingSheetId);
+      return this._costingSheet;
     }
 
     /////////////////////////////////////////////
@@ -619,7 +641,6 @@ export class Project extends Initiative {
     }
     const data = this.dataSheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
-      console.log('data[i][1]', data[i][1], 'this.jobNumber', this.jobNumber);
       if (data[i][1] == this.jobNumber) {
         this._rowNumber = i + 1;
         return this._rowNumber;
@@ -725,7 +746,27 @@ export class Project extends Initiative {
   }
 
   public resetDatabaseRow(): void {
-    this.dataSheet.getRange(this.rowNumber, 3, 1, 2).setValues([[this.clientName, this.projectName]]);
+    this.dataSheet.getRange(this.rowNumber, 1, 1, 4).setValues([[this.yrmo, this. jobNumber, this.clientName, this.projectName]]);
+  }
+
+  public renameProject(newProjectDetails: SerializedData): void {
+    const newTitle = `${newProjectDetails.yrmo} ${newProjectDetails.jobNumber} ${newProjectDetails.clientName} ${newProjectDetails.projectName}`;
+    if (this.clientName === newProjectDetails.clientName) {
+      this.proposalDocument?.setName(`${newTitle} Proposal`);
+      this.costingSheet?.setName(`${newTitle} Costing Sheet`);
+      this.reconciliationSheet?.setName(newTitle);
+      this.folder?.setName(newTitle);
+      return;
+    }
+    const newClient = new exports.Client({ name: newProjectDetails.clientName as string });
+    if (newClient.isNew()) {
+      newClient.makeFolder();
+    }
+    this.folder?.moveTo(newClient.folder as GoogleAppsScript.Drive.Folder);
+    this.folder?.setName(newTitle);
+    this.proposalDocument?.setName(`${newTitle} Proposal`);
+    this.costingSheet?.setName(`${newTitle} Costing Sheet`);
+    this.reconciliationSheet?.setName(newTitle);
   }
 
   /////////////////////////////////////////////
@@ -737,17 +778,25 @@ export class Project extends Initiative {
       const clientName = jobYrMo.slice(10);
       const client = new exports.Client({ name: clientName });
       jobYrMo = jobYrMo.slice(0, 9);
-      const clientFolderSearch = client.folder?.searchFolders(`title contains '${jobYrMo}'`);
-      if (clientFolderSearch?.hasNext()) {
-        return Initiative.getInitiative({ folder: clientFolderSearch.next() }) as Project;
+      const jobNumber = jobYrMo.slice(5);
+      const clientFolderSearch = client.folder?.searchFolders(`title contains ' ${jobNumber} ${clientName.replace(/'/g, '\\\'')}'`);
+      const regexPattern = new RegExp(`^\\d{4} ${jobNumber}`);
+      while (clientFolderSearch?.hasNext()) {
+        const folder = clientFolderSearch.next();
+        if (regexPattern.test(folder.getName())) {
+          return Initiative.getInitiative({ folder }) as Project;
+        }
       }
       const folder = exports.Client.clientFolder;
       const folders = folder.getFolders();
       while (folders.hasNext()) {
         const folder = folders.next();
-        const projectFolderSearch = folder.searchFolders(`title contains '${jobYrMo}'`);
-        if (projectFolderSearch.hasNext()) {
-          return Initiative.getInitiative({ folder: projectFolderSearch.next() }) as Project;
+        const projectFolderSearch = folder.searchFolders(`title contains ' ${jobNumber}'`);
+        while (projectFolderSearch.hasNext()) {
+          const projectFolder = projectFolderSearch.next();
+          if (regexPattern.test(projectFolder.getName())) {
+            return Initiative.getInitiative({ folder: projectFolder }) as Project;
+          }
         }
       }
       return undefined;

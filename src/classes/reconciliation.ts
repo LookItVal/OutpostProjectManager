@@ -34,20 +34,32 @@ export class Reconciliation {
   constructor({ sheetId = '', row = undefined, event = undefined, calId = undefined, eventId = undefined}: ReconciliationParams) {
     if (sheetId) {
       this._spreadsheetId = sheetId;
-      this._row = row;
+      if (row === -1) {
+        this._row = this.sheet.getLastRow() + 1;
+      } else {
+        this._row = row;
+      }
       return;
     }
     if (event) {
       this._bookingCalId = event.calendar.calendarId;
       this._bookingId = event.calendar.id;
-      this._row = row;
+      if (row === -1) {
+        this._row = this.sheet.getLastRow() + 1;
+      } else {
+        this._row = row;
+      }
       return;
     }
     if (calId && eventId) {
       this._bookingCalId = calId;
       this._bookingId = eventId;
       if (row !== undefined) {
-        this._row = row;
+        if (row === -1) {
+          this._row = this.sheet.getLastRow() + 1;
+        } else {
+          this._row = row;
+        }
       }
       return;
     }
