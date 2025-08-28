@@ -65,15 +65,20 @@ export function getInitiative(): SerializedData {
     if (!project) {
       return {'title': 'Project Not Found.'} as SerializedData;
     }
-    if (project.folder) {
-      return project.serialize();
-    }
-    const originalProject = exports.Project.getProject({ jobYrMo: `${project.yrmo} ${project.jobNumber} ${project.clientName}` });
-    if (originalProject) {
-      const lucky_charms = originalProject.serialize();
-      lucky_charms.newProject = project.serialize();
-      return lucky_charms;
-    }
+
+    //if (project.folder) {  this is just another search.
+    //  return project.serialize();
+    //}
+    
+    // This slows things down every time there is a new project.
+    // TODO: make a new button that does the rename.
+    //const originalProject = exports.Project.getProject({ jobYrMo: `${project.yrmo} ${project.jobNumber} ${project.clientName}` });
+    //if (originalProject) {
+    //  const lucky_charms = originalProject.serialize();
+    //  lucky_charms.newProject = project.serialize();
+    //  return lucky_charms;
+    //}
+
     return project.serialize();
   }
   if (sheet.getName() === 'Proposals') {
