@@ -10,23 +10,16 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.4.0';
+export const version = '1.3.4';
 export const changelog = {
   1: {
-    4: [
-      'File Structure Update',
-      {
-        0: [
-          ['Developed system for renaming projects', 'New Feature'],
-          ['Developed system for merging projects', 'New Feature'],
-          ['Developed system for renaming clients', 'New Feature'],
-          ['Developed system for merging clients', 'New Feature']
-        ]
-      }
-    ],
     3: [
       'Project Reconciliation',
       {
+        4: [
+          ['Added system for Deleting every unreconciled calendar event when closing a project.', 'New Feature'],
+          ['Added system for Reconciling every unreconciled calendar event when closing a project.', 'New Feature']
+        ],
         3: [
           ['Added Button only visable to administrators to check the status of unreconciled bookings.', 'New Feature'],
           ['Close Project button now checks for unreconciled bookings before closing.', 'New Feature'],
