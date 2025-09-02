@@ -12,6 +12,7 @@
   $(function() {
     // Assign handler functions to sidebar elements here, if needed.
     $('#project-refresh-button').click(refreshSidebar);
+    $('#edit-icon').click(renameInitiative);
     $('#open-folder-button').click(openFolder);
     $('#jump-to-job-button').click(jumpToProject);
     $('#jump-to-proposals-button').click(jumpToProposal);
@@ -184,6 +185,7 @@
 
   // Fade out all dynamic content.
   function fadeOutAll() {
+    $('#edit-icon').fadeOut();
     $('.info-message').fadeOut();
     $('#open-folder-button').fadeOut();
     $('#open-reconciliation-button').fadeOut();
@@ -212,6 +214,7 @@
     }
     fadeInProposalInfo();
     if (globalInitiative.folderId) {
+      $('#edit-icon').fadeIn();
       $('#open-folder-button').fadeIn();
     }
     if (globalInitiative.type === "PROJECT") {
@@ -546,6 +549,16 @@
         stopLoading();
         refreshSidebar();
       }).checkReconciliationSheet([globalInitiative.yrmo, globalInitiative.jobNumber, globalInitiative.clientName, globalInitiative.projectName, "FALSE"]);
+  }
+
+  function renameInitiative() {
+    startLoading(loadingText = 'Loading Documents');
+    google.script.run
+      .withFailureHandler(errorHandler)
+      .withSuccessHandler(function() {
+        stopLoading();
+        refreshSidebar();
+      }).showRenameInitiativeModal(globalInitiative);
   }
 
   function requestCloseProject() {

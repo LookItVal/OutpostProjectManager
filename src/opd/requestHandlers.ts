@@ -209,11 +209,20 @@ export function generateJob(nameArray: ProposalNameArray): void {
   Project.getProject({nameArray})!.generateProject();
 }
 
-function showUnreconciledBookingsModal(bookings: Booking[]): GoogleAppsScript.HTML.HtmlOutput {
+export function showUnreconciledBookingsModal(bookings: Booking[]): GoogleAppsScript.HTML.HtmlOutput {
   const output = HtmlService.createTemplateFromFile('src/opd/html/unreconciledBookings');
   output.bookings = bookings;
   output.bookings = bookings.map(b => b.serialize());
   return output.evaluate();
+}
+
+export function showRenameInitiativeModal(project: SerializedData): void {
+  const ui = SpreadsheetApp.getUi();
+  const output = HtmlService.createTemplateFromFile('src/opd/html/renameInitiative');
+  output.yrmo = project.yrmo;
+  output.billingName = project.clientName;
+  output.projectName = project.projectName;
+  ui.showModalDialog(output.evaluate(), 'Rename Initiative');
 }
 
 export function deleteBooking({calendarId, bookingId}: {calendarId: string, bookingId: string}): void {

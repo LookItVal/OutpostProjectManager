@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
+    <?!= HtmlService.createHtmlOutputFromFile('stylesheet').getContent(); ?>
+    <style>
+    </style>
+  </head>
+  <body>
+    <div class="rename-initiative-container">
+      <section class="top-section" style="display:flex;gap:12px;">
+        <div class="field-box" style="flex:1;">
+          <label for="yrmo">YRMO</label>
+          <input id="yrmo" name="yrmo" type="text" class="input" value="<?!= yrmo ?>" />
+        </div>
+
+        <div class="field-box" style="flex:2;">
+          <label for="billingName">BILLING NAME</label>
+          <input id="billingName" name="billingName" type="text" class="input" value="<?!= billingName ?>" />
+        </div>
+
+        <div class="field-box" style="flex:2;">
+          <label for="projectName">PROJECT NAME</label>
+          <input id="projectName" name="projectName" type="text" class="input" value="<?!= projectName ?>" />
+        </div>
+      </section>
+
+      <section class="bottom-section" style="margin-top:18px;">
+      <!-- second section content goes here -->
+      </section>
+    </div>
+    <?!= HtmlService.createHtmlOutputFromFile('src/opd/html/renameInitiativejs').getContent(); ?>
+  </body>
+</html>
