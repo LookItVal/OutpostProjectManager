@@ -320,8 +320,85 @@ export function initConstants(): SerializedData {
   return {version: exports.version, isAdmin: String(exports.User.isAdmin)};
 }
 
-export function renameInitiative(originalInitiative: SerializedData, changedElements: { yrmo?: string | null; clientName?: string | null; projectName?: string | null }): boolean {
-  console.log(originalInitiative, changedElements);
-  Utilities.sleep(100000); // pause server for 10s
-  return true;
+export function renameInitiative(originalInitiative: SerializedData, changedElements: { yrmo?: string | null; clientName?: string | null; projectName?: string | null }): void {
+  const newInitiative = {...originalInitiative};
+  const folder = DriveApp.getFolderById(originalInitiative.folderId as string);
+  const sheet = exports.spreadsheet?.getActiveSheet();
+  let row = -1;
+  if (changedElements.yrmo){
+    newInitiative.yrmo = changedElements.yrmo;
+  }
+  if (changedElements.clientName) {
+    const originalClient = new Client({name: originalInitiative.clientName as string});
+    const newClient = new Client({name: changedElements.clientName});
+    if (!newClient.folder) {
+      newClient.makeFolder();
+    }
+    const files = originalClient.folder!.getFiles();
+    const folders = originalClient.folder!.getFolders();
+    let itemCount = 0;
+    while (files.hasNext() && itemCount <= 1) { files.next(); itemCount++; }
+    while (folders.hasNext() && itemCount <= 1) { folders.next(); itemCount++; }
+    folder.moveTo(newClient.folder!);
+    if (itemCount === 0) { // If the client folder is empty
+      originalClient.deleteClient();
+    }
+    newInitiative.clientName = changedElements.clientName;
+  }
+  if (changedElements.projectName) {
+    newInitiative.projectName = changedElements.projectName;
+  }
+  if (originalInitiative.type === 'PROJECT') {
+    const rows = sheet!.getDataRange().getValues();
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i][0]?.toString().trim() === originalInitiative.yrmo.toString().trim() &&
+          rows[i][1]?.toString().trim() === originalInitiative.jobNumber.toString().trim() &&
+          rows[i][2]?.toString().trim() === originalInitiative.clientName.toString().trim() &&
+          rows[i][3]?.toString().trim() === originalInitiative.projectName.toString().trim()) {
+        row = i + 1;
+        break;
+      }
+    }
+    if (row === -1) {
+      throw new Error('Could not find the initiative in the sheet');
+    }
+    sheet!.getRange(row, 1).setValue(newInitiative.yrmo);
+    sheet!.getRange(row, 3).setValue(newInitiative.clientName);
+    sheet!.getRange(row, 4).setValue(newInitiative.projectName);
+    newInitiative.title = `${newInitiative.yrmo} ${newInitiative.jobNumber} ${newInitiative.clientName} ${newInitiative.projectName}`;
+  }
+  else if (originalInitiative.type === 'PROPOSAL') {
+    const rows = sheet!.getDataRange().getValues();
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i][0]?.toString().trim() === originalInitiative.yrmo &&
+          rows[i][1]?.toString().trim() === originalInitiative.clientName &&
+          rows[i][2]?.toString().trim() === originalInitiative.projectName) {
+        row = i + 1;
+        break;
+      }
+    }
+    if (row === -1) {
+      throw new Error('Could not find the initiative in the sheet');
+    }
+    sheet!.getRange(row, 1).setValue(newInitiative.yrmo);
+    sheet!.getRange(row, 2).setValue(newInitiative.clientName);
+    sheet!.getRange(row, 3).setValue(newInitiative.projectName);
+    newInitiative.title = `PROPOSAL: ${newInitiative.yrmo} ${newInitiative.clientName} ${newInitiative.projectName}`;
+  }
+  else {
+    throw new Error('Unknown initiative type');
+  }
+  folder.setName(newInitiative.title);
+  if (originalInitiative.reconciliationSheetId) {
+    const reconciliationSheet = DriveApp.getFileById(originalInitiative.reconciliationSheetId as string);
+    reconciliationSheet.setName(newInitiative.title);
+  }
+  if (originalInitiative.proposalDocumentId) {
+    const proposalDocument = DriveApp.getFileById(originalInitiative.proposalDocumentId as string);
+    proposalDocument.setName(`${newInitiative.yrmo} ${newInitiative.clientName} ${newInitiative.projectName} Proposal`);
+  }
+  if (originalInitiative.costingSheetId) {
+    const costingSheet = DriveApp.getFileById(originalInitiative.costingSheetId as string);
+    costingSheet.setName(`${newInitiative.yrmo} ${newInitiative.clientName} ${newInitiative.projectName} Costing Sheet`);
+  }
 }

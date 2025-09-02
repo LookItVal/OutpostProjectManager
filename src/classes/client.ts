@@ -158,6 +158,30 @@ export class Client {
     return this._folder;
   }
 
+  public deleteClient(): void {
+    if (this.folder?.getFiles().hasNext()) {
+      throw new exports.ValidationError('Client folder is not empty');
+    }
+    if (this.folder?.getFolders().hasNext()) {
+      throw new exports.ValidationError('Client folder is not empty');
+    }
+    if (!exports.spreadsheet) {
+      throw new ReferenceError('Spreadsheet is not defined');
+    }
+    this.folder?.setTrashed(true);
+    const clientSheet = exports.spreadsheet.getSheetByName('Clients');
+    if (!clientSheet) {
+      throw new ReferenceError('Clients sheet is not defined');
+    }
+    const data = clientSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === this.name) {
+        clientSheet.deleteRow(i + 1);
+        break;
+      }
+    }
+  }
+
   /////////////////////////////////////////////
   //             Static Methods              //
   /////////////////////////////////////////////
