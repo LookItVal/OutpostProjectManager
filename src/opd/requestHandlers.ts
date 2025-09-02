@@ -1,6 +1,7 @@
 import { Project, Proposal } from '../classes/initiatives';
 import { Booking } from '../classes/booking';
 import { User } from '../classes/user';
+import { Client } from '../classes/client';
 import { SerializedData, ProposalNameArray, ProjectNameArray } from '../interfaces';
 import { ValidationError } from '../classes/errors';
 import { properties, spreadsheet, version } from '../constants';
@@ -10,6 +11,7 @@ declare const exports: {
   Project: typeof Project;
   Proposal: typeof Proposal;
   User: typeof User;
+  Client: typeof Client;
   Booking: typeof Booking;
   ValidationError: typeof ValidationError;
   properties: typeof properties;
@@ -222,7 +224,8 @@ export function showRenameInitiativeModal(project: SerializedData): void {
   output.yrmo = project.yrmo;
   output.billingName = project.clientName;
   output.projectName = project.projectName;
-  ui.showModalDialog(output.evaluate(), 'Rename Initiative');
+  output.clients = Client.clientNames;
+  ui.showModalDialog(output.evaluate(), `Rename ${(project.type as string).toLowerCase()}`);
 }
 
 export function deleteBooking({calendarId, bookingId}: {calendarId: string, bookingId: string}): void {

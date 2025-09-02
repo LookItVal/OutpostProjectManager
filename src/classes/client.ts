@@ -1,6 +1,6 @@
 import { ValidationError } from './errors';
 import { ClientParams, Initiative } from '../interfaces';
-import { properties, regexJobName, regexProposalName } from '../constants';
+import { properties, regexJobName, regexProposalName, spreadsheet } from '../constants';
 import { Project, Proposal } from './initiatives';
 
 interface ClientExports {
@@ -8,6 +8,7 @@ interface ClientExports {
     properties: typeof properties;
     regexJobName: typeof regexJobName;
     regexProposalName: typeof regexProposalName;
+    spreadsheet: typeof spreadsheet;
     Project: typeof Project;
     Proposal: typeof Proposal;
 }
@@ -44,6 +45,25 @@ export class Client {
     const folderId: string = exports.properties.getProperty('clientFolderId') ?? '';
     const folder: GoogleAppsScript.Drive.Folder = DriveApp.getFolderById(folderId);
     return folder;
+  }
+
+  public static get clientNames(): string[] {
+    if (!exports.spreadsheet) {
+      throw new ReferenceError('Spreadsheet is not defined');
+    }
+    const sheet = exports.spreadsheet.getSheetByName('Clients');
+    if (!sheet) {
+      throw new ReferenceError('Clients sheet is not defined');
+    }
+    const data = sheet.getDataRange().getValues();
+    const names: string[] = [];
+    for (let i = 1; i < data.length; i++) {
+      const name = data[i][0];
+      if (name) {
+        names.push(name.toString());
+      }
+    }
+    return names;
   }
 
   /////////////////////////////////////////////

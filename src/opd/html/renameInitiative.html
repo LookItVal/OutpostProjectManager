@@ -6,24 +6,62 @@
     <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
     <?!= HtmlService.createHtmlOutputFromFile('stylesheet').getContent(); ?>
     <style>
+      #yrmo:invalid {
+        border-color: red;
+      }
+      #yrmo:invalid + .yrmo-error {
+        display: block;
+      }
+      .yrmo-error {
+        display: none;
+        color: red;
+        font-size: 0.8rem;
+        margin-top: 4px;
+        text-wrap: nowrap;
+      }
+
+      #billingName:invalid {
+        border-color: orange;
+      }
+      #billingName:invalid + .billing-name-error {
+        display: block;
+      }
+      .billing-name-error {
+        display: none;
+        color: orange;
+        font-size: 0.8rem;
+        margin-top: 4px;
+        text-wrap: nowrap;
+      }
     </style>
   </head>
   <body>
     <div class="rename-initiative-container">
-      <section class="top-section" style="display:flex;gap:12px;">
-        <div class="field-box" style="flex:1;">
+      <section class="top-section" style="display:flex; justify-content: space-between;">
+        <div class="field-box" style="width: 15%">
           <label for="yrmo">YRMO</label>
-          <input id="yrmo" name="yrmo" type="text" class="input" value="<?!= yrmo ?>" />
+          <input id="yrmo" name="yrmo" type="number" class="input" style="width: 100%" value="<?!= yrmo ?>" min="2000" max="9999"/>
+          <div class="yrmo-error">
+            * Must be a 4-digit year/month combination (e.g., September 2025 -> 2509)
+          </div>
         </div>
 
-        <div class="field-box" style="flex:2;">
+        <div class="field-box" style="width: 30%">
           <label for="billingName">BILLING NAME</label>
-          <input id="billingName" name="billingName" type="text" class="input" value="<?!= billingName ?>" />
+          <input id="billingName" name="billingName" type="text" class="input" style="width: 100%" value="<?!= billingName ?>" list="clientList" pattern="<?!= clients.join('|') ?>"/>
+          <div class="billing-name-error">
+            * New client - will be added to database
+          </div>
+          <datalist id="clientList">
+            <? for (const client of clients) { ?>
+              <option value="<?!= client ?>">
+            <? } ?>
+          </datalist>
         </div>
 
-        <div class="field-box" style="flex:2;">
+        <div class="field-box" style="width: 50%">
           <label for="projectName">PROJECT NAME</label>
-          <input id="projectName" name="projectName" type="text" class="input" value="<?!= projectName ?>" />
+          <input id="projectName" name="projectName" type="text" class="input" style="width: 100%" value="<?!= projectName ?>" />
         </div>
       </section>
 
