@@ -39,7 +39,10 @@
       }
 
       .footer {
+        position: fixed;
+        bottom: 0;
         margin-top: 20px;
+        width: 100%;
       }
       .footer .row-container {
         border-bottom: none !important;
@@ -63,7 +66,7 @@
         display: flex;
         flex-wrap: wrap;
         flex-direction: row;
-        justify-content: center;
+        justify-content: flex-end;
         align-items: center;
         align-content: center;
         padding: 10px 0;
@@ -103,11 +106,26 @@
         0% { transform: rotate(360deg); }
         100% { transform: rotate(0deg); }
       }
+
+      .wiggle {
+        will-change: transform;
+        animation: wiggle-rotate 600ms cubic-bezier(.22,.9,.36,1) 1 both;
+      }
+
+      @keyframes wiggle-rotate {
+        0%   { transform: rotate(0deg); }
+        15%  { transform: rotate(-12deg); }
+        30%  { transform: rotate(10deg); }
+        45%  { transform: rotate(-6deg); }
+        60%  { transform: rotate(6deg); }
+        75%  { transform: rotate(-3deg); }
+        100% { transform: rotate(0deg); }
+      }
     </style>
   </head>
   <body>
     <div class="rename-initiative-container">
-      <h2 style="margin-bottom: 10px;"><?!= title ?></h2>
+      <h2 style="font-size: 1.2rem; margin-bottom: 1.2rem;"><?!= title ?></h2>
       <section class="top-section" style="display:flex; justify-content: space-between;">
         <div class="field-box" style="width: 15%">
           <label for="yrmo">YRMO</label>
@@ -147,7 +165,10 @@
                 </div>
               </div>
               <div class="confirm-rename">
-                <p>Are you sure you want to rename this initiative?</p>
+                <div class="new-name-display">
+                  <p>Are you sure you want to rename this to:</p>
+                  <b id="newName">blank</b>
+                </div>
                 <div class="buttons">
                   <button class="confirm-rename-button green" onclick="executeRename()">Yes</button>
                   <button class="cancel-rename-button blue" onclick="cancelRenameConfirm()">No</button>
@@ -166,6 +187,9 @@
         </div>
       </section>
     </div>
+    <script type="application/json" id="originalInitiative">
+      <?!= originalInitiative ?>
+    </script>
     <?!= HtmlService.createHtmlOutputFromFile('src/opd/html/renameInitiativejs').getContent(); ?>
   </body>
 </html>

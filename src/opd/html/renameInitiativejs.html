@@ -1,3 +1,81 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
+  function cancelRename() {
+    google.script.host.close();
+  }
+
+  function setFormLocked(locked) {
+    document.querySelectorAll('input').forEach(el => {
+      el.disabled = !!locked;
+    });
+  }
+
+  function confirmRename() {
+    const yrmoEl = document.getElementById('yrmo');
+    if (yrmoEl && !yrmoEl.checkValidity()) {
+      yrmoEl.classList.add('wiggle');
+      yrmoEl.focus();
+      setTimeout(() => yrmoEl.classList.remove('wiggle'), 500);
+      return;
+    }
+    // lock form values so they can't be changed
+    setFormLocked(true);
+    $('#newName').text(newTitle());
+    $('.row').addClass('checking-confirm');
+  }
+
+  function cancelRenameConfirm() {
+    // unlock form values
+    setFormLocked(false);
+    $('.row').removeClass('checking-confirm');
+  }
+
+  function executeRename() {
+    showLoadingIndicator();
+
+    const originalInitiative = JSON.parse(document.getElementById('originalInitiative').textContent);
+    const yrmo = document.getElementById('yrmo').value === originalInitiative.yrmo ? null : document.getElementById('yrmo').value;
+    const clientName = document.getElementById('billingName').value === originalInitiative.clientName ? null : document.getElementById('billingName').value;
+    const projectName = document.getElementById('projectName').value === originalInitiative.projectName ? null : document.getElementById('projectName').value;
+
+    google.script.run
+      .withSuccessHandler(() => {
+        google.script.host.close();
+      })
+      .withFailureHandler((error) => {
+        hideLoadingIndicator();
+        $('.row').removeClass('loading');
+        alert(`Error: ${error.message}`);
+      })
+      .renameInitiative(originalInitiative, { yrmo, clientName, projectName });
+  }
   
+  function showLoadingIndicator() {
+    $('.row .main').fadeOut(200);
+    $('.row .confirm-rename').fadeOut(200);
+    $('.row').removeClass('checking-confirm');
+    setTimeout(() => {
+      $('.row .loading-indicator').fadeIn(300);
+    }, 220); // Delay to allow fade outs to finish before fading in
+  }
+
+  function hideLoadingIndicator() {
+    $('.row .loading-indicator').fadeOut(200);
+    $('.row').removeClass('checking-confirm');
+    setTimeout(() => {
+      $('.row .main').fadeIn(300);
+    }, 220);
+  }
+
+  function newTitle() {
+    const originalInitiative = JSON.parse(document.getElementById('originalInitiative').textContent);
+    if (!originalInitiative) throw new Error('Original initiative data is missing');
+    if (originalInitiative.type === 'PROJECT') {
+      return `${document.getElementById('yrmo').value} ${originalInitiative.jobNumber} ${document.getElementById('billingName').value} ${document.getElementById('projectName').value}`;
+    }
+    if (originalInitiative.type === 'PROPOSAL') {
+      return `PROPOSAL: ${document.getElementById('yrmo').value} ${document.getElementById('billingName').value} ${document.getElementById('projectName').value}`;
+    }
+    throw new Error('Unknown initiative type');
+  }
 </script>

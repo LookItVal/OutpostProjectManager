@@ -226,6 +226,7 @@ export function showRenameInitiativeModal(project: SerializedData): void {
   output.projectName = project.projectName;
   output.clients = Client.clientNames;
   output.title = project.title;
+  output.originalInitiative = JSON.stringify(project);
   ui.showModalDialog(output.evaluate(), `Rename ${(project.type as string).toLowerCase()}`);
 }
 
@@ -317,4 +318,10 @@ export function openSheetChangelog(): void {
 
 export function initConstants(): SerializedData {
   return {version: exports.version, isAdmin: String(exports.User.isAdmin)};
+}
+
+export function renameInitiative(originalInitiative: SerializedData, changedElements: { yrmo?: string | null; clientName?: string | null; projectName?: string | null }): boolean {
+  console.log(originalInitiative, changedElements);
+  Utilities.sleep(100000); // pause server for 10s
+  return true;
 }
