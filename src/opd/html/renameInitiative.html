@@ -6,6 +6,10 @@
     <!-- Use a templated HTML printing scriptlet to import common stylesheet -->
     <?!= HtmlService.createHtmlOutputFromFile('stylesheet').getContent(); ?>
     <style>
+      button {
+        justify-content: center;
+      }
+
       #yrmo:invalid {
         border-color: red;
       }
@@ -33,10 +37,77 @@
         margin-top: 4px;
         text-wrap: nowrap;
       }
+
+      .footer {
+        margin-top: 20px;
+      }
+      .footer .row-container {
+        border-bottom: none !important;
+        border-top: 1px solid #999999;
+      }
+      .row-container {
+        overflow: hidden;
+        border-bottom: 1px solid #999999;
+      }
+      .row {
+        display: flex;
+        flex-direction: row;
+        transition: all 0.3s ease-in-out;
+        width: 200%;
+      }
+      .row.checking-confirm {
+        transform: translateX(-50%);
+      }
+      .row .main {
+        width: 50%;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+        padding: 10px 0;
+      }
+      .row .confirm-rename {
+        width: 50%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+      }
+      .row .loading-indicator {
+        width: 50%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        align-content: space-between;
+        gap: 0.5em;
+        padding: 10px;
+      }
+      .row .buttons {
+        display: flex;
+        gap: 1em;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+      }
+      .spinner {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+        font-size: 24px;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        0% { transform: rotate(360deg); }
+        100% { transform: rotate(0deg); }
+      }
     </style>
   </head>
   <body>
     <div class="rename-initiative-container">
+      <h2 style="margin-bottom: 10px;"><?!= title ?></h2>
       <section class="top-section" style="display:flex; justify-content: space-between;">
         <div class="field-box" style="width: 15%">
           <label for="yrmo">YRMO</label>
@@ -66,7 +137,33 @@
       </section>
 
       <section class="bottom-section" style="margin-top:18px;">
-      <!-- second section content goes here -->
+        <div class="footer">
+          <div class="row-container">
+            <div class="row">
+              <div class="main">
+                <div class="buttons">
+                  <button class="cancel-button action" onclick="cancelRename()">Cancel</button>
+                  <button class="rename-button green" onclick="confirmRename()">Rename</button>
+                </div>
+              </div>
+              <div class="confirm-rename">
+                <p>Are you sure you want to rename this initiative?</p>
+                <div class="buttons">
+                  <button class="confirm-rename-button green" onclick="executeRename()">Yes</button>
+                  <button class="cancel-rename-button blue" onclick="cancelRenameConfirm()">No</button>
+                </div>
+              </div>
+              <div class="loading-indicator" style="display: none;">
+                <p>Processing...</p>
+                <div class="spinner">
+                  <span class="material-symbols-outlined">
+                    sync
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
     <?!= HtmlService.createHtmlOutputFromFile('src/opd/html/renameInitiativejs').getContent(); ?>

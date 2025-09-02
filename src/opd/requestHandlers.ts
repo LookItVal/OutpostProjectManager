@@ -225,6 +225,7 @@ export function showRenameInitiativeModal(project: SerializedData): void {
   output.billingName = project.clientName;
   output.projectName = project.projectName;
   output.clients = Client.clientNames;
+  output.title = project.title;
   ui.showModalDialog(output.evaluate(), `Rename ${(project.type as string).toLowerCase()}`);
 }
 
