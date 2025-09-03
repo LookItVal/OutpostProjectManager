@@ -10,9 +10,19 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.3.4';
+export const version = '1.4.0';
 export const changelog = {
   1: {
+    4: [
+      'Fluid Nomenclature',
+      {
+        0: [
+          ['Added Rename button inside OPD', 'UI Change'],
+          ['Rename button open modal dialogue that requests the change. It will rename all documents associated with the project', 'New Feature'],
+          ['Renaming the client moves projects into the new client folder. If the client is new it makes a new folder. If there is nothing remaning in the old client folder after the move, the old client is removed.', 'New Feature']
+        ]
+      }
+    ],
     3: [
       'Project Reconciliation',
       {
