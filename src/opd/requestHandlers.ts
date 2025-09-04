@@ -334,14 +334,18 @@ export function renameInitiative(originalInitiative: SerializedData, changedElem
     if (!newClient.folder) {
       newClient.makeFolder();
     }
+    folder.moveTo(newClient.folder!);
     const files = originalClient.folder!.getFiles();
     const folders = originalClient.folder!.getFolders();
     let itemCount = 0;
-    while (files.hasNext() && itemCount <= 1) { files.next(); itemCount++; }
-    while (folders.hasNext() && itemCount <= 1) { folders.next(); itemCount++; }
-    folder.moveTo(newClient.folder!);
+    while (files.hasNext() && itemCount <= 1) { files.next().getName(); itemCount++; }
+    while (folders.hasNext() && itemCount <= 1) { folders.next().getName(); itemCount++; }
     if (itemCount === 0) { // If the client folder is empty
-      originalClient.deleteClient();
+      try {
+        originalClient.deleteClient();
+      } catch (error) {
+        console.error('Failed to delete client folder:', error);
+      }
     }
     newInitiative.clientName = changedElements.clientName;
   }
