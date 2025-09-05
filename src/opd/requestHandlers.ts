@@ -213,7 +213,6 @@ export function generateJob(nameArray: ProposalNameArray): void {
 
 export function showUnreconciledBookingsModal(bookings: Booking[]): GoogleAppsScript.HTML.HtmlOutput {
   const output = HtmlService.createTemplateFromFile('src/opd/html/unreconciledBookings');
-  output.bookings = bookings;
   output.bookings = bookings.map(b => b.serialize());
   return output.evaluate();
 }

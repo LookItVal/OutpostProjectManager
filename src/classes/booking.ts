@@ -182,6 +182,7 @@ export class Booking {
       duration: String(this.duration),
       technician: this.technician,
       project: this.project?.name as string,
+      calendarEventLink: this.calendarEventLink
     };
     return bookingData;
   }
