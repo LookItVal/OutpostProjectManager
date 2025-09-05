@@ -10,28 +10,14 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.4.5';
+export const version = '1.4.1';
 export const changelog = {
   1: {
     4: [
       'Fluid Nomenclature',
       {
-        5: [
-          ['Changed how client names are generated to prevent errors looking for client folders from little information', 'Bug Fix']
-        ],
-        4: [
-          ['Ensured all abnormal whitespace is trimmed from project titles when searching for projects', 'Bug Fix']
-        ],
-        3: [
-          ['Change Project Reconciliation template to use automatic filtering and sorting', 'New Feature'],
-          ['Change Quote to have better formatting and no existing project information', 'UI Change'],
-          ['Changed method of calendar event linking to reconciliation', 'Bug Fix']
-        ],
-        2: [
-          ['Ensure "Reconcile All" buttons work from inside the Unreconciled Bookings Modal', 'Hotfix']
-        ],
         1: [
-          ['Ensure "Open Calendar" buttons work from inside the Unreconciled Bookings Modal', 'Hotfix']
+          ['Ensure "Open Calendar" buttons work from inside the Unreconciled Bookings Modal', 'Bug Fix']
         ],
         0: [
           ['Added Rename button inside OPD', 'UI Change'],
