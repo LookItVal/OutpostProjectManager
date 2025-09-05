@@ -38,8 +38,8 @@ export class Reconciliation {
         this._row = this.sheet.getLastRow() + 1;
       } else {
         this._row = row;
+        return;
       }
-      return;
     }
     if (event) {
       this._bookingCalId = event.calendar.calendarId;

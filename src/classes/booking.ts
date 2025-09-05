@@ -167,7 +167,12 @@ export class Booking {
     if (this.project.type !== 'PROJECT') {
       throw new TypeError('Cannot reconcile booking for a non-project initiative.');
     }
-    this.reconciliation = new Reconciliation({sheetId: this.project?.reconciliationSheetId as string, row: -1});
+    this.reconciliation = new Reconciliation({
+      sheetId: this.project?.reconciliationSheetId as string,
+      row: -1,
+      eventId: this.eventId,
+      calId: this.calendarId
+    });
     this.reconciliation.linkBooking();
     this.reconciliation.date = this.date;
     this.reconciliation.hours = this.duration;
