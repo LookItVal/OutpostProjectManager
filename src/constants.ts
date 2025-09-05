@@ -10,12 +10,15 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.4.0';
+export const version = '1.4.1';
 export const changelog = {
   1: {
     4: [
       'Fluid Nomenclature',
       {
+        1: [
+          ['Ensure "Open Calendar" buttons work from inside the Unreconciled Bookings Modal', 'Bug Fix']
+        ],
         0: [
           ['Added Rename button inside OPD', 'UI Change'],
           ['Rename button open modal dialogue that requests the change. It will rename all documents associated with the project', 'New Feature'],
