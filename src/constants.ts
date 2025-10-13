@@ -10,12 +10,17 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.4.2';
+export const version = '1.4.3';
 export const changelog = {
   1: {
     4: [
       'Fluid Nomenclature',
       {
+        3: [
+          ['Change Project Reconciliation template to use automatic filtering and sorting', 'New Feature'],
+          ['Change Quote to have better formatting and no existing project information', 'UI Change'],
+          ['Changed method of calendar event linking to reconciliation', 'Bug Fix']
+        ],
         2: [
           ['Ensure "Reconcile All" buttons work from inside the Unreconciled Bookings Modal', 'Hotfix']
         ],
