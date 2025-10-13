@@ -10,12 +10,15 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.4.3';
+export const version = '1.4.4';
 export const changelog = {
   1: {
     4: [
       'Fluid Nomenclature',
       {
+        4: [
+          ['Ensured all abnormal whitespace is trimmed from project titles when searching for projects', 'Bug Fix']
+        ],
         3: [
           ['Change Project Reconciliation template to use automatic filtering and sorting', 'New Feature'],
           ['Change Quote to have better formatting and no existing project information', 'UI Change'],
