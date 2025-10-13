@@ -28,7 +28,6 @@ export class Reconciliation {
   private _spreadsheetId?: string;
   private _spreadsheet?: GoogleAppsScript.Spreadsheet.Spreadsheet;
   private _sheet?: GoogleAppsScript.Spreadsheet.Sheet;
-  private _bookingSheet?: GoogleAppsScript.Spreadsheet.Sheet;
   private _row?: number;
 
   constructor({ sheetId = '', row = undefined, event = undefined, calId = undefined, eventId = undefined}: ReconciliationParams) {
@@ -97,19 +96,6 @@ export class Reconciliation {
       return this._sheet;
     }
     throw new exports.ValidationError('Reconciliation sheet is not available.');
-  }
-
-  public get bookingSheet(): GoogleAppsScript.Spreadsheet.Sheet {
-    if (this._bookingSheet) {
-      return this._bookingSheet;
-    }
-    let bookingsSheet = this.spreadsheet.getSheetByName('bookings');
-    if (!bookingsSheet) {
-      bookingsSheet = this.spreadsheet.insertSheet('bookings');
-      bookingsSheet.hideSheet();
-    }
-    this._bookingSheet = bookingsSheet;
-    return this._bookingSheet;
   }
 
   public get row(): number {
@@ -335,21 +321,30 @@ export class Reconciliation {
       }
       spreadsheet = SpreadsheetApp.open(spreadsheetFile as GoogleAppsScript.Drive.File);
     }
-    let bookingsSheet = spreadsheet.getSheetByName('bookings');
-    if (!bookingsSheet) {
-      bookingsSheet = spreadsheet.insertSheet('bookings');
-      bookingsSheet.hideSheet();
+    const sheet = spreadsheet.getSheetByName('Sheet1');
+    if (!sheet) {
+      throw new exports.ValidationError('Sheet1 not found in reconciliation spreadsheet.');
     }
-    const data = bookingsSheet.getDataRange().getValues();
+
+    // Access the hidden columns for eventId and calendarId to search for matches
+    const maxColumns = sheet.getMaxColumns();
+    if (maxColumns == 8) {
+      // Insert additional columns if needed
+      sheet.insertColumnsAfter(maxColumns, 2);
+
+      // Hide columns I and J (9 and 10)
+      sheet.hideColumns(9, 2);
+    }
+    
+    const data = sheet.getDataRange().getValues();
     const eventId = booking.eventId;
     const calendarId = booking.calendarId;
     const matchingRows: number[] = [];
 
-    // Check the hidden "bookings" sheet for matching rows based on eventId and calendarId
-
+    // Check the hidden columns for matching rows based on eventId and calendarId
     for (let i = 0; i < data.length; i++) {
-      if (data[i][0] === eventId) {
-        if (data[i][1] === calendarId) {
+      if (data[i][9] === eventId) {
+        if (data[i][10] === calendarId) {
           matchingRows.push(i + 1); // +1 because Sheets are 1-indexed
         }
       }
@@ -357,28 +352,27 @@ export class Reconciliation {
     if (matchingRows.length > 0) {
       return matchingRows;
     }
-    // Search "Sheet1" for matching rows based on booking.date, booking.duration, and booking.technitian
-    const sheet1 = spreadsheet.getSheetByName('Sheet1');
-    if (sheet1) {
-      const sheet1Data = sheet1.getDataRange().getValues();
+    // Search Sheet for matching rows based on booking.date, booking.duration, and booking.technitian
+    if (sheet) {
+      const sheetData = sheet.getDataRange().getValues();
       const bookingDate = booking.date;
-      const bookingTechnitian = booking.technician;
+      const bookingTechnician = booking.technician;
 
-      for (let i = 0; i < sheet1Data.length; i++) {
-        const rowDate = new Date(sheet1Data[i][0]);
-        const rowTechnitian = sheet1Data[i][2];
+      for (let i = 0; i < sheetData.length; i++) {
+        const rowDate = new Date(sheetData[i][0]);
+        const rowTechnician = sheetData[i][2];
 
         if (
           rowDate.getMonth() === bookingDate.getMonth() &&
           rowDate.getDate() === bookingDate.getDate() &&
-          rowTechnitian === bookingTechnitian
+          rowTechnician === bookingTechnician
         ) {
           matchingRows.push(i + 1); // 1-indexed
         }
       }
       if (matchingRows.length === 1) {
-        bookingsSheet.getRange(matchingRows[0], 1).setValue(eventId);
-        bookingsSheet.getRange(matchingRows[0], 2).setValue(calendarId);
+        sheet.getRange(matchingRows[0], 9).setValue(eventId);
+        sheet.getRange(matchingRows[0], 10).setValue(calendarId);
       }
       if (matchingRows.length > 0) {
         return matchingRows;
@@ -398,7 +392,7 @@ export class Reconciliation {
     if (!this.row) {
       throw new exports.ValidationError('Reconciliation row number is not set.');
     }
-    this.bookingSheet.getRange(this.row, 1).setValue(this._bookingId);
-    this.bookingSheet.getRange(this.row, 2).setValue(this._bookingCalId);
+    this.sheet.getRange(this.row, 9).setValue(this._bookingId);
+    this.sheet.getRange(this.row, 10).setValue(this._bookingCalId);
   }
 }
