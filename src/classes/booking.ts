@@ -43,7 +43,8 @@ export class Booking {
   public get project(): Initiative | undefined {
     if (this._project) return this._project;
     if (this.calendarEvent) {
-      this._project = exports.Project.getInitiative({ name: this.calendarEvent.getTitle().trim() });
+      const title = this.calendarEvent.getTitle().replace(/\s+/g, ' ').trim();
+      this._project = exports.Project.getInitiative({ name: title });
       return this._project;
     }
     return undefined;
