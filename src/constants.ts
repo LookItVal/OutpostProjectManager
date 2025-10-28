@@ -10,12 +10,15 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.4.4';
+export const version = '1.4.5';
 export const changelog = {
   1: {
     4: [
       'Fluid Nomenclature',
       {
+        5: [
+          ['Changed how client names are generated to prevent errors looking for client folders from little information', 'Bug Fix']
+        ],
         4: [
           ['Ensured all abnormal whitespace is trimmed from project titles when searching for projects', 'Bug Fix']
         ],
