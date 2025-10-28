@@ -134,7 +134,7 @@ export abstract class Initiative {
       // would i define the client to be the Client class?
       const clientNames: string[] = exports.Client.getClients().map(client => client.name);
       for (const client of clientNames) {
-        if (clientProject.includes(client)) {
+        if (clientProject.startsWith(client)) {
           this._clientName = client;
           return client;
         }
