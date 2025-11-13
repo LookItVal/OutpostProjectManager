@@ -15,8 +15,7 @@ declare const exports: {
 };
 
 export class User {
-  constructor() {
-  }
+  constructor() {}
 
   static get email(): string {
     return Session.getActiveUser().getEmail();
