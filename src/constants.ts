@@ -10,12 +10,16 @@ export const regexProposalOpen: RegExp = /^PROPOSAL:/;
 export const regexPullDigits: RegExp = /\d+/g;
 
 //Changelog
-export const version = '1.4.5';
+export const version = '1.4.6';
 export const changelog = {
   1: {
     4: [
       'Fluid Nomenclature',
       {
+        6: [
+          ['Outpost Project Database now automatically updates the recent sheet tab color when initializing', 'New Feature'],
+          ['Outpost Project Database now ensures there is always one blank sheet ahead of the most recent sheet when initializing', 'New Feature']
+        ],
         5: [
           ['Changed how client names are generated to prevent errors looking for client folders from little information', 'Bug Fix']
         ],

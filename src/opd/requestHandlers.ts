@@ -4,7 +4,7 @@ import { User } from '../classes/user';
 import { Client } from '../classes/client';
 import { SerializedData, ProposalNameArray, ProjectNameArray } from '../interfaces';
 import { ValidationError } from '../classes/errors';
-import { properties, spreadsheet, version } from '../constants';
+import { properties, spreadsheet, version, regexPullDigits } from '../constants';
 import { openChangelogAsModalDialogue } from '../changelog/handlers';
 
 declare const exports: {
@@ -17,6 +17,7 @@ declare const exports: {
   properties: typeof properties;
   spreadsheet: typeof spreadsheet;
   version: typeof version;
+  regexPullDigits: typeof regexPullDigits;
   openChangelogAsModalDialogue: typeof openChangelogAsModalDialogue;
 };
 
@@ -316,6 +317,8 @@ export function openSheetChangelog(): void {
 }
 
 export function initConstants(): SerializedData {
+  isActiveSheetRecent(); // Update recent sheet tab color
+  getNextSheet(); // ensure next sheet exists
   return {version: exports.version, isAdmin: String(exports.User.isAdmin)};
 }
 
@@ -404,4 +407,76 @@ export function renameInitiative(originalInitiative: SerializedData, changedElem
     const costingSheet = DriveApp.getFileById(originalInitiative.costingSheetId as string);
     costingSheet.setName(`${newInitiative.yrmo} ${newInitiative.clientName} ${newInitiative.projectName} Costing Sheet`);
   }
+}
+
+export function isActiveSheetRecent(): boolean {
+  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  if (!spreadsheet) {
+    throw new ReferenceError('Spreadsheet is not defined');
+  }
+  const sheet = spreadsheet.getActiveSheet();
+  const recentSheet = exports.Project.nextSheet;
+  let digits = recentSheet.getName().match(exports.regexPullDigits) ?? [];
+  if (digits.length !== 2) {
+    throw new ReferenceError('No Digits Found');
+  }
+  digits = [String(Number(digits[0]) - 50), String(Number(digits[1]) - 50)];
+  const prevSheet = Project.dataSpreadsheet.getSheetByName(`${digits[0]}-${digits[1]}`);
+  recentSheet.setTabColor('#6495ED'); // cornflower blue
+  prevSheet?.setTabColor(null); // reset previous sheet tab color
+  return sheet.getName() === recentSheet.getName();
+}
+
+export function getNextSheet(): GoogleAppsScript.Spreadsheet.Sheet {
+  const spreadsheet = exports.spreadsheet as GoogleAppsScript.Spreadsheet.Spreadsheet;
+  if (!spreadsheet) {
+    throw new ReferenceError('Spreadsheet is not defined');
+  }
+  const recentSheet = exports.Project.nextSheet;
+  let digits = recentSheet.getName().match(exports.regexPullDigits) ?? [];
+  if (digits.length !== 2) {
+    throw new ReferenceError('No Digits Found');
+  }
+  digits = [String(Number(digits[0]) + 50), String(Number(digits[1]) + 50)];
+  let nextSheet = Project.dataSpreadsheet.getSheetByName(`${digits[0]}-${digits[1]}`);
+  if (!nextSheet) {
+    nextSheet = Project.dataSpreadsheet.insertSheet(`${digits[0]}-${digits[1]}`);
+    Project.dataSpreadsheet.setActiveSheet(recentSheet);
+    // Copy contents of recentSheet to nextSheet
+    const sourceRange = recentSheet.getDataRange();
+    const targetRange = nextSheet.getRange(1, 1, sourceRange.getNumRows(), sourceRange.getNumColumns());
+    sourceRange.copyTo(targetRange);
+    // Remove any additional rows/columns that were not in recentSheet
+    const lastRow = recentSheet.getLastRow();
+    const lastColumn = recentSheet.getLastColumn();
+    if (nextSheet.getMaxRows() > lastRow) {
+      nextSheet.deleteRows(lastRow + 1, nextSheet.getMaxRows() - lastRow);
+    }
+    if (nextSheet.getMaxColumns() > lastColumn) {
+      nextSheet.deleteColumns(lastColumn + 1, nextSheet.getMaxColumns() - lastColumn);
+    }
+    // Remove the contents of the text (not formatting) from all cells
+    nextSheet.getRange(2, 1, nextSheet.getMaxRows() - 1, 7).clearContent(); // Clear columns A through G
+    nextSheet.getRange(2, 8, nextSheet.getMaxRows() - 1, 4).setValue('FALSE'); // Set columns H through K to "FALSE"
+    // Add the new Job Numbers in column B starting from digit[0]
+    for (let i = 2; i <= nextSheet.getMaxRows(); i++) {
+      const jobNumber = String(Number(digits[0]) + i - 2);
+      nextSheet.getRange(i, 2).setValue(jobNumber);
+    }
+    // set the thickness of each column from the recent sheet
+    const columnWidths: number[] = [];
+    for (let i = 1; i <= recentSheet.getLastColumn(); i++) {
+      columnWidths.push(recentSheet.getColumnWidth(i));
+    }
+    for (let i = 0; i < columnWidths.length; i++) {
+      nextSheet.setColumnWidth(i + 1, columnWidths[i]);
+    }
+    // Freeze the first row
+    nextSheet.setFrozenRows(1);
+    // Move sheet all the way to the left
+    Project.dataSpreadsheet.setActiveSheet(nextSheet);
+    Project.dataSpreadsheet.moveActiveSheet(1);
+    Project.dataSpreadsheet.setActiveSheet(recentSheet);
+  }
+  return nextSheet;
 }
